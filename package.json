@@ -6,7 +6,7 @@
     "start": "ng serve -c production",
     "dev": "ng serve --watch -c development",
     "build": "ng build",
-    "test": "ng test"
+    "test": "ng test --browsers ChromeHeadless"
   },
   "private": true,
   "dependencies": {
