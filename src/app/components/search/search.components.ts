@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from "@angular/core";
+import { Component, ElementRef, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { NgbTypeahead } from "@ng-bootstrap/ng-bootstrap";
 import { debounceTime, map, Observable, OperatorFunction } from "rxjs";
@@ -16,6 +16,8 @@ export class SearchComponent<T> implements OnInit {
   @Input() initialValue?: T;
   @Output() onEntitySelected = new EventEmitter<T>();
 
+  @ViewChild('entityInput') entityInput!: ElementRef<HTMLInputElement>;
+
   selectedEntity?: T;
 
   ngOnInit(): void {
@@ -24,12 +26,31 @@ export class SearchComponent<T> implements OnInit {
       }
   }
 
+  ngAfterViewInit(): void {
+    const isValid = Boolean(this.selectedEntity);
+    this.setValidity(isValid);
+
+    if (!isValid) {
+      this.onEntitySelected.emit(undefined);
+    }
+  }
+
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['entities']) {
       if (this.selectedEntity && !this.entities.includes(this.selectedEntity)) {
         this.selectedEntity = undefined;
       }
+
+      this.setValidity(Boolean(this.selectedEntity));
     }
+  }
+
+  private setValidity(isValid: boolean): void {
+    if (!this.entityInput?.nativeElement) {
+      return;
+    }
+
+    this.entityInput.nativeElement.setCustomValidity(isValid ? '' : 'invalid');
   }
 
   search: OperatorFunction<string, readonly T[]> = (
@@ -59,9 +80,13 @@ export class SearchComponent<T> implements OnInit {
   selectionChanged(selection: T | string): void {
     if (typeof selection === 'string') {
         // a proper object wasn't selected yet
+        this.setValidity(false);
+        this.onEntitySelected.emit(undefined);
+
         return;
     }
 
+    this.setValidity(true);
     this.selectedEntity = selection;
     this.onEntitySelected.emit(selection);
   }

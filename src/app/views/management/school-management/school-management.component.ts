@@ -1,6 +1,6 @@
 import { Component, DestroyRef, OnInit } from "@angular/core";
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { cloneDeep } from 'lodash';
+import { cloneDeep, isEqual, sortBy } from 'lodash';
 import { BehaviorSubject, filter, switchMap } from "rxjs";
 import { GovernmentData, Street } from "src/app/api/gov/types";
 import { School } from "src/app/api/server/types/school";
@@ -29,6 +29,26 @@ const mocks: School[] = [
   },
 ];
 
+
+const emptySchool: School = {
+    id: '',
+    name: '',
+    municipality: {
+        fk: -1,
+        id: -1,
+        name: ''
+    },
+    address: {
+        street: {
+            id: -1,
+            fk: -1,
+            municipalityFk: -1,
+            name: ''
+        },
+        houseNumber: 0
+    }
+};
+
 @Component({
   selector: 'school-management',
   templateUrl: './school-management.component.html',
@@ -36,7 +56,7 @@ const mocks: School[] = [
   providers: [MunicipaitiesQuery, StreetsQuery]
 })
 export class SchoolManagementComponent implements OnInit {
-    fields: string[] = ['מזהה', "שם", 'ישוב', "רחוב", "מספר בניין", "פעולות"];
+    fields: string[] = ['מזהה', "שם", 'ישוב', "רחוב", "מספר בניין", "פעולות", ""];
     schools: School[] = [];
     editedSchool?: School;
     editedMunicipaity = new BehaviorSubject<GovernmentData | null>(null);
@@ -51,7 +71,7 @@ export class SchoolManagementComponent implements OnInit {
     ) {}
 
     ngOnInit(): void {
-        this.schools = mocks;
+        this.setSchools(mocks);
         this.municipaitiesQuery
             .selectAll()
             .pipe(
@@ -66,6 +86,10 @@ export class SchoolManagementComponent implements OnInit {
         ).subscribe(streets => this.streetsForEditedMunicipality = streets);
     }
 
+    private setSchools(schools: School[]): void {
+        this.schools = sortBy(schools, (school) => school.name);
+    }
+
     editSchool(school: School): void {
         if(this.editedSchool && this.editedSchool.id !== school.id) {
             //trying to switch edit in the middle
@@ -76,12 +100,23 @@ export class SchoolManagementComponent implements OnInit {
         }
     }
 
+    addSchool(): void {
+        if (this.editedSchool) {
+            return;
+        }
+
+        this.schools.unshift(emptySchool);
+        this.editedSchool = emptySchool;
+    }
+
     changeMunicipality(municipality: GovernmentData) {
         if (!this.editedSchool) {
             return;
         }
 
-        this.editedMunicipaity.next(municipality);
+        if (municipality) {
+            this.editedMunicipaity.next(municipality);
+        }
         this.editedSchool.municipality = municipality;
     }
 
@@ -91,6 +126,42 @@ export class SchoolManagementComponent implements OnInit {
         }
 
         this.editedSchool.address.street = street;
+    }
+
+    deleteSchool(school: School): void {
+        // throw confirmation message
+
+        if (school.id === this.editedSchool?.id) {
+            this.resetEditedSchool();
+        }
+
+        this.setSchools(this.schools.filter(({ id }) => id !== school.id));
+
+        // delete from server
+    }
+
+    private isSchoolValid(school: School): boolean {
+        const { name, municipality, address: { street, houseNumber } } = school;
+
+        if (name.length < 1 && name.length > 255) {
+            return false;
+        }
+
+        if (!municipality) {
+            console.log({municipality});
+            return false;
+        }
+
+        if (!street) {
+            console.log({street});
+            return false;
+        }
+
+        if (houseNumber < 0 || houseNumber > 1023) {
+            return false;
+        }
+
+        return true;
     }
     
     saveSchool(school: School): void {        
@@ -103,15 +174,17 @@ export class SchoolManagementComponent implements OnInit {
         const preEditSchool = cloneDeep(schoolToEdit);
 
         try {
-            schoolToEdit.name = this.getValueIfValid(school.name, (name) => name.length > 0 && name.length < 256);
-            schoolToEdit.municipality = this.getGovInfoByName(school.municipality.name, "municiplaity");
-            schoolToEdit.address = {
-                houseNumber: this.getValueIfValid(school.address.houseNumber, num => num >= 0 && num < 1024),
-                street: this.getGovInfoByName(school.address.street.name, "street")
-            };
+            if (!this.isSchoolValid(school)) {
+                throw new Error("Invalid school fields")
+            }
 
-            this.editedMunicipaity.next(null);
-            this.editedSchool = undefined;
+            schoolToEdit.name = school.name;
+            schoolToEdit.municipality = school.municipality;
+            schoolToEdit.address = school.address;
+
+            this.resetEditedSchool();
+
+            //server.upsert school
         } catch(error) {
             schoolToEdit.name = preEditSchool.name;
             schoolToEdit.address = preEditSchool.address;
@@ -121,23 +194,9 @@ export class SchoolManagementComponent implements OnInit {
         }
     }
 
-
-    private getGovInfoByName(name: string, url: string): Street {
-
-        return {
-            id: 5,
-            name,
-            fk: 200,
-            municipalityFk: 4
-        };
-    }
-
-    private getValueIfValid<T>(value: T, isValid: (val: T) => boolean, errorMessage = "did not pass validator function"): T {
-        if (!isValid(value)) {
-            throw new Error("Invalid value: " + errorMessage);
-        }
-
-        return value;
+    private resetEditedSchool(): void {
+        this.editedSchool = undefined;
+        this.editedMunicipaity.next(null);
     }
 
     trackById(index: number, school: School): string {
