@@ -1,26 +1,31 @@
-import { Component } from "@angular/core";
+import { Component, DestroyRef, OnInit } from "@angular/core";
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { cloneDeep } from 'lodash';
-import { GovernmentData, School } from "src/app/api/types/School";
+import { BehaviorSubject, filter, switchMap } from "rxjs";
+import { GovernmentData, Street } from "src/app/api/gov/types";
+import { School } from "src/app/api/server/types/school";
+import { MunicipaitiesQuery } from "src/app/stores/gov/municipalities/municipalities.query";
+import { StreetsQuery } from "src/app/stores/gov/streets/streets.query";
 
 const mockGov: GovernmentData[] = [
-    { id: 'c1', fk: 100, name: 'city one' },
-    { id: 's1', fk: 105, name: 'street one'},
-    { id: 'c2', fk: 200, name: 'city two' },
-    { id: 's2', fk: 204, name: 'street two'},
+    { id: 1, fk: 6200, name: 'בת ים' },
+    { id: 1, fk: 105, name: 'הרצל'},
+    { id: 2, fk: 200, name: 'חולון' },
+    { id: 2, fk: 204, name: 'אילת'},
 ]
 
 const mocks: School[] = [
   {
     id: '1',
-    name: 'test',
+    name: 'ראשון',
     municipality: mockGov[0],
-    address: { street: mockGov[1], houseNumber: 69 },
+    address: { street: {...mockGov[1], municipalityFk: mockGov[0].fk }, houseNumber: 69 },
   },
   {
     id: '2',
-    name: 'dumb',
+    name: 'שני',
     municipality: mockGov[2],
-    address: { street: mockGov[3], houseNumber: 420 },
+    address: { street: {...mockGov[3], municipalityFk: mockGov[2].fk }, houseNumber: 420 },
   },
 ];
 
@@ -28,15 +33,37 @@ const mocks: School[] = [
   selector: 'school-management',
   templateUrl: './school-management.component.html',
   styleUrls: ['./school-management.component.less'],
+  providers: [MunicipaitiesQuery, StreetsQuery]
 })
-export class SchoolManagementComponent {
+export class SchoolManagementComponent implements OnInit {
     fields: string[] = ['מזהה', "שם", 'ישוב', "רחוב", "מספר בניין", "פעולות"];
     schools: School[] = [];
     editedSchool?: School;
+    editedMunicipaity = new BehaviorSubject<GovernmentData | null>(null);
+
+    allMunicipalities: GovernmentData[] = [];
+    streetsForEditedMunicipality: Street[] = [];
+
+    constructor(
+        private readonly destroyRef: DestroyRef,
+        private readonly municipaitiesQuery: MunicipaitiesQuery,
+        private readonly streetsQuery: StreetsQuery
+    ) {}
 
     ngOnInit(): void {
         this.schools = mocks;
-        this.editedSchool = undefined;
+        this.municipaitiesQuery
+            .selectAll()
+            .pipe(
+                takeUntilDestroyed(this.destroyRef),
+                filter(entities => entities.length > 0)
+            ).subscribe(municipaities => this.allMunicipalities = municipaities);
+        
+        this.editedMunicipaity.pipe(
+            takeUntilDestroyed(this.destroyRef),
+            filter(Boolean),
+            switchMap(municipaity =>this.streetsQuery.selectStreetsByMunicipality(municipaity))
+        ).subscribe(streets => this.streetsForEditedMunicipality = streets);
     }
 
     editSchool(school: School): void {
@@ -44,8 +71,26 @@ export class SchoolManagementComponent {
             //trying to switch edit in the middle
             alert('no no no');
         } else {
+            this.editedMunicipaity.next(school.municipality);
             this.editedSchool = school;
         }
+    }
+
+    changeMunicipality(municipality: GovernmentData) {
+        if (!this.editedSchool) {
+            return;
+        }
+
+        this.editedMunicipaity.next(municipality);
+        this.editedSchool.municipality = municipality;
+    }
+
+    changeStreet(street: Street): void {
+        if (!this.editedSchool) {
+            return;
+        }
+
+        this.editedSchool.address.street = street;
     }
     
     saveSchool(school: School): void {        
@@ -65,6 +110,7 @@ export class SchoolManagementComponent {
                 street: this.getGovInfoByName(school.address.street.name, "street")
             };
 
+            this.editedMunicipaity.next(null);
             this.editedSchool = undefined;
         } catch(error) {
             schoolToEdit.name = preEditSchool.name;
@@ -76,12 +122,13 @@ export class SchoolManagementComponent {
     }
 
 
-    private getGovInfoByName(name: string, url: string): GovernmentData {
+    private getGovInfoByName(name: string, url: string): Street {
 
         return {
-            id: "5",
+            id: 5,
             name,
-            fk: 200
+            fk: 200,
+            municipalityFk: 4
         };
     }
 

@@ -1,0 +1,6 @@
+<input
+    type="text" class="form-control"
+    [ngModel]="selectedEntity" (ngModelChange)="selectionChanged($event)"
+    [ngbTypeahead]="search" [selectOnExact]="true"
+    [inputFormatter]="formatter"
+    [resultFormatter]="formatter"/>

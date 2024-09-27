@@ -23,10 +23,26 @@
 <ng-template #editedSchoolTemplate>
     <tr *ngIf="editedSchool" class="editing">
         <th scope="row"> {{ editedSchool.id }} </th>
-        <td><input [(ngModel)]="editedSchool.name" required [maxlength]="255"></td>
-        <td><input [(ngModel)]="editedSchool.municipality.name"></td>
-        <td><input [(ngModel)]="editedSchool.address.street.name"></td>
-        <td><input [(ngModel)]="editedSchool.address.houseNumber" type="number" min="0" max="1023"></td>
+        <td>
+            <input [(ngModel)]="editedSchool.name" class="form-control"
+            required [maxlength]="255">
+        </td>
+        <td>
+            <search
+                [entities]="allMunicipalities" [displayField]="'name'"
+                [initialValue]="editedSchool.municipality" (onEntitySelected)="changeMunicipality($event)">
+            </search>
+        </td>
+        <td>
+            <search
+                [entities]="streetsForEditedMunicipality" [displayField]="'name'"
+                [initialValue]="editedSchool.address.street" (onEntitySelected)="changeStreet($event)">
+            </search>
+        </td>
+        <td>
+            <input [(ngModel)]="editedSchool.address.houseNumber" class="form-control"
+            type="number" min="0" max="1023">
+        </td>
         <td class="action-button" (click)="saveSchool(editedSchool)"> שמירה </td>
     </tr>
 </ng-template>
