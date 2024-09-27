@@ -1,0 +1,32 @@
+<div class="filters-container">
+</div>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th *ngFor="let field of fields" scope="col">{{field}}</th>
+        </tr>
+    </thead>
+    <tbody>
+        <ng-container *ngFor="let school of schools; trackBy: trackById">
+            <tr *ngIf="editedSchool?.id !== school.id; else editedSchoolTemplate">
+                <th scope="row"> {{ school.id }} </th>
+                <td> {{ school.name }} </td>
+                <td> {{ school.municipality.name }} </td>
+                <td> {{ school.address.street.name }} </td>
+                <td> {{ school.address.houseNumber }} </td>
+                <td class="action-button" (click)="editSchool(school)"> עריכה </td>
+            </tr>
+        </ng-container>
+    </tbody>
+</table>
+
+<ng-template #editedSchoolTemplate>
+    <tr *ngIf="editedSchool" class="editing">
+        <th scope="row"> {{ editedSchool.id }} </th>
+        <td><input [(ngModel)]="editedSchool.name" required [maxlength]="255"></td>
+        <td><input [(ngModel)]="editedSchool.municipality.name"></td>
+        <td><input [(ngModel)]="editedSchool.address.street.name"></td>
+        <td><input [(ngModel)]="editedSchool.address.houseNumber" type="number" min="0" max="1023"></td>
+        <td class="action-button" (click)="saveSchool(editedSchool)"> שמירה </td>
+    </tr>
+</ng-template>

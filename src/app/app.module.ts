@@ -1,16 +1,20 @@
 import { NgModule } from '@angular/core';
-import { BrowserModule } from '@angular/platform-browser';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
+import { BasicModule } from './basic.module';
+import { ManagementModule } from './views/management/management.module';
+
+const subModules = [ManagementModule];
 
 @NgModule({
   declarations: [
     AppComponent
   ],
   imports: [
-    BrowserModule,
-    AppRoutingModule
+    AppRoutingModule,
+    BasicModule,
+    ...subModules,
   ],
   providers: [],
   bootstrap: [AppComponent]

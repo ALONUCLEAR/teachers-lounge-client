@@ -1,2 +1,5 @@
-<h1>Hello There</h1>
-<h2>You're at the {{ environment }} environment</h2>
+<nav style="display: flex; justify-content: space-evenly; align-items: center;">
+    <a routerLink="school-management" style="text-decoration: none; color: black;">Page currently being built</a>
+    <h3 *ngIf="environment !== 'Prod'" >{{ environment }}</h3>
+</nav>
+<router-outlet></router-outlet>

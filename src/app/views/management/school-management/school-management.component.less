@@ -1,0 +1,51 @@
+:host {
+    .table {
+        overflow-x: auto;
+        border-spacing: 0 1rem;
+        width: 90%;
+        margin: 0 5%;
+
+        td, th {
+            white-space: nowrap;
+            padding: 0.5rem 1rem;
+        }
+
+        .editing {
+            input {
+                width: 100%;
+                padding: 0;
+                min-width: max-content;
+
+                &[type=number] {
+                    direction: ltr;
+                    text-align: right;
+                }
+
+                &:focus {
+                  border-color: #80bdff;
+                  outline: 0;
+                  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+                }
+
+                &:invalid {
+                    border-color: #ff8080;
+          
+                    &:focus {
+                      box-shadow: 0 0 0 0.2rem rgba(255, 0, 0, 0.25);
+                    }
+                }
+              }
+        }
+    }
+
+    .action-button {
+        display: table-cell;
+        cursor: pointer;
+        width: 2em;
+
+        &:hover {
+            background-color: #007bff87;
+            color: white;
+        }
+    }
+}
