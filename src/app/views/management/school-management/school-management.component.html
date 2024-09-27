@@ -19,7 +19,7 @@
                 <td> {{ school.municipality.name }} </td>
                 <td> {{ school.address.street.name }} </td>
                 <td> {{ school.address.houseNumber }} </td>
-                <td class="action-button" (click)="editSchool(school)" [class.disabled]="editedSchool"> <i class="fa-solid fa-pen-to-square"></i></td>
+                <td class="action-button" (click)="editSchool(school)"> <i class="fa-solid fa-pen-to-square"></i></td>
                 <ng-container [ngTemplateOutlet]="deleteBtn" [ngTemplateOutletContext]="{ school: school }"></ng-container>
             </tr>
         </ng-container>

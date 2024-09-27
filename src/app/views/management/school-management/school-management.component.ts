@@ -1,34 +1,15 @@
-import { Component, DestroyRef, OnInit } from "@angular/core";
+import { Component, DestroyRef, OnDestroy, OnInit } from "@angular/core";
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { NgbModal } from "@ng-bootstrap/ng-bootstrap";
 import { cloneDeep, isEqual, sortBy } from 'lodash';
 import { BehaviorSubject, filter, switchMap } from "rxjs";
 import { GovernmentData, Street } from "src/app/api/gov/types";
+import { getAllSchools } from "src/app/api/server/getters/get-schools";
 import { School } from "src/app/api/server/types/school";
+import { ConfirmationPopupComponent, ConfirmationResult } from "src/app/components/ui/confirmation-popup/confirmation-popup.component";
+import { ToastService } from "src/app/services/toast.service";
 import { MunicipaitiesQuery } from "src/app/stores/gov/municipalities/municipalities.query";
 import { StreetsQuery } from "src/app/stores/gov/streets/streets.query";
-
-const mockGov: GovernmentData[] = [
-    { id: 1, fk: 6200, name: 'בת ים' },
-    { id: 1, fk: 105, name: 'הרצל'},
-    { id: 2, fk: 200, name: 'חולון' },
-    { id: 2, fk: 204, name: 'אילת'},
-]
-
-const mocks: School[] = [
-  {
-    id: '1',
-    name: 'ראשון',
-    municipality: mockGov[0],
-    address: { street: {...mockGov[1], municipalityFk: mockGov[0].fk }, houseNumber: 69 },
-  },
-  {
-    id: '2',
-    name: 'שני',
-    municipality: mockGov[2],
-    address: { street: {...mockGov[3], municipalityFk: mockGov[2].fk }, houseNumber: 420 },
-  },
-];
-
 
 const emptySchool: School = {
     id: '',
@@ -55,7 +36,7 @@ const emptySchool: School = {
   styleUrls: ['./school-management.component.less'],
   providers: [MunicipaitiesQuery, StreetsQuery]
 })
-export class SchoolManagementComponent implements OnInit {
+export class SchoolManagementComponent implements OnInit, OnDestroy {
     fields: string[] = ['מזהה', "שם", 'ישוב', "רחוב", "מספר בניין", "פעולות", ""];
     schools: School[] = [];
     editedSchool?: School;
@@ -64,14 +45,18 @@ export class SchoolManagementComponent implements OnInit {
     allMunicipalities: GovernmentData[] = [];
     streetsForEditedMunicipality: Street[] = [];
 
+    private intervals: number[] = [];
+
     constructor(
         private readonly destroyRef: DestroyRef,
         private readonly municipaitiesQuery: MunicipaitiesQuery,
-        private readonly streetsQuery: StreetsQuery
+        private readonly streetsQuery: StreetsQuery,
+        private readonly modalService: NgbModal,
+        private readonly toastService: ToastService
     ) {}
 
     ngOnInit(): void {
-        this.setSchools(mocks);
+        this.fetchSchools();
         this.municipaitiesQuery
             .selectAll()
             .pipe(
@@ -90,14 +75,56 @@ export class SchoolManagementComponent implements OnInit {
         this.schools = sortBy(schools, (school) => school.name);
     }
 
-    editSchool(school: School): void {
-        if(this.editedSchool && this.editedSchool.id !== school.id) {
-            //trying to switch edit in the middle
-            alert('no no no');
-        } else {
-            this.editedMunicipaity.next(school.municipality);
-            this.editedSchool = school;
+    // returns true if nothing changed(we can continue saving) and false otherwise
+    private async getAndSetSchools(isFirstCheck = false): Promise<boolean> {
+        try {
+            const upToDateSchools = await getAllSchools();
+            const nonNewSchools = this.schools.filter(({id}) => id != emptySchool.id);
+
+            if (!isEqual(upToDateSchools, nonNewSchools)) {
+                this.resetEditedSchool();
+                this.setSchools(upToDateSchools);
+
+                if (!isFirstCheck) {
+                    this.toastService.show({header: 'זוהה עדכון', message: 'רשימת בתי הספר התעדכנה', classes: ['t-success']});
+                }
+
+                return false;
+            }
+        } catch (error) {
+          console.error(error);
         }
+
+        return true;
+    }
+
+    private fetchSchools(): void {
+        this.getAndSetSchools(true);
+        const interval = window.setInterval(() => this.getAndSetSchools(), 5000);
+        this.intervals.push(interval);
+    }
+
+    private removeAllIntervals(): void {
+        this.intervals.forEach(clearInterval);
+        this.intervals = [];
+    }
+
+    async editSchool(school: School): Promise<void> {
+        if(this.editedSchool && this.editedSchool.id !== school.id) {
+            const modalRef = this.modalService.open(ConfirmationPopupComponent);
+            const componentInstance: ConfirmationPopupComponent = modalRef.componentInstance;
+            componentInstance.body = 'לערוך את בית הספר הזה יאפס את השינויים שלא שמרתם על בית הספר הקודם';
+
+            const result = await modalRef.result;
+
+            if (result !== ConfirmationResult.OK) {
+                return;
+            }
+        }
+
+        const newEditedSchool = cloneDeep(school);
+        this.editedMunicipaity.next(newEditedSchool.municipality);
+        this.editedSchool = newEditedSchool;
     }
 
     addSchool(): void {
@@ -164,10 +191,14 @@ export class SchoolManagementComponent implements OnInit {
         return true;
     }
     
-    saveSchool(school: School): void {        
+    async saveSchool(school: School): Promise<void> {        
         const schoolToEdit = this.schools.find(({ id }) => id === school?.id);
 
         if (!school || !schoolToEdit) {
+          return;
+        }
+
+        if (!await this.getAndSetSchools()) {
             return;
         }
 
@@ -201,5 +232,9 @@ export class SchoolManagementComponent implements OnInit {
 
     trackById(index: number, school: School): string {
         return `index-${index};school-${school.id}`;
+    }
+
+    ngOnDestroy(): void {
+        this.removeAllIntervals();
     }
 }

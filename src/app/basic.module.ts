@@ -5,20 +5,28 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BrowserModule } from "@angular/platform-browser";
 import { NgbModule } from "@ng-bootstrap/ng-bootstrap";
 import { DropDownComponent } from "./components/ui/drop-down/drop-down.component";
-import { SearchComponent } from "./components/search/search.components";
+import { SearchComponent } from "./components/ui/search/search.components";
+import { ConfirmationPopupComponent } from "./components/ui/confirmation-popup/confirmation-popup.component";
+import { ToastService } from "./services/toast.service";
 
 const basicModules = [
-    BrowserModule, CommonModule, FormsModule, ReactiveFormsModule, NgbModule
+    BrowserModule, CommonModule,
+    FormsModule, ReactiveFormsModule,
+    NgbModule
 ];
 
 const standaloneComponents = [
-    DropDownComponent, SearchComponent
+    DropDownComponent,
+    SearchComponent,
+    ConfirmationPopupComponent,
 ];
+
+const services = [ToastService];
 
 @NgModule({
     declarations: [],
     imports: [...basicModules, ...standaloneComponents],
-    providers: [],
+    providers: [services],
     exports: [...basicModules, ...standaloneComponents],
   })
  export class BasicModule {}
