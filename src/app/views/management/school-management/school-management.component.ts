@@ -7,7 +7,7 @@ import { GovernmentData, Street } from "src/app/api/gov/types";
 import { getAllSchools } from "src/app/api/server/getters/get-schools";
 import { School } from "src/app/api/server/types/school";
 import { ConfirmationPopupComponent, ConfirmationResult } from "src/app/components/ui/confirmation-popup/confirmation-popup.component";
-import { ToastService } from "src/app/services/toast.service";
+import { NotificationsService } from "src/app/services/notifications.service";
 import { MunicipaitiesQuery } from "src/app/stores/gov/municipalities/municipalities.query";
 import { StreetsQuery } from "src/app/stores/gov/streets/streets.query";
 
@@ -52,7 +52,7 @@ export class SchoolManagementComponent implements OnInit, OnDestroy {
         private readonly municipaitiesQuery: MunicipaitiesQuery,
         private readonly streetsQuery: StreetsQuery,
         private readonly modalService: NgbModal,
-        private readonly toastService: ToastService
+        private readonly notificationsService: NotificationsService
     ) {}
 
     ngOnInit(): void {
@@ -86,7 +86,7 @@ export class SchoolManagementComponent implements OnInit, OnDestroy {
                 this.setSchools(upToDateSchools);
 
                 if (!isFirstCheck) {
-                    this.toastService.show({header: 'זוהה עדכון', message: 'רשימת בתי הספר התעדכנה', classes: ['t-success']});
+                    this.notificationsService.info('רשימת בתי הספר התעדכנה', {  });
                 }
 
                 return false;

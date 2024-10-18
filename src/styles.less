@@ -27,35 +27,8 @@ body {
     }
   }
 
-  .toast {
-    &.t-success, .t-error {
-      @color: white;
-      color: @color;
-
-      .toast-header {
-        --bs-btn-close-color: @color;
-        color: @color;
-      }
-    }
-
-    &.t-success {
-      background-color: rgba(var(--bs-success-rgb),var(--bs-bg-opacity, 0.5));
-    }
-
-    &.t-error {
-      background-color: rgba(var(--bs-error-rgb),var(--bs-bg-opacity, 0.5));
-    }
-
-    .toast-header {
-      background-color: inherit;
-
-      .me-auto {
-        margin: 0 !important;
-      }
-
-      .btn-close {
-        margin-right: auto;
-      }
-    }
+  .sn-notify-close.sn-notify-close {
+    left: 0.75em;
+    right: unset;
   }
 }

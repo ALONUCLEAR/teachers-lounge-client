@@ -7,7 +7,7 @@ import { NgbModule } from "@ng-bootstrap/ng-bootstrap";
 import { DropDownComponent } from "./components/ui/drop-down/drop-down.component";
 import { SearchComponent } from "./components/ui/search/search.components";
 import { ConfirmationPopupComponent } from "./components/ui/confirmation-popup/confirmation-popup.component";
-import { ToastService } from "./services/toast.service";
+import { NotificationsService } from "./services/notifications.service";
 
 const basicModules = [
     BrowserModule, CommonModule,
@@ -21,7 +21,7 @@ const standaloneComponents = [
     ConfirmationPopupComponent,
 ];
 
-const services = [ToastService];
+const services = [NotificationsService];
 
 @NgModule({
     declarations: [],

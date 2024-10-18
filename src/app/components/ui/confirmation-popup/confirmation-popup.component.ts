@@ -1,6 +1,5 @@
-import { CommonModule } from '@angular/common';
 import { AfterViewChecked, Component, ElementRef, Input, ViewChild } from '@angular/core';
-import { NgbActiveModal, NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
 export enum ConfirmationResult {
   OK = 'Ok',

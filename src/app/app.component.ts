@@ -2,8 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { environment } from 'src/environments/environment';
 import { MunicipaitiesStore } from './stores/gov/municipalities/municipalities.store';
 import { StreetsStore } from './stores/gov/streets/streets.store';
-import { Toast, ToastService } from './services/toast.service';
-import { BehaviorSubject } from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -16,16 +14,11 @@ export class AppComponent implements OnInit {
   readonly environment = environment.env;
   readonly url = environment.serverUrl;
 
-  allToasts$ = new BehaviorSubject<Toast[]>([]);
-
   constructor(
     private readonly municipalitiesStore: MunicipaitiesStore,
-    private readonly streetsStore: StreetsStore,
-    public readonly toastService: ToastService
-  ) {}
+    private readonly streetsStore: StreetsStore) {}
 
   ngOnInit(): void {
-    this.allToasts$ = this.toastService.selectAllToasts$();
     this.initializeStores();
   }
 
