@@ -1,0 +1,42 @@
+<div class="controls-container">
+    <div class="filters-container">
+    </div>
+    <div class="actions-container">
+        <div class="action-button" (click)="addEntity()" [class.disabled]="editedEntity"><i class="fa-solid fa-circle-plus"></i></div>
+    </div>
+</div>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th *ngFor="let field of displayedFields" scope="col">{{field.title}}</th>
+        </tr>
+    </thead>
+    <tbody>
+        <ng-container *ngFor="let entity of mappedEntities; let index = index; trackBy: trackById">
+            <tr *ngIf="editedEntity?.id !== entity['מזהה']; else editedEntityTemplate">
+                <ng-container *ngFor="let field of fields">
+                    <th *ngIf="field.title === 'מזהה'" scope="row"> {{ entity['מזהה'] }} </th>
+                    <td *ngIf="field.title !== 'מזהה'"> {{ entity[field.title] }} </td>
+                </ng-container>
+                <td class="action-button" (click)="editEntity(copiedEntities[index], index)"> <i class="fa-solid fa-pen-to-square"></i></td>
+                <ng-container [ngTemplateOutlet]="deleteBtn" [ngTemplateOutletContext]="{ entity: copiedEntities[index] }"></ng-container>
+            </tr>
+        </ng-container>
+    </tbody>
+</table>
+<ng-template #editedEntityTemplate>
+    <tr *ngIf="editedEntity && editedRowTemplate" class="editing">
+        <th scope="row"> {{ editedEntity.id }} </th>
+        <ng-container [ngTemplateOutlet]="editedRowTemplate" [ngTemplateOutletContext]="{ editedEntity }"></ng-container>
+        <td class="action-button" (click)="saveEntity(editedEntity)">
+            <i class="fa-solid fa-floppy-disk"></i>
+        </td>
+        <ng-container [ngTemplateOutlet]="deleteBtn" [ngTemplateOutletContext]="{ entity: editedEntity }"></ng-container>
+    </tr>
+</ng-template>
+
+<ng-template #deleteBtn let-entity="entity">
+    <td class="action-button delete" (click)="onAction.emit({action: ActionType.DELETE, entity, editedEntity })">
+        <i class="fa-solid fa-trash"></i>
+    </td>
+</ng-template>

@@ -1,59 +1,33 @@
-<div class="controls-container">
-    <div class="filters-container">
-    </div>
-    <div class="actions-container">
-        <div class="action-button" (click)="addSchool()" [class.disabled]="editedSchool"><i class="fa-solid fa-circle-plus"></i></div>
-    </div>
-</div>
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th *ngFor="let field of fields" scope="col">{{field}}</th>
-        </tr>
-    </thead>
-    <tbody>
-        <ng-container *ngFor="let school of schools; trackBy: trackById">
-            <tr *ngIf="editedSchool?.id !== school.id; else editedSchoolTemplate">
-                <th scope="row"> {{ school.id }} </th>
-                <td> {{ school.name }} </td>
-                <td> {{ school.municipality.name }} </td>
-                <td> {{ school.address.street.name }} </td>
-                <td> {{ school.address.houseNumber }} </td>
-                <td class="action-button" (click)="editSchool(school)"> <i class="fa-solid fa-pen-to-square"></i></td>
-                <ng-container [ngTemplateOutlet]="deleteBtn" [ngTemplateOutletContext]="{ school: school }"></ng-container>
-            </tr>
-        </ng-container>
-    </tbody>
-</table>
+<my-table
+    [fields]="fields"
+    [entities]="schools"
+    [midEditSwapAlert]="midEditSwapAlert"
+    [editedRowTemplate]="trimmedEditedSchoolTemplate"
+    [emptyEntity]="emptySchool"
+    [inputEditedEntityIndex]="inputEditedEntityIndex"
+    (onEditedEntityChanged)="handleEditChange($event)"
+    (onAction)="handleAction($event)">
+</my-table>
 
-<ng-template #editedSchoolTemplate>
-    <tr *ngIf="editedSchool" class="editing">
-        <th scope="row"> {{ editedSchool.id }} </th>
-        <td>
-            <input [(ngModel)]="editedSchool.name" class="form-control"
-            required [maxlength]="255">
-        </td>
-        <td>
-            <search
-                [entities]="allMunicipalities" [displayField]="'name'"
-                [initialValue]="editedSchool.municipality" (onEntitySelected)="changeMunicipality($event)">
-            </search>
-        </td>
-        <td>
-            <search
-                [entities]="streetsForEditedMunicipality" [displayField]="'name'"
-                [initialValue]="editedSchool.address.street" (onEntitySelected)="changeStreet($event)">
-            </search>
-        </td>
-        <td>
-            <input [(ngModel)]="editedSchool.address.houseNumber" class="form-control"
-            type="number" min="0" max="1023">
-        </td>
-        <td class="action-button" (click)="saveSchool(editedSchool)"> <i class="fa-solid fa-floppy-disk"></i> </td>
-        <ng-container [ngTemplateOutlet]="deleteBtn" [ngTemplateOutletContext]="{ school: editedSchool }"></ng-container>
-    </tr>
-</ng-template>
-
-<ng-template #deleteBtn let-school="school">
-    <td class="action-button delete" (click)="deleteSchool(school)"> <i class="fa-solid fa-trash"></i> </td>
+<ng-template #trimmedEditedSchoolTemplate let-editedEntity="editedEntity">
+    <td>
+        <input [(ngModel)]="editedEntity.name" class="form-control"
+        required [maxlength]="255">
+    </td>
+    <td>
+        <search
+            [entities]="allMunicipalities" [displayField]="'name'"
+            [initialValue]="editedEntity.municipality" (onEntitySelected)="changeMunicipality($event, editedEntity)">
+        </search>
+    </td>
+    <td>
+        <search
+            [entities]="streetsForEditedMunicipality" [displayField]="'name'"
+            [initialValue]="editedEntity.address.street" (onEntitySelected)="changeStreet($event, editedEntity)">
+        </search>
+    </td>
+    <td>
+        <input [(ngModel)]="editedEntity.address.houseNumber" class="form-control"
+        type="number" min="0" max="1023">
+    </td>
 </ng-template>
