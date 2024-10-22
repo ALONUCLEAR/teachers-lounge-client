@@ -1,24 +1,20 @@
+import { CommonModule } from '@angular/common';
 import {
   Component,
-  ElementRef,
   EventEmitter,
   Input,
   OnChanges,
-  OnInit,
   Output,
   SimpleChanges,
-  TemplateRef,
-  ViewChild,
+  TemplateRef
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { NgbModal, NgbTypeahead } from '@ng-bootstrap/ng-bootstrap';
-import { debounceTime, map, Observable, OperatorFunction } from 'rxjs';
+import { NgbModal, NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
+import { cloneDeep } from 'lodash';
 import {
   ConfirmationPopupComponent,
   ConfirmationResult,
 } from '../confirmation-popup/confirmation-popup.component';
-import { cloneDeep } from 'lodash';
-import { CommonModule } from '@angular/common';
 
 export enum FieldType {
   READONLY = 'READ ONLY',
@@ -51,7 +47,7 @@ export type Field<Entity> = ActionField | PropertyField<Entity>;
   templateUrl: './my-table.component.html',
   styleUrls: ['./my-table.component.less'],
   standalone: true,
-  imports: [FormsModule, CommonModule],
+  imports: [FormsModule, CommonModule, NgbTooltipModule],
 })
 export class MyTableComponent<Entity extends { id: string }> implements OnChanges {
   @Input({ required: true }) fields: PropertyField<Entity>[] = [];
@@ -65,7 +61,7 @@ export class MyTableComponent<Entity extends { id: string }> implements OnChange
   @Output() onAction = new EventEmitter<{action: ActionType, entity?: Entity, editedEntity?: Entity}>();
 
 
-  editedEntity?: Entity;
+  editedEntity?: Entity & { displayId: string };
   displayedFields: Field<Entity>[] = [];
   copiedEntities: Entity[] = [];
   mappedEntities: Record<string, string>[] = [];
@@ -87,10 +83,17 @@ export class MyTableComponent<Entity extends { id: string }> implements OnChange
     }
 
     if (changes[`inputEditedEntityIndex`]) {
-      this.editedEntity = this.copiedEntities[this.inputEditedEntityIndex];
+      const editedEntity = this.copiedEntities[this.inputEditedEntityIndex];
+      this.editedEntity = editedEntity
+        ? { ...editedEntity, displayId: this.mapIdToDisplay(editedEntity) }
+        : undefined;
     }
   }
 
+  private mapIdToDisplay(entity: Entity): string {
+    return this.fields.find(field => field.title === "מזהה")!.mapper(entity);
+  
+  }
   private initTable(): void {
     this.displayedFields = [...this.fields, ...this.ACTION_FIELDS];
   }
@@ -126,7 +129,7 @@ export class MyTableComponent<Entity extends { id: string }> implements OnChange
       }
     }
 
-    this.editedEntity = cloneDeep(entity);
+    this.editedEntity = cloneDeep({ ...entity, displayId: this.mapIdToDisplay(entity) });
     this.onEditedEntityChanged.emit({ entity: this.editedEntity, index });
   }
 
@@ -137,7 +140,7 @@ export class MyTableComponent<Entity extends { id: string }> implements OnChange
 
     this.copiedEntities.unshift(this.emptyEntity);
     this.initMappedEntities(this.copiedEntities);
-    this.editedEntity = this.emptyEntity;
+    this.editedEntity = {...this.emptyEntity, displayId: this.mapIdToDisplay(this.emptyEntity) };
     this.onEditedEntityChanged.emit({ entity: this.editedEntity, index: 0 });
   }
 

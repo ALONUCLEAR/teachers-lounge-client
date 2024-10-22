@@ -13,3 +13,15 @@ export const getAllSchools = async (): Promise<School[]> => {
 
     return response.data;
 }
+
+export const tryUpsertSchool = async (schoolToUpsert: School): Promise<boolean> => {
+    const response = await axios.post(`${schoolsUrl}/upsert`, schoolToUpsert);
+
+    if (response.status >= 300) {
+        console.error(`Request to get all schools failed, returned with status ${response.status}`);
+
+        return false;
+    }
+
+    return true;
+} 

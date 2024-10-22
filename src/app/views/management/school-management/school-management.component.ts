@@ -1,10 +1,9 @@
 import { Component, DestroyRef, OnDestroy, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { cloneDeep, isEqual, sortBy } from 'lodash';
+import { cloneDeep, isEqual, omit, sortBy } from 'lodash';
 import { BehaviorSubject, filter, switchMap } from 'rxjs';
 import { GovernmentData, Street } from 'src/app/api/gov/types';
-import { getAllSchools } from 'src/app/api/server/getters/get-schools';
+import { getAllSchools, tryUpsertSchool } from 'src/app/api/server/actions/school-actions';
 import { School } from 'src/app/api/server/types/school';
 import {
   ActionType,
@@ -45,7 +44,12 @@ export class SchoolManagementComponent implements OnInit, OnDestroy {
     {
       type: FieldType.READONLY,
       title: 'מזהה',
-      mapper: (school) => school.id,
+      mapper: (school) => {
+        const { id } = school;
+        const len = id?.length ?? 0;
+
+        return len < 8 ? id : `${school.id.substring(len - 5, len)}...`;
+      },
     },
     {
       type: FieldType.EDITABLE,
@@ -105,7 +109,7 @@ export class SchoolManagementComponent implements OnInit, OnDestroy {
           this.streetsQuery.selectStreetsByMunicipality(municipaity)
         )
       )
-      .subscribe((streets) => this.streetsForEditedMunicipality = streets);
+      .subscribe((streets) => (this.streetsForEditedMunicipality = streets));
   }
 
   private setSchools(schools: School[]): void {
@@ -113,19 +117,19 @@ export class SchoolManagementComponent implements OnInit, OnDestroy {
   }
 
   // returns true if nothing changed(we can continue saving) and false otherwise
-  private async getAndSetSchools(isFirstCheck = false): Promise<boolean> {
+  private async getAndSetSchools(alertUserToChange = true): Promise<boolean> {
     try {
-        const idSorter = (school: School) => school.id;
+      const idSorter = (school: School) => school.id;
       const upToDateSchools = sortBy(await getAllSchools(), idSorter);
-      const nonNewSchools = sortBy(this.schools.filter(({ id }) => id != emptySchool.id), idSorter);
+      const nonNewSchools = sortBy(this.schools.filter(({ id }) => id !== emptySchool.id), idSorter);
 
       if (!isEqual(upToDateSchools, nonNewSchools)) {
         this.resetEditedFields();
         this.setSchools(upToDateSchools);
 
-        if (!isFirstCheck) {
+        if (alertUserToChange) {
           this.notificationsService.info('רשימת בתי הספר התעדכנה', {
-            title: 'זןהה עדכון',
+            title: 'זוהה עדכון',
           });
         }
 
@@ -139,7 +143,7 @@ export class SchoolManagementComponent implements OnInit, OnDestroy {
   }
 
   private fetchSchools(): void {
-    this.getAndSetSchools(true);
+    this.getAndSetSchools(false);
     const interval = window.setInterval(() => this.getAndSetSchools(), 5000);
     this.intervals.push(interval);
   }
@@ -203,7 +207,11 @@ export class SchoolManagementComponent implements OnInit, OnDestroy {
   }
 
   private isSchoolValid(school: School): boolean {
-    const { name, municipality, address: { street, houseNumber } } = school;
+    const {
+      name,
+      municipality,
+      address: { street, houseNumber },
+    } = school;
 
     if (name.length < 1 || name.length > 255) {
       return false;
@@ -229,7 +237,7 @@ export class SchoolManagementComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (!await this.getAndSetSchools()) {
+    if (!(await this.getAndSetSchools())) {
       return;
     }
 
@@ -238,7 +246,7 @@ export class SchoolManagementComponent implements OnInit, OnDestroy {
     try {
       if (!this.isSchoolValid(school)) {
         this.notificationsService.error('חפשו שדות אדומים ותקנו אותם', {
-          title: 'שגיאה בשמרית בית ספר',
+          title: 'שגיאה בשמירת בית ספר',
         });
 
         throw new Error('Invalid school fields');
@@ -249,6 +257,14 @@ export class SchoolManagementComponent implements OnInit, OnDestroy {
       schoolToEdit.address = school.address;
 
       const schoolIndex = this.schools.findIndex(({ id }) => id === school.id);
+      
+      const needToUpsert = schoolIndex < 0 || !isEqual(this.schools[schoolIndex], omit(school, 'displayId'));
+
+      if (!needToUpsert) {
+        this.resetEditedFields();
+
+        return;
+      }
 
       if (schoolIndex < 0) {
         this.schools.push(school);
@@ -257,9 +273,17 @@ export class SchoolManagementComponent implements OnInit, OnDestroy {
       }
       this.schools = [...this.schools];
 
-      this.resetEditedFields();
+      if (!(await tryUpsertSchool(schoolToEdit))) {
+        this.notificationsService.error('אופס... משהו השתבש', {
+          title: 'שגיאה בשמירת בית ספר',
+        });
+      } else {
+        const actionName = schoolIndex < 0 ? `נוצר` : `עודכן`;
+        this.notificationsService.info(`בית הספר ${actionName} בהצלחה`);
+        await this.getAndSetSchools(false);
+      }
 
-      //server.upsert school
+      this.resetEditedFields();
     } catch (error) {
       schoolToEdit.name = preEditSchool.name;
       schoolToEdit.address = preEditSchool.address;

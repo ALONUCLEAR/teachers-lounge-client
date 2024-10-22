@@ -13,9 +13,9 @@
     </thead>
     <tbody>
         <ng-container *ngFor="let entity of mappedEntities; let index = index; trackBy: trackById">
-            <tr *ngIf="editedEntity?.id !== entity['מזהה']; else editedEntityTemplate">
+            <tr *ngIf="editedEntity?.id !== copiedEntities[index].id; else editedEntityTemplate">
                 <ng-container *ngFor="let field of fields">
-                    <th *ngIf="field.title === 'מזהה'" scope="row"> {{ entity['מזהה'] }} </th>
+                    <th *ngIf="field.title === 'מזהה'" scope="row" container="body" [ngbTooltip]="copiedEntities[index].id"> {{ entity['מזהה'] }} </th>
                     <td *ngIf="field.title !== 'מזהה'"> {{ entity[field.title] }} </td>
                 </ng-container>
                 <td class="action-button" (click)="editEntity(copiedEntities[index], index)"> <i class="fa-solid fa-pen-to-square"></i></td>
@@ -26,7 +26,7 @@
 </table>
 <ng-template #editedEntityTemplate>
     <tr *ngIf="editedEntity && editedRowTemplate" class="editing">
-        <th scope="row"> {{ editedEntity.id }} </th>
+        <th scope="row" container="body" [ngbTooltip]="editedEntity.id"> {{ editedEntity.displayId }} </th>
         <ng-container [ngTemplateOutlet]="editedRowTemplate" [ngTemplateOutletContext]="{ editedEntity }"></ng-container>
         <td class="action-button" (click)="saveEntity(editedEntity)">
             <i class="fa-solid fa-floppy-disk"></i>
