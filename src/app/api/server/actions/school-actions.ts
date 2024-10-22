@@ -24,4 +24,16 @@ export const tryUpsertSchool = async (schoolToUpsert: School): Promise<boolean> 
     }
 
     return true;
-} 
+}
+
+export const tryDeleteSchool = async (schoolId: string): Promise<boolean> => {
+    const response = await axios.delete(`${schoolsUrl}/${schoolId}`);
+
+    if (response.status >= 300) {
+        console.error(`Request to get all schools failed, returned with status ${response.status}`);
+
+        return false;
+    }
+
+    return response.data;
+}

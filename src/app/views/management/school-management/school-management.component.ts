@@ -1,10 +1,12 @@
 import { Component, DestroyRef, OnDestroy, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { cloneDeep, isEqual, omit, sortBy } from 'lodash';
 import { BehaviorSubject, filter, switchMap } from 'rxjs';
 import { GovernmentData, Street } from 'src/app/api/gov/types';
-import { getAllSchools, tryUpsertSchool } from 'src/app/api/server/actions/school-actions';
+import { getAllSchools, tryDeleteSchool, tryUpsertSchool } from 'src/app/api/server/actions/school-actions';
 import { School } from 'src/app/api/server/types/school';
+import { ConfirmationPopupComponent, ConfirmationResult } from 'src/app/components/ui/confirmation-popup/confirmation-popup.component';
 import {
   ActionType,
   FieldType,
@@ -88,7 +90,8 @@ export class SchoolManagementComponent implements OnInit, OnDestroy {
     private readonly destroyRef: DestroyRef,
     private readonly municipaitiesQuery: MunicipaitiesQuery,
     private readonly streetsQuery: StreetsQuery,
-    private readonly notificationsService: NotificationsService
+    private readonly notificationsService: NotificationsService,
+    private readonly modalService: NgbModal
   ) {}
 
   ngOnInit(): void {
@@ -158,13 +161,13 @@ export class SchoolManagementComponent implements OnInit, OnDestroy {
     this.inputEditedEntityIndex = index;
   }
 
-  handleAction({ action, entity, editedEntity }: { action: ActionType; entity?: School; editedEntity?: School; }): void {
+  async handleAction({ action, entity, editedEntity }: { action: ActionType; entity?: School; editedEntity?: School; }): Promise<void> {
     switch (action) {
       case ActionType.DELETE:
-        this.deleteSchool(entity, editedEntity);
+        await this.deleteSchool(entity, editedEntity);
         break;
       default:
-        this.saveSchool(entity, editedEntity);
+        await this.saveSchool(entity, editedEntity);
         break;
     }
   }
@@ -189,21 +192,52 @@ export class SchoolManagementComponent implements OnInit, OnDestroy {
     editedSchool.address.street = street;
   }
 
-  deleteSchool(school?: School, editedSchool?: School): void {
+  private async confirmDelete(school: School): Promise<boolean> {
+    const schoolName = school.name || "בית הספר הזה";
+
+    const modalRef = this.modalService.open(ConfirmationPopupComponent);
+    const componentInstance: ConfirmationPopupComponent = modalRef.componentInstance;
+
+    componentInstance.title = `שימו לב - פעולה בלתי הפיכה`;
+    componentInstance.body = `אתם בטוחים שברצונכם למחוק את ${schoolName}?`;
+    let result = ConfirmationResult.CANCEL;
+
+    try {
+      result = await modalRef.result;
+    } catch {
+      // user clicked outside the modal to close
+    }
+
+    return result === ConfirmationResult.OK;
+  }
+
+  async deleteSchool(school?: School, editedSchool?: School): Promise<void> {
     if (!school) {
       this.notificationsService.error(`לא נבחר בית ספר למחיקה`);
 
       return;
     }
-    // throw confirmation message
+
+    if (!await this.confirmDelete(school)) {
+      return;
+    } 
 
     if (school.id === editedSchool?.id) {
       this.resetEditedFields();
     }
 
-    this.setSchools(this.schools.filter(({ id }) => id !== school.id));
+    if (school.id !== emptySchool.id) {
+      if(!await tryDeleteSchool(school.id)) {
+        this.notificationsService.error('אופס... משהו השתבש', {
+          title: 'שגיאה במחיקת בית ספר',
+        });
+      } else {
+        this.notificationsService.info(`בית הספר נמחק בהצלחה`);
+        await this.getAndSetSchools(false);
+      }
+    }
 
-    // delete from server
+    this.setSchools(this.schools.filter(({ id }) => id !== school.id));
   }
 
   private isSchoolValid(school: School): boolean {

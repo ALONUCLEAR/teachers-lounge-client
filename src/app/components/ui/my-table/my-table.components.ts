@@ -113,8 +113,7 @@ export class MyTableComponent<Entity extends { id: string }> implements OnChange
   async editEntity(entity: Entity, index: number): Promise<void> {
     if (this.editedEntity && this.editedEntity.id !== entity.id) {
       const modalRef = this.modalService.open(ConfirmationPopupComponent);
-      const componentInstance: ConfirmationPopupComponent =
-        modalRef.componentInstance;
+      const componentInstance: ConfirmationPopupComponent = modalRef.componentInstance;
       componentInstance.body = this.midEditSwapAlert;
       let result = ConfirmationResult.CANCEL;
 
