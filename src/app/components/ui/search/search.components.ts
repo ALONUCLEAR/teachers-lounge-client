@@ -14,6 +14,8 @@ export class SearchComponent<T> implements OnInit {
   @Input({ required: true }) entities: T[] = [];
   @Input({ required: true }) displayField?: keyof T;
   @Input() initialValue?: T;
+  @Input() markValidity = true;
+  @Input() placeholder?: string;
   @Output() onEntitySelected = new EventEmitter<T>();
 
   @ViewChild('entityInput') entityInput!: ElementRef<HTMLInputElement>;
@@ -46,7 +48,7 @@ export class SearchComponent<T> implements OnInit {
   }
 
   private setValidity(isValid: boolean): void {
-    if (!this.entityInput?.nativeElement) {
+    if (!this.entityInput?.nativeElement || !this.markValidity) {
       return;
     }
 

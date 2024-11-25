@@ -1,5 +1,5 @@
 <input #entityInput
     type="text" class="form-control"
     [ngModel]="selectedEntity" (ngModelChange)="selectionChanged($event)"
-    [ngbTypeahead]="search" [selectOnExact]="true"
+    [ngbTypeahead]="search" [selectOnExact]="true" [placeholder]="placeholder"
     [inputFormatter]="formatter" [resultFormatter]="formatter"/>

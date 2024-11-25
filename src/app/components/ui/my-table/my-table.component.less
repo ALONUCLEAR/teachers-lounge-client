@@ -1,18 +1,32 @@
 :host {
+    width: max-content;
     .controls-container {
         display: flex;
         justify-content: space-evenly;
         background-color: #b4b4b464;
-        width: 90%;
+        width: max-content;
+        min-width: 90%;
         margin: 0 5%;
+        white-space: nowrap;
 
         .filters-container {
             display: flex;
+            align-items: center;
+            justify-content: space-between;
+            
+            .filter-icon, .clear-filters, .filter-title {
+                margin: 0.2rem 0.5rem;
+            }
+
+            .filter-title {
+                font-weight: bold;
+            }
         }
 
         .actions-container {
             display: flex;
             float: right;
+            align-items: center;
         }
     }
 

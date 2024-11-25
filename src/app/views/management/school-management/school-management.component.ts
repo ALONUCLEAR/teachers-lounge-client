@@ -74,7 +74,8 @@ export class SchoolManagementComponent implements OnInit, OnDestroy {
       mapper: (school) => `${school.address.houseNumber}`,
     },
   ];
-  schools: School[] = [];
+  private schools: School[] = [];
+  filteredSchools: School[] = [];
   inputEditedEntityIndex = -1;
   editedMunicipaity = new BehaviorSubject<GovernmentData | null>(null);
 
@@ -85,6 +86,11 @@ export class SchoolManagementComponent implements OnInit, OnDestroy {
   readonly emptySchool = emptySchool;
 
   private intervals: number[] = [];
+  nameFilter = '';
+  private municipalityFilter?: GovernmentData = undefined;
+  private streetFilter?: Street = undefined;
+  filterMunicipalities$ = new BehaviorSubject<GovernmentData[]>([]);
+  filterStreets: Street[] = [];
 
   constructor(
     private readonly destroyRef: DestroyRef,
@@ -102,7 +108,10 @@ export class SchoolManagementComponent implements OnInit, OnDestroy {
         takeUntilDestroyed(this.destroyRef),
         filter((entities) => entities.length > 0)
       )
-      .subscribe((municipaities) => (this.allMunicipalities = municipaities));
+      .subscribe((municipaities) => {
+        this.allMunicipalities = municipaities;
+        this.filterMunicipalities$.next([...municipaities]);
+      });
 
     this.editedMunicipaity
       .pipe(
@@ -117,6 +126,7 @@ export class SchoolManagementComponent implements OnInit, OnDestroy {
 
   private setSchools(schools: School[]): void {
     this.schools = sortBy(schools, (school) => school.name);
+    this.filterSchools();
   }
 
   // returns true if nothing changed(we can continue saving) and false otherwise
@@ -193,7 +203,7 @@ export class SchoolManagementComponent implements OnInit, OnDestroy {
   }
 
   private async confirmDelete(school: School): Promise<boolean> {
-    const schoolName = school.name || "בית הספר הזה";
+    const schoolName = school.name ? `"${school.name}"` : 'בית הספר הזה';
 
     const modalRef = this.modalService.open(ConfirmationPopupComponent);
     const componentInstance: ConfirmationPopupComponent = modalRef.componentInstance;
@@ -220,14 +230,14 @@ export class SchoolManagementComponent implements OnInit, OnDestroy {
 
     if (!await this.confirmDelete(school)) {
       return;
-    } 
+    }
 
     if (school.id === editedSchool?.id) {
       this.resetEditedFields();
     }
 
     if (school.id !== emptySchool.id) {
-      if(!await tryDeleteSchool(school.id)) {
+      if (!(await tryDeleteSchool(school.id))) {
         this.notificationsService.error('אופס... משהו השתבש', {
           title: 'שגיאה במחיקת בית ספר',
         });
@@ -291,8 +301,9 @@ export class SchoolManagementComponent implements OnInit, OnDestroy {
       schoolToEdit.address = school.address;
 
       const schoolIndex = this.schools.findIndex(({ id }) => id === school.id);
-      
-      const needToUpsert = schoolIndex < 0 || !isEqual(this.schools[schoolIndex], omit(school, 'displayId'));
+
+      const needToUpsert = schoolIndex < 0
+        || !isEqual(this.schools[schoolIndex], omit(school, 'displayId'));
 
       if (!needToUpsert) {
         this.resetEditedFields();
@@ -305,7 +316,7 @@ export class SchoolManagementComponent implements OnInit, OnDestroy {
       } else {
         this.schools[schoolIndex] = school;
       }
-      this.schools = [...this.schools];
+      this.filterSchools();
 
       if (!(await tryUpsertSchool(schoolToEdit))) {
         this.notificationsService.error('אופס... משהו השתבש', {
@@ -328,6 +339,60 @@ export class SchoolManagementComponent implements OnInit, OnDestroy {
   private resetEditedFields(): void {
     this.inputEditedEntityIndex = -1;
     this.editedMunicipaity.next(null);
+  }
+
+  filterSchools(): void {
+    const passNameFilter = (school: School) =>
+      !this.nameFilter.trim() || school.name.includes(this.nameFilter.trim());
+    const passMunicipalityFilter = (school: School) =>
+      !this.municipalityFilter ||
+      school.municipality.id === this.municipalityFilter.id;
+    const passStreetFilter = (school: School) =>
+      !this.streetFilter || school.address.street.id === this.streetFilter.id;
+
+    this.filteredSchools = this.schools.filter(
+      (school) =>
+        passNameFilter(school) &&
+        passMunicipalityFilter(school) &&
+        passStreetFilter(school)
+    );
+  }
+
+  changeNameFilter(name: string): void {
+    this.nameFilter = name ?? "";
+    this.filterSchools();
+  }
+
+  changeMunicipalityFilters(municipality?: GovernmentData): void {
+    const changedMunicipality = this.municipalityFilter?.id !== municipality?.id;
+
+    this.municipalityFilter = municipality ? { ...municipality } : undefined;
+    this.filterStreets = municipality?.fk
+      ? this.streetsQuery.getStreetsByMunicipality(municipality)
+      : [];
+
+    if (changedMunicipality) {
+      this.streetFilter = undefined;
+    }
+
+    this.filterSchools();
+  }
+
+  changeStreetFilters(street?: Street): void {
+    this.streetFilter = street ? { ...street } : undefined;
+    this.filterSchools();
+  }
+
+  clearFilters(): void {
+    this.nameFilter = "";
+    // empty and refill to clear municipalities
+    this.filterMunicipalities$.next([]);
+    console.log(new Date(), `emptied`);
+    this.changeMunicipalityFilters(undefined);
+    setTimeout(() => {
+      this.filterMunicipalities$.next([...this.allMunicipalities]);
+      console.log(new Date(), `refilled`);
+    }, 0);
   }
 
   ngOnDestroy(): void {

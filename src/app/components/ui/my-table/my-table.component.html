@@ -1,5 +1,11 @@
 <div class="controls-container">
     <div class="filters-container">
+        <ng-container *ngIf="filterTemplate">
+            <i class="filter-icon fa-solid fa-filter"></i>
+            <div class="filter-title">סינונים:</div>
+            <ng-container [ngTemplateOutlet]="filterTemplate"></ng-container>
+            <div class="action-button clear-filters" (click)="onFiltersCleared.emit()"><i class="fa-solid fa-ban"></i></div>
+        </ng-container>
     </div>
     <div class="actions-container">
         <div class="action-button" (click)="addEntity()" [class.disabled]="editedEntity"><i class="fa-solid fa-circle-plus"></i></div>

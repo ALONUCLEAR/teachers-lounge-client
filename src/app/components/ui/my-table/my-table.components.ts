@@ -54,11 +54,13 @@ export class MyTableComponent<Entity extends { id: string }> implements OnChange
   @Input({ required: true }) entities: Entity[] = [];
   @Input({ required: true }) editedRowTemplate?: TemplateRef<any>;
   @Input({ required: true }) emptyEntity?: Entity;
+  @Input() filterTemplate?: TemplateRef<any>;
   @Input() inputEditedEntityIndex = -1;
   @Input() midEditSwapAlert =
     'לערוך את השורה הזו יאפס את השינויים שלא שמרתם על השורה הקודמת';
   @Output() onEditedEntityChanged = new EventEmitter<{entity: Entity, index: number}>();
   @Output() onAction = new EventEmitter<{action: ActionType, entity?: Entity, editedEntity?: Entity}>();
+  @Output() onFiltersCleared = new EventEmitter<void>();
 
 
   editedEntity?: Entity & { displayId: string };
@@ -78,15 +80,15 @@ export class MyTableComponent<Entity extends { id: string }> implements OnChange
       this.initTable();
     }
 
-    if (changes[`fields`] || changes[`entities`]) {
-      this.initMappedEntities(this.entities);
-    }
-
     if (changes[`inputEditedEntityIndex`]) {
       const editedEntity = this.copiedEntities[this.inputEditedEntityIndex];
       this.editedEntity = editedEntity
         ? { ...editedEntity, displayId: this.mapIdToDisplay(editedEntity) }
         : undefined;
+    }
+
+    if (changes[`fields`] || changes[`entities`]) {
+      this.initMappedEntities(this.entities);
     }
   }
 
@@ -100,6 +102,11 @@ export class MyTableComponent<Entity extends { id: string }> implements OnChange
 
   private initMappedEntities(entities: Entity[]): void {
     this.copiedEntities = cloneDeep(entities);
+
+    if (this.editedEntity && !this.copiedEntities.some(({id}) => id === this.editedEntity!.id)) {
+      this.copiedEntities.unshift(this.editedEntity);
+    }
+
     this.mappedEntities = this.copiedEntities.map(entity => {
       const mappedEntity: Record<string, string> = {};
       this.fields.forEach(field => {

@@ -1,12 +1,14 @@
 <my-table
     [fields]="fields"
-    [entities]="schools"
+    [entities]="filteredSchools"
     [midEditSwapAlert]="midEditSwapAlert"
     [editedRowTemplate]="trimmedEditedSchoolTemplate"
+    [filterTemplate]="schoolFilters"
     [emptyEntity]="emptySchool"
     [inputEditedEntityIndex]="inputEditedEntityIndex"
     (onEditedEntityChanged)="handleEditChange($event)"
-    (onAction)="handleAction($event)">
+    (onAction)="handleAction($event)"
+    (onFiltersCleared)="clearFilters()">
 </my-table>
 
 <ng-template #trimmedEditedSchoolTemplate let-editedEntity="editedEntity">
@@ -30,4 +32,20 @@
         <input [(ngModel)]="editedEntity.address.houseNumber" class="form-control"
         type="number" min="0" max="1023">
     </td>
+</ng-template>
+
+<ng-template #schoolFilters>
+    <input
+        [ngModel]="nameFilter" class="form-control filter" placeholder="שם"
+        (ngModelChange)="changeNameFilter($event)" [maxlength]="255">
+    <search
+        [entities]="(filterMunicipalities$ | async) || []" [displayField]="'name'" [markValidity]="false"
+        placeholder="ישוב" class="filter"
+        (onEntitySelected)="changeMunicipalityFilters($event)">
+    </search>
+    <search
+        [entities]="filterStreets" [displayField]="'name'" [markValidity]="false"
+        placeholder="רחוב" class="filter"
+        (onEntitySelected)="changeStreetFilters($event)">
+    </search>
 </ng-template>

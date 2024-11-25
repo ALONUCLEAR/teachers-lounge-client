@@ -15,4 +15,10 @@ export class StreetsQuery extends QueryEntity<StreetsState> {
       filterBy: (street) => street.municipalityFk === municipality.fk,
     });
   }
+
+  getStreetsByMunicipality(municipality: GovernmentData): Street[] {
+    return this.getAll({
+      filterBy: (street) => street.municipalityFk === municipality.fk,
+    });
+  }
 }
