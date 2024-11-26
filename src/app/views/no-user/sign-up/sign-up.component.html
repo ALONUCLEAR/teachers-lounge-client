@@ -1,0 +1,15 @@
+<form [formGroup]="signUpForm!">
+    <input type="text" placeholder="תעודת זהות" formControlName="govId">
+    <input type="email" placeholder="דואל" formControlName="email">
+    <input type="text" placeholder="שם פרטי" formControlName="firstName">
+    <input type="text" placeholder="שם משפחה" formControlName="lastName">
+    <input [type]="passwordType" placeholder="סיסמה" formControlName="password">
+    <input [type]="confirmedPasswordType" placeholder="סיסמה(מאומתת)" formControlName="confirmedPassword">
+    <drop-down [entities]="roleOptions" displayField="value"
+        [defaultValue]="defaultRole"
+        (onSelectionChanged)="changeSelectedRole($event.value)"></drop-down>
+    <search [entities]="schoolList || []" [displayField]="'display'"
+        placeholder="בית ספר מאשר" (onEntitySelected)="changeSelectedSchool($event)">
+    </search>
+    <textarea placeholder="הערה" formControlName="message"></textarea>
+</form>

@@ -1,8 +1,8 @@
 <div ngbDropdown class="d-inline-block">
     <button type="button" class="btn btn-outline-primary" id="dropdownBasic1" ngbDropdownToggle>
-        Toggle dropdown
+        {{ selectedEntity?.[displayField!] ?? placeholder }}
     </button>
     <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
-        <button ngbDropdownItem *ngFor="let entity of entities">{{ entity[displayField!] }}</button>
+        <button ngbDropdownItem *ngFor="let entity of entities" (click)="changeSelection(entity)">{{ entity[displayField!] }}</button>
     </div>
 </div>
