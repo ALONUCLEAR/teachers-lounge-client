@@ -1,0 +1,128 @@
+:host {
+    display: block;
+    width: 100%;
+    max-width: 900px;
+    margin: 50px auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+    form {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .input-row {
+        display: flex;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+
+        .input-group {
+            flex: 1;
+            min-width: 220px;
+            margin-right: 20px;
+            margin-bottom: 15px;
+
+            &.full-width {
+                flex: 100%;
+                margin-right: 0;
+            }
+
+            label {
+                font-weight: bold;
+                display: block;
+                margin-bottom: 5px;
+            }
+
+            input,
+            select,
+            textarea {
+                width: 100%;
+                padding: 10px;
+                font-size: 16px;
+                border-radius: 5px;
+                border: 1px solid #ccc;
+            }
+
+            input:focus,
+            textarea:focus,
+            select:focus {
+                border-color: #4A90E2;
+                outline: none;
+            }
+
+            input::placeholder,
+            textarea::placeholder {
+                color: #bbb;
+            }
+
+            textarea {
+                min-height: 150px;
+                max-height: 400px;
+                overflow-y: auto;
+            }
+        }
+    }
+
+    .govid-email .input-group,
+    .first-last-name .input-group,
+    .password-row .input-group {
+        margin-right: 10px;
+        margin-left: 10px;
+    }
+
+    .role-school {
+        .input-group {
+            display: flex;
+            align-items: center;
+            margin-right: 15px;
+
+            .field-name {
+                margin-left: 10px;
+                text-align: right;
+            }
+
+            drop-down,
+            search {
+                flex: 1;
+            }
+        }
+    }
+
+    .remarks-row .input-group {
+        &.full-width {
+            flex: 100%;
+            margin-right: 0;
+        }
+
+        textarea {
+            min-height: 150px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+    }
+
+    // Responsive Styling
+    @media (max-width: 768px) {
+        .input-row {
+            flex-direction: column;
+        }
+
+        .input-group {
+            margin-right: 0;
+        }
+
+        .role-school .input-group {
+            flex-direction: column;
+            margin-bottom: 20px;
+        }
+    }
+
+    @media (min-width: 1024px) {
+        .input-row {
+            justify-content: space-between;
+        }
+    }
+}

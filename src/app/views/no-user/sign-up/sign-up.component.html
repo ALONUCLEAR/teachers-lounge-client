@@ -1,15 +1,57 @@
 <form [formGroup]="signUpForm!">
-    <input type="text" placeholder="תעודת זהות" formControlName="govId">
-    <input type="email" placeholder="דואל" formControlName="email">
-    <input type="text" placeholder="שם פרטי" formControlName="firstName">
-    <input type="text" placeholder="שם משפחה" formControlName="lastName">
-    <input [type]="passwordType" placeholder="סיסמה" formControlName="password">
-    <input [type]="confirmedPasswordType" placeholder="סיסמה(מאומתת)" formControlName="confirmedPassword">
-    <drop-down [entities]="roleOptions" displayField="value"
-        [defaultValue]="defaultRole"
-        (onSelectionChanged)="changeSelectedRole($event.value)"></drop-down>
-    <search [entities]="schoolList || []" [displayField]="'display'"
-        placeholder="בית ספר מאשר" (onEntitySelected)="changeSelectedSchool($event)">
-    </search>
-    <textarea placeholder="הערה" formControlName="message"></textarea>
+    <div class="input-row govid-email">
+        <div class="input-group">
+            <div class="field-name">תעודת זהות</div>
+            <input type="text" placeholder="תעודת זהות" formControlName="govId">
+        </div>
+        <div class="input-group">
+            <div class="field-name">דוא"ל</div>
+            <input type="email" placeholder="דואל" formControlName="email">
+        </div>
+    </div>
+
+    <div class="input-row first-last-name">
+        <div class="input-group">
+            <div class="field-name">שם פרטי</div>
+            <input type="text" placeholder="שם פרטי" formControlName="firstName">
+        </div>
+        <div class="input-group">
+            <div class="field-name">שם משפחה</div>
+            <input type="text" placeholder="שם משפחה" formControlName="lastName">
+        </div>
+    </div>
+
+    <div class="input-row password-row">
+        <div class="input-group">
+            <div class="field-name">סיסמה</div>
+            <input [type]="passwordType" placeholder="סיסמה" formControlName="password">
+        </div>
+        <div class="input-group">
+            <div class="field-name">אימות סיסמה</div>
+            <input [type]="confirmedPasswordType" placeholder="סיסמה (מאומתת)" formControlName="confirmedPassword">
+        </div>
+    </div>
+
+    <div class="input-row role-school">
+        <div class="input-group">
+            <div class="field-name">בחר תפקיד</div>
+            <drop-down [entities]="roleOptions" displayField="value"
+                [defaultValue]="defaultRole"
+                (onSelectionChanged)="changeSelectedRole($event.value)">
+            </drop-down>
+        </div>
+        <div class="input-group">
+            <div class="field-name">בית ספר</div>
+            <search [entities]="schoolList || []" [displayField]="'display'"
+                placeholder="בחר בית ספר" (onEntitySelected)="changeSelectedSchool($event)">
+            </search>
+        </div>
+    </div>
+
+    <div class="input-row remarks-row">
+        <div class="input-group full-width">
+            <div class="field-name">הערה</div>
+            <textarea placeholder="הכנס הערות נוספות כאן" formControlName="message"></textarea>
+        </div>
+    </div>
 </form>

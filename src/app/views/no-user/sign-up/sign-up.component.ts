@@ -42,11 +42,20 @@ export class SignUpComponent {
 
   async ngOnInit(): Promise<void> {
     this.signUpForm = this.createEmptySignUpForm();
-    const schools = await getAllSchools();
-    this.schoolList = schools.map(school => ({
-      ...school,
-      display: `${school.name}(${school.municipality.name})`
-    }));
+    await this.initSchoolList();
+  }
+
+  async initSchoolList(): Promise<void> {
+    try {
+      const schools = await getAllSchools();
+      this.schoolList = schools.map(school => ({
+        ...school,
+        display: `${school.name}(${school.municipality.name})`
+      }));
+    } catch(error) {
+      console.error(error);
+      this.schoolList = [];
+    }
   }
 
   private getFieldOptions(additionalValidators: ValidatorFn[]): FormControlOptions & { nonNullable: true } {
