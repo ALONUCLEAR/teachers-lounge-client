@@ -36,26 +36,44 @@
                 margin-bottom: 5px;
             }
 
-            input,
-            select,
-            textarea {
-                width: 100%;
-                padding: 10px;
-                font-size: 16px;
-                border-radius: 5px;
-                border: 1px solid #ccc;
-            }
-
-            input:focus,
-            textarea:focus,
-            select:focus {
-                border-color: #4A90E2;
-                outline: none;
+            &.input-group {
+                input,
+                select,
+                textarea,
+                password-input {
+                    width: 100%;
+                    padding: 10px;
+                    font-size: 16px;
+                    border-radius: 5px;
+                    border: 1px solid #ccc;
+                }
+                
+                /* Remove border for password-input fields specifically */
+                password-input {
+                    border: none; /* Ensure no additional border */
+                }
             }
 
             input::placeholder,
             textarea::placeholder {
                 color: #bbb;
+            }
+
+                        /* Customize the tooltip */
+            ::ng-deep .tooltip-inner {
+                background-color: white !important; /* White background */
+                color: black !important; /* Black text */
+                padding: 10px !important; /* Add padding for better spacing */
+                border-radius: 5px; /* Rounded corners */
+                max-width: 200px; /* Optional: Limit width to avoid overflow */
+                text-align: start;
+                word-wrap: break-word; /* Allow text to wrap when it overflows */
+                white-space: pre-line; /* Allow white space for line breaks */
+            }
+
+            /* Optional: Tooltip arrow color customization */
+            ::ng-deep .tooltip-arrow {
+                border-top-color: white !important; /* Arrow color matches the tooltip background */
             }
 
             textarea {
@@ -101,6 +119,32 @@
             min-height: 150px;
             max-height: 400px;
             overflow-y: auto;
+        }
+    }
+
+    .submit-btn-container {
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+
+        .submit-btn {
+            padding: 12px 20px;
+            font-size: 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+
+            &:hover {
+                background-color: #0056b3;
+            }
+
+            &:disabled {
+                background-color: #d6d6d6;
+                cursor: not-allowed;
+            }
         }
     }
 

@@ -1,8 +1,8 @@
-<form [formGroup]="signUpForm!">
+<form [formGroup]="signUpForm!" (ngSubmit)="onSubmit()">
     <div class="input-row govid-email">
         <div class="input-group">
             <div class="field-name">תעודת זהות</div>
-            <input type="text" placeholder="תעודת זהות" formControlName="govId">
+            <input type="text" placeholder="תעודת זהות" formControlName="govId" pattern="^[\d]{7,9}$">
         </div>
         <div class="input-group">
             <div class="field-name">דוא"ל</div>
@@ -23,12 +23,15 @@
 
     <div class="input-row password-row">
         <div class="input-group">
-            <div class="field-name">סיסמה</div>
-            <input [type]="passwordType" placeholder="סיסמה" formControlName="password">
+            <div class="field-name">
+                סיסמה
+                <i class="fa-regular fa-circle-question color-secondary" [ngbTooltip]="passwordExplainer" placement="bottom"></i>
+              </div>
+            <password-input placeholder="סיסמה" [validationRegex]="passwordPattern" (passwordChange)="changeFormFieldValue('password', $event)"></password-input>
         </div>
         <div class="input-group">
             <div class="field-name">אימות סיסמה</div>
-            <input [type]="confirmedPasswordType" placeholder="סיסמה (מאומתת)" formControlName="confirmedPassword">
+            <password-input placeholder="סיסמה (מאומתת)" [validationRegex]="passwordPattern" (passwordChange)="changeFormFieldValue('confirmedPassword', $event)"></password-input>
         </div>
     </div>
 
@@ -53,5 +56,11 @@
             <div class="field-name">הערה</div>
             <textarea placeholder="הכנס הערות נוספות כאן" formControlName="message"></textarea>
         </div>
+    </div>
+
+    <div class="submit-btn-container">
+        <button type="submit" [disabled]="signUpForm!.invalid" class="submit-btn">
+            שלח
+        </button>
     </div>
 </form>

@@ -1,10 +1,8 @@
 import { Component } from '@angular/core';
 import { FormBuilder, FormControl, FormControlOptions, FormGroup, ValidatorFn, Validators } from '@angular/forms';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { getAllSchools } from 'src/app/api/server/actions/school-actions';
 import { UserRoles } from 'src/app/api/server/types/permissions';
 import { School } from 'src/app/api/server/types/school';
-import { NotificationsService } from 'src/app/services/notifications.service';
 
 type SignUpForm = {
   govId: FormControl<string>,
@@ -18,8 +16,6 @@ type SignUpForm = {
   message: FormControl<string | null>
 }
 
-type PasswordType = 'password' | 'text';
-
 @Component({
   selector: 'sign-up',
   templateUrl: './sign-up.component.html',
@@ -31,13 +27,15 @@ export class SignUpComponent {
   signUpForm?: FormGroup<SignUpForm>;
   roleOptions = Object.entries(UserRoles).map(([key, value]) => ({key, value}));
   defaultRole = this.roleOptions.find(role => role.value === UserRoles.Base)!;
-  passwordType: PasswordType = 'password';
-  confirmedPasswordType: PasswordType = 'password';
+  readonly passwordPattern = /^(?=.*[A-Z])(?=.*[0-9])(?=.*[a-z]).{8,}$/g;
+  passwordExplainer = `סיסמה תקינה מכילה:
+  * אות גדולה באנגלית
+  * אות קטנה באנגלית
+  * ספרה
+  * לפחות 8 תווים`
 
   constructor(
-    private readonly formBuilder: FormBuilder,
-    private readonly notificationsService: NotificationsService,
-    private readonly modalService: NgbModal,
+    private readonly formBuilder: FormBuilder
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -66,8 +64,7 @@ export class SignUpComponent {
   }
 
   private createEmptySignUpForm(): FormGroup<SignUpForm> {
-    const passwordPattern = /^(?=.*[A-Z])(?=.*[0-9])(?=.*[a-z]).{8,}$/g;
-    const passwordOptions = this.getFieldOptions([Validators.pattern(passwordPattern)]);
+    const passwordOptions = this.getFieldOptions([Validators.pattern(this.passwordPattern)]);
 
     return this.formBuilder.group<SignUpForm>({
       govId: this.formBuilder.control("", this.getFieldOptions([Validators.pattern(/^[\d]{8,10}$/g)])),
@@ -82,6 +79,16 @@ export class SignUpComponent {
     });
   }
 
+  changeFormFieldValue<K extends Exclude<keyof SignUpForm, 'requestedRole'>>(field: K, value: string): void {
+    const control = this.signUpForm?.controls[field];
+
+    if (control) {
+      control.setValue(value);
+      control.markAsDirty();
+    }
+  }
+
+
   changeSelectedSchool(school: School): void {
     console.log(`Changed to `, { newSchool: school });
     this.signUpForm!.controls.linkedSchoolId.setValue(school?.id);
@@ -90,5 +97,14 @@ export class SignUpComponent {
   changeSelectedRole(role: UserRoles): void {
     console.log(`Changed to `, { newRole: role });
     this.signUpForm!.controls.requestedRole.setValue(role);
+  }
+
+  onSubmit(): void {
+    console.log(`Reached on submit`);
+    if (this.signUpForm?.valid) {
+      // Handle form submission logic
+      console.log('Form Submitted!', this.signUpForm.value);
+      alert('Submitted a valid form');
+    }
   }
 }
