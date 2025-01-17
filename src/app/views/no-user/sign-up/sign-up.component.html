@@ -1,23 +1,26 @@
-<form [formGroup]="signUpForm!" (ngSubmit)="onSubmit()">
+<form *ngIf="signUpForm" [formGroup]="signUpForm">
+    <div class="title-row">
+        <div class="title">בקשת יצירת משתמש</div>
+    </div>
     <div class="input-row govid-email">
         <div class="input-group">
             <div class="field-name">תעודת זהות</div>
-            <input type="text" placeholder="תעודת זהות" formControlName="govId" pattern="^[\d]{7,9}$">
+            <input type="text" placeholder="תעודת זהות" formControlName="govId" required pattern="^[\d]{7,9}$">
         </div>
         <div class="input-group">
             <div class="field-name">דוא"ל</div>
-            <input type="email" placeholder="דואל" formControlName="email">
+            <input type="email" placeholder="דואל" required formControlName="email">
         </div>
     </div>
 
     <div class="input-row first-last-name">
         <div class="input-group">
             <div class="field-name">שם פרטי</div>
-            <input type="text" placeholder="שם פרטי" formControlName="firstName">
+            <input type="text" placeholder="שם פרטי" required formControlName="firstName">
         </div>
         <div class="input-group">
             <div class="field-name">שם משפחה</div>
-            <input type="text" placeholder="שם משפחה" formControlName="lastName">
+            <input type="text" placeholder="שם משפחה" required formControlName="lastName">
         </div>
     </div>
 
@@ -36,17 +39,17 @@
     </div>
 
     <div class="input-row role-school">
-        <div class="input-group">
-            <div class="field-name">בחר תפקיד</div>
-            <drop-down [entities]="roleOptions" displayField="value"
+        <div class="input-group" [ngStyle]="{justifyContent: isSupportApprovalRequired ? 'center' : null}">
+            <div class="field-name">תפקיד</div>
+            <drop-down [style.flex]="'unset'" [entities]="roleOptions" displayField="value"
                 [defaultValue]="defaultRole"
                 (onSelectionChanged)="changeSelectedRole($event.value)">
             </drop-down>
         </div>
-        <div class="input-group">
+        <div class="input-group" *ngIf="!isSupportApprovalRequired">
             <div class="field-name">בית ספר</div>
             <search [entities]="schoolList || []" [displayField]="'display'"
-                placeholder="בחר בית ספר" (onEntitySelected)="changeSelectedSchool($event)">
+                placeholder="בחר בית ספר" (onEntitySelected)="changeSelectedSchool($event?.id)">
             </search>
         </div>
     </div>
@@ -59,8 +62,8 @@
     </div>
 
     <div class="submit-btn-container">
-        <button type="submit" [disabled]="signUpForm!.invalid" class="submit-btn">
-            שלח
+        <button type="submit" [disabled]="signUpForm!.invalid" class="submit-btn" (click)="onSubmit()">
+            שליחת בקשה
         </button>
     </div>
 </form>

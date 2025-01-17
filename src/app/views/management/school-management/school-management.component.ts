@@ -387,11 +387,9 @@ export class SchoolManagementComponent implements OnInit, OnDestroy {
     this.nameFilter = "";
     // empty and refill to clear municipalities
     this.filterMunicipalities$.next([]);
-    console.log(new Date(), `emptied`);
     this.changeMunicipalityFilters(undefined);
     setTimeout(() => {
       this.filterMunicipalities$.next([...this.allMunicipalities]);
-      console.log(new Date(), `refilled`);
     }, 0);
   }
 

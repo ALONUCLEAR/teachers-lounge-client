@@ -1,3 +1,5 @@
+@import '../../../../styles.less';
+
 :host {
     display: block;
     width: 100%;
@@ -14,16 +16,28 @@
         align-items: stretch;
     }
 
+    .title-row {
+        display: flex;
+        justify-content: center;
+
+        .title {
+            justify-self: center;
+            font-weight: bolder;
+            font-size: large;
+        }
+    }
+
     .input-row {
         display: flex;
         flex-wrap: wrap;
-        margin-bottom: 20px;
+        margin-bottom: 2em;
+        justify-content: center;
+        align-items: center;
 
         .input-group {
             flex: 1;
             min-width: 220px;
-            margin-right: 20px;
-            margin-bottom: 15px;
+            margin-right: 1em;
 
             &.full-width {
                 flex: 100%;
@@ -45,7 +59,15 @@
                     padding: 10px;
                     font-size: 16px;
                     border-radius: 5px;
-                    border: 1px solid #ccc;
+                    border: 1px solid;
+
+                    &:valid {
+                        border-color: @valid-color;
+                    }
+
+                    &:invalid {
+                        border-color: @invalid-color;
+                    }
                 }
                 
                 /* Remove border for password-input fields specifically */
@@ -149,7 +171,7 @@
     }
 
     // Responsive Styling
-    @media (max-width: 768px) {
+    @media (max-width: 48rem) {
         .input-row {
             flex-direction: column;
         }
@@ -164,7 +186,7 @@
         }
     }
 
-    @media (min-width: 1024px) {
+    @media (min-width: 64rem) {
         .input-row {
             justify-content: space-between;
         }

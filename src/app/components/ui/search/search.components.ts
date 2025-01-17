@@ -1,7 +1,7 @@
 import { Component, ElementRef, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { NgbTypeahead } from "@ng-bootstrap/ng-bootstrap";
-import { debounceTime, map, Observable, OperatorFunction, tap } from "rxjs";
+import { debounceTime, map, Observable, OperatorFunction } from "rxjs";
 
 @Component({
   selector: 'search',
@@ -69,7 +69,6 @@ export class SearchComponent<T> implements OnInit {
   ) =>
     text$.pipe(
       debounceTime(200),
-      tap(vals => console.log({vals})),
       map((term) =>
         term === ''
           ? this.entities

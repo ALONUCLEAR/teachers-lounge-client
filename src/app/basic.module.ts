@@ -10,6 +10,7 @@ import { ConfirmationPopupComponent } from "./components/ui/confirmation-popup/c
 import { NotificationsService } from "./services/notifications.service";
 import { MyTableComponent } from "./components/ui/my-table/my-table.components";
 import { PasswordInputComponent } from "./components/ui/password-input/password-input.component";
+import { PopupService } from "./services/popup.service";
 
 const basicModules = [
     BrowserModule, CommonModule,
@@ -25,7 +26,7 @@ const standaloneComponents = [
     PasswordInputComponent
 ];
 
-const services = [NotificationsService];
+const services = [NotificationsService, PopupService];
 
 @NgModule({
     declarations: [],
