@@ -1,0 +1,14 @@
+<div class="modal-header">
+  <h5 class="modal-title">{{ promptTitle }}</h5>
+  <button type="button" class="close" (click)="onAnswerSubmit()">
+    <span>&times;</span>
+  </button>
+</div>
+<div class="modal-body">
+  <p>{{ promptText }}</p>
+  <input type="text" class="form-control" [(ngModel)]="promptInput"/>
+</div>
+<div class="modal-footer">
+  <button type="button" class="btn btn-secondary" (click)="onAnswerSubmit()">ביטול</button>
+  <button type="button" class="btn btn-primary" (click)="onAnswerSubmit(promptInput)">אישור</button>
+</div>

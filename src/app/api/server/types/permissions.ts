@@ -1,7 +1,7 @@
 export enum UserRoles {
     Base = "מורה",
-    Admin = "מנהל",
-    SuperAdmin = "בכיר",
+    Admin = "מנהל(/ת)",
+    SuperAdmin = "בכיר(/ה)",
     Support = "תמיכה"
 }
 

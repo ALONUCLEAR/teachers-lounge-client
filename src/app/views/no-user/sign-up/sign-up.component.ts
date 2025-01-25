@@ -1,24 +1,17 @@
 import { Component } from '@angular/core';
 import { FormBuilder, FormControl, FormControlOptions, FormGroup, ValidatorFn, Validators } from '@angular/forms';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { trySendingCodeToUser } from 'src/app/api/server/actions/email-actions';
 import { getAllSchools } from 'src/app/api/server/actions/school-actions';
+import { trySendingUserRequest } from 'src/app/api/server/actions/user-status-actions';
 import { getRoleKey, UserRoles } from 'src/app/api/server/types/permissions';
 import { School } from 'src/app/api/server/types/school';
+import { UserRequest } from 'src/app/api/server/types/user';
+import { PromptComponent } from 'src/app/components/ui/prompt/prompt.component';
 import { PopupService } from 'src/app/services/popup.service';
 
 const supportApprovalId = "SupportApproval";
 const SupportApprovedRoles = [UserRoles.SuperAdmin, UserRoles.Support];
-
-interface UserRequest {
-  govId: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  password: string;
-  confirmedPassword: string;
-  requestedRole: keyof UserRoles;
-  linkedSchoolId: string;
-  message?: string;
-}
 
 interface SignUpForm {
   govId: FormControl<string>;
@@ -54,6 +47,7 @@ export class SignUpComponent {
   constructor(
     private readonly formBuilder: FormBuilder,
     private readonly popupService: PopupService,
+    private readonly modalService: NgbModal,
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -103,7 +97,7 @@ export class SignUpComponent {
     }
 
     if (this.signUpForm.controls.password.value !== this.signUpForm.controls.confirmedPassword.value) {
-      this.signUpForm.controls.confirmedPassword.setErrors({passwordsNotMatch: "password !== confirmed"}, { emitEvent: true })
+      this.signUpForm.setErrors({passwordsDontMatch: "password !== confirmed"}, { emitEvent: true })
       this.popupService.error(`הסיסמאות לא תואמות`);
 
       return false;
@@ -151,17 +145,35 @@ export class SignUpComponent {
     return {
       govId: controls.govId.value,
       email: controls.email.value,
-      firstName: controls.firstName.value,
-      lastName: controls.lastName.value,
+      info: {
+        firstName: controls.firstName.value,
+        lastName: controls.lastName.value,
+      },
       password: controls.password.value,
       confirmedPassword: controls.confirmedPassword.value,
       requestedRole: getRoleKey(controls.requestedRole.value)!,
-      linkedSchoolId: controls.linkedSchoolId.value,
-      message: controls.message?.value ?? undefined
+      associatedSchools: [controls.linkedSchoolId.value],
+      message: controls.message?.value || undefined
     };
   }
 
-  onSubmit(): void {
+  // TODO: change it to work as it should (don't get the code back to the client)
+  private async codeVerification(email: string): Promise<boolean> {
+    const verificationCode = await trySendingCodeToUser(email);
+    const modalRef = this.modalService.open(PromptComponent);
+    const instance: PromptComponent = modalRef.componentInstance;
+    instance.promptTitle = `קוד אימות`;
+    instance.promptText = `הכניסו את קוד האימות שקיבלתם במייל(${verificationCode})`;
+    const inputCode = await modalRef.result;
+
+    if (!inputCode) {
+      return false;
+    }
+
+    return inputCode === verificationCode;
+  }
+
+  async onSubmit(): Promise<void> {
     if (!this.isFormValid()) {
       return;
     }
@@ -170,11 +182,22 @@ export class SignUpComponent {
 
     if (!formData) {
       this.popupService.error(`קיים מידע לא תקין בבקשה`);
+
+      return;
     }
 
     try {
-      console.log({form: this.signUpForm, formData});
-      this.popupService.success(`תקבלו מייל על המשך התהליך בקרוב`, { title: `ההודעה נשלחה בהצלחה` })
+      if (!await this.codeVerification(formData.email)) {
+        this.popupService.error(`קוד לא נכון`);
+
+        return;
+      }
+
+      if (!trySendingUserRequest({ id: "", ...formData})) {
+        throw new Error(`Error sending user request to db`);
+      }
+
+      this.popupService.success(`תקבלו מייל על המשך התהליך בקרוב`, { title: `ההודעה נשלחה בהצלחה` });
     } catch (e) {
       console.error(e);
       this.popupService.error(`שגיאה בשליחת הבקשה`);

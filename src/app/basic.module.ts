@@ -11,6 +11,7 @@ import { NotificationsService } from "./services/notifications.service";
 import { MyTableComponent } from "./components/ui/my-table/my-table.components";
 import { PasswordInputComponent } from "./components/ui/password-input/password-input.component";
 import { PopupService } from "./services/popup.service";
+import { PromptComponent } from "./components/ui/prompt/prompt.component";
 
 const basicModules = [
     BrowserModule, CommonModule,
@@ -22,6 +23,7 @@ const standaloneComponents = [
     DropDownComponent,
     SearchComponent,
     ConfirmationPopupComponent,
+    PromptComponent,
     MyTableComponent,
     PasswordInputComponent
 ];
