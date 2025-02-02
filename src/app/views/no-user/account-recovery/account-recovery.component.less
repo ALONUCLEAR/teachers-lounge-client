@@ -1,0 +1,110 @@
+@import '../../../../styles.less';
+
+:host {
+    display: block;
+    width: 100%;
+    max-width: 900px;
+    margin: 50px auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+    .title-row {
+        display: flex;
+        justify-content: center;
+
+        .title {
+            justify-self: center;
+            font-weight: bolder;
+            font-size: large;
+        }
+    }
+
+    .input-row {
+        display: flex;
+        flex-wrap: wrap;
+        margin-bottom: 2em;
+        justify-content: center;
+        align-items: center;
+
+        .input-group {
+            flex: 1;
+            min-width: 220px;
+            margin-right: 1em;
+
+            &.full-width {
+                flex: 100%;
+                margin-right: 0;
+            }
+
+            .field-name {
+                font-weight: bold;
+                display: block;
+                margin-bottom: 5px;
+            }
+
+            input {
+                width: 100%;
+                padding: 10px;
+                font-size: 16px;
+                border-radius: 5px;
+                border: 1px solid;
+
+                &:valid {
+                    border-color: @valid-color;
+                }
+
+                &:invalid {
+                    border-color: @invalid-color;
+                }
+            }
+
+            input::placeholder {
+                color: #bbb;
+            }
+        }
+    }
+
+    .submit-btn-container {
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+
+        .submit-btn {
+            padding: 12px 20px;
+            font-size: 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+
+            &:hover {
+                background-color: #0056b3;
+            }
+
+            &:disabled {
+                background-color: #d6d6d6;
+                cursor: not-allowed;
+            }
+        }
+    }
+
+    @media (max-width: 48rem) {
+        .input-row {
+            flex-direction: column;
+        }
+
+        .input-group {
+            margin-right: 0;
+        }
+    }
+
+    @media (min-width: 64rem) {
+        .input-row {
+            justify-content: space-between;
+        }
+    }
+}

@@ -193,7 +193,7 @@ export class SignUpComponent {
         return;
       }
 
-      if (!trySendingUserRequest({ id: "", ...formData})) {
+      if (!await trySendingUserRequest({ id: "", ...formData})) {
         throw new Error(`Error sending user request to db`);
       }
 

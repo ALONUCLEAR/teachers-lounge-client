@@ -26,6 +26,18 @@ export const trySendingUserRequest = async (userToCreate: UserRequest & { id: st
     return true;
 }
 
+export const trySendingUserRecoveryRequest = async (userGovId: string): Promise<boolean> => {
+    const response = await axios.post(`${requestsUrl}/recovery/${userGovId}`);
+
+    if (response.status >= 300) {
+        console.error(`Request to send a user creation request failed, returned with status ${response.status}`);
+
+        return false;
+    }
+
+    return true;
+}
+
 export const tryDeleteUserRequest = async (requestId: string): Promise<boolean> => {
     const response = await axios.delete(`${requestsUrl}/${requestId}`);
 

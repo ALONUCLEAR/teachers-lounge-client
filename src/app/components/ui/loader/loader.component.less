@@ -1,0 +1,10 @@
+@spinner-color: #d524d5;
+@spinner-size: min(25vw, 25vh);
+
+:host {
+  .spinner-border {
+    width: @spinner-size;
+    height: @spinner-size;
+    border-width: calc(@spinner-size / 20);
+  }
+}

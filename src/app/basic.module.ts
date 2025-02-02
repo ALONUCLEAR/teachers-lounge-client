@@ -12,6 +12,7 @@ import { MyTableComponent } from "./components/ui/my-table/my-table.components";
 import { PasswordInputComponent } from "./components/ui/password-input/password-input.component";
 import { PopupService } from "./services/popup.service";
 import { PromptComponent } from "./components/ui/prompt/prompt.component";
+import { LoaderComponent } from "./components/ui/loader/loader.component";
 
 const basicModules = [
     BrowserModule, CommonModule,
@@ -25,7 +26,8 @@ const standaloneComponents = [
     ConfirmationPopupComponent,
     PromptComponent,
     MyTableComponent,
-    PasswordInputComponent
+    PasswordInputComponent,
+    LoaderComponent
 ];
 
 const services = [NotificationsService, PopupService];

@@ -15,3 +15,15 @@ export const trySendingCodeToUser = async (emailAddress: string): Promise<string
 
     return response.data;
 }
+
+export const trySendingCodeToUserByGovId = async (govId: string): Promise<string> => {
+    const response = await axios.post(`${requestsUrl}/send-code/to-id/${govId}`);
+
+    if (response.status >= 300) {
+        console.error(`Request to send a user creation request failed, returned with status ${response.status}`);
+
+        return `Error - ${response.data}`;
+    }
+
+    return response.data;
+}
