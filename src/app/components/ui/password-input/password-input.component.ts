@@ -37,6 +37,6 @@ export class PasswordInputComponent implements OnInit {
         return !this.isRequired;
     }
 
-    return new RegExp(this.validationRegex).test(password);
+    return this.validationRegex.test(password);
   }
 }

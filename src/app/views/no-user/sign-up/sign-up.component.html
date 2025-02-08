@@ -39,7 +39,7 @@
     </div>
 
     <div class="input-row role-school">
-        <div class="input-group" [ngStyle]="{justifyContent: isSupportApprovalRequired ? 'center' : null}">
+        <div class="input-group" [style.justifyContent]="isSupportApprovalRequired ? 'center' : null">
             <div class="field-name">תפקיד</div>
             <drop-down [style.flex]="'unset'" [entities]="roleOptions" displayField="value"
                 [defaultValue]="defaultRole"

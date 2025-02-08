@@ -55,6 +55,7 @@ export class AccountRecoveryComponent {
     try {
       if (!await this.codeVerification(govId)) {
         this.popupService.error(`קוד לא נכון`);
+        this.isLoading = false;
 
         return;
       }
