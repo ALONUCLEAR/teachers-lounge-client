@@ -1,0 +1,97 @@
+:host {
+  display: flex;
+
+  .list {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-width: 5em;
+    width: auto;
+    max-width: 30%;
+    max-height: 80vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    overflow-wrap: anywhere;
+    direction: ltr;
+    padding-right: 15px;
+
+    // These two are for Firefox
+    scrollbar-width: thin;
+    scrollbar-color: #007bff #f4f4f4;
+
+    ::-webkit-scrollbar {
+      width: 2em;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background-color: #007bff;
+      border-radius: 3em;
+    }
+
+    ::-webkit-scrollbar-track {
+      background-color: #f4f4f4;
+      border-radius: 3em;
+    }
+
+    .search-container {
+      position: sticky;
+      top: 0;
+      direction: rtl;
+      margin-bottom: 1em;
+    }
+
+    .search-input {
+      padding: 8px;
+      width: 100%;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    .lists-container {
+      direction: rtl;
+
+      --bs-accordion-active-color: black;
+      --bs-accordion-active-bg: transparent;
+      --bs-accordion-btn-focus-box-shadow: transparent;
+
+      .group-header {
+        position: sticky;
+        top: 1.4em;
+
+        .group-title {
+          font-weight: bold;
+          margin: 0;
+          font-size: 1em;
+        }
+      }
+
+      .entity-list {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+
+        li {
+          margin: 5px 0;
+          padding: 5px;
+          width: 100%;
+          cursor: pointer;
+          background-color: #fff;
+          transition: background-color 0.3s;
+
+          &.selected {
+            background-color: #5ca2ed;
+            color: white;
+          }
+        }
+      }
+    }
+  }
+
+  .selected-entity {
+    margin-left: 20px;
+    padding: 10px;
+    min-width: 10em;
+    width: 100%;
+  }
+}

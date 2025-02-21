@@ -52,10 +52,10 @@ export class SignUpComponent {
 
   async ngOnInit(): Promise<void> {
     this.signUpForm = this.createEmptySignUpForm();
-    await this.initSchoolList();
+    await this.initSchoolList(1000);
   }
 
-  async initSchoolList(): Promise<void> {
+  async initSchoolList(retryInterval: number): Promise<void> {
     try {
       const schools = await getAllSchools();
       this.schoolList = schools.map(school => ({
@@ -65,6 +65,12 @@ export class SignUpComponent {
     } catch(error) {
       console.error(error);
       this.schoolList = [];
+
+      if (retryInterval > 3600 * 1000) {
+        this.popupService.error("אחרי נסיונות רבים, לא הצלחנו לשלוף את רשימת בתי הספר.\n אם אתם מורים או מנהלים, נא נסו להרשם מאוחר יותר", { title: "שגיאה בשליפת בתי ספר" });
+      } else {
+        this.initSchoolList(retryInterval * 1.25);
+      }
     }
   }
 
@@ -197,7 +203,8 @@ export class SignUpComponent {
         throw new Error(`Error sending user request to db`);
       }
 
-      this.popupService.success(`תקבלו מייל על המשך התהליך בקרוב`, { title: `ההודעה נשלחה בהצלחה` });
+      await this.popupService.success(`תקבלו מייל על המשך התהליך בקרוב`, { title: `ההודעה נשלחה בהצלחה` });
+      // TODO: redirect to login page(when one exists)
     } catch (e) {
       console.error(e);
       this.popupService.error(`שגיאה בשליחת הבקשה`);

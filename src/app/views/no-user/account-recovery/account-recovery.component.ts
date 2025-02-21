@@ -65,7 +65,8 @@ export class AccountRecoveryComponent {
         throw new Error(`Error sending user request to db`);
       }
 
-      this.popupService.success(`המאשרים יקבלו התראה בקרוב`, { title: `ההודעה נשלחה בהצלחה` });
+      await this.popupService.success(`המאשרים יקבלו התראה בקרוב`, { title: `ההודעה נשלחה בהצלחה` });
+      // TODO: redirect to login page(when we have one)
     } catch (e) {
       console.error(e);
       this.popupService.error(`שגיאה בשליחת הבקשה`);
