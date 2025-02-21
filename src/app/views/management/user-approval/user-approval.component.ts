@@ -77,12 +77,20 @@ export class UserApprovalComponent implements OnInit, OnDestroy {
     this.selectedUserId = userId;
   }
 
+  private get isFirstLoad(): boolean {
+    return this.isLoading && this.approvalGroups.every(group => !group.entities.length);
+  }
+
   private pollUserRequests(): void {
     const userRequestsInterval = window.setInterval(async () => {
       try {
         const allPendingUsers = await getAllUserRequests();
+        
+        if (this.isFirstLoad) {
+          this.isLoading = false;
+        }
+
         this.pendingUsers.next(allPendingUsers);
-        this.isLoading = false;
       } catch (error) {
         console.error(`Error polling user requests - `, error);
         this.notificationService.error(
@@ -99,8 +107,12 @@ export class UserApprovalComponent implements OnInit, OnDestroy {
     const bannedUsersInterval = window.setInterval(async () => {
       try {
         const allBannedUsers = await getAllBlockedUsers();
+
+        if (this.isFirstLoad) {
+          this.isLoading = false;
+        }
+
         this.bannedUsers.next(allBannedUsers);
-        this.isLoading = false;
       } catch (error) {
         console.error(`Error polling blocked users - `, error);
         this.notificationService.error(`לא הצלחנו לשלוף את המשתמשים החסומים`, {
@@ -167,6 +179,8 @@ export class UserApprovalComponent implements OnInit, OnDestroy {
 
       return;
     }
+
+    this.selectUser(undefined);
 
     const mailInput: MailInput = {
       title: `דחיית בקשה ליצירת משתמש`,

@@ -26,13 +26,19 @@ export class ListViewComponent<Entity extends Record<string, any>>
   @Input() selectedEntityId?: string;
   @Input() showCountInTitle = true;
   @Output() onEntitySelected = new EventEmitter<string | undefined>();
+
   selectedEntity?: Entity;
   searchTerm = '';
   filteredData: EntityGroup<Entity>[] = [];
+  shouldBeClose: Record<string, boolean> = {};
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['data'] || changes['displayMapper']) {
       this.filteredData = this.getFilteredData();
+
+      this.filteredData.forEach(group => {
+        this.shouldBeClose[group.title] = !group.entities.length;
+      });
     }
 
     if (changes['data'] || changes['selectedEntityId']) {

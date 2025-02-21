@@ -4,7 +4,7 @@
   </div>
 
   <div ngbAccordion class="lists-container">
-    <div ngbAccordionItem *ngFor="let group of filteredData; trackBy: trackByGroup">
+    <div ngbAccordionItem *ngFor="let group of filteredData; trackBy: trackByGroup" [collapsed]="shouldBeClose[group.title] ?? false">
       <h2 ngbAccordionHeader class="group-header">
         <button ngbAccordionButton>
           <div class="group-title">{{ group.title }}{{ showCountInTitle ? ' (' + group.entities.length + ')' : null }}</div>
