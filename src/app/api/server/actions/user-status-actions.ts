@@ -1,19 +1,19 @@
 import { environment } from "src/environments/environment";
-import { ApprovableUser, UserRequest } from "../types/user";
+import { GenericUser, UserRequest } from "../types/user";
 import axios, { HttpStatusCode } from "axios";
 import { UserRoles } from "../types/permissions";
 
 const requestsUrl = `${environment.serverUrl}/requests`;
 const usersUrl = `${environment.serverUrl}/users`;
 
-const approvableUserRoleMapper = (user: ApprovableUser) => ({
+const approvableUserRoleMapper = (user: GenericUser) => ({
   ...user,
   role: user.role
     ? UserRoles[`${user.role}` as keyof typeof UserRoles]
     : undefined,
 });
 
-export const getAllUserRequests = async (): Promise<ApprovableUser[]> => {
+export const getAllUserRequests = async (): Promise<GenericUser[]> => {
     const response = await axios.get(requestsUrl);
 
     if (response.status >= HttpStatusCode.BadRequest) {
@@ -23,18 +23,14 @@ export const getAllUserRequests = async (): Promise<ApprovableUser[]> => {
     return response.data.map(approvableUserRoleMapper);
 }
 
-export const getAllBlockedUsers = async (): Promise<ApprovableUser[]> => {
-    const response = await axios.get(`${usersUrl}/active/false`);
+export const getAllUsersByStatus = async (areActive: boolean): Promise<GenericUser[]> => {
+    const response = await axios.get(`${usersUrl}/active/${areActive}`);
 
     if (response.status >= HttpStatusCode.BadRequest) {
         throw new Error(`Request to get all blocked users failed, returned with status ${response.status}`);
     }
 
-    return response.data.map((user: ApprovableUser) => {
-      delete user['role'];
-
-      return approvableUserRoleMapper(user);
-    });
+    return response.data.map(approvableUserRoleMapper);
 }
 
 export const trySendingUserRequest = async (userToCreate: UserRequest & { id: string }): Promise<boolean> => {
@@ -63,6 +59,18 @@ export const trySendingUserRecoveryRequest = async (userGovId: string): Promise<
 
 export const tryUnblockUser = async (userId: string): Promise<boolean> => {
     const response = await axios.post(`${usersUrl}/restore/${userId}`);
+
+    if (response.status >= HttpStatusCode.MultipleChoices) {
+        console.error(response.status);
+
+        return false;
+    }
+
+    return true;
+}
+
+export const tryBlockUser = async (userId: string): Promise<boolean> => {
+    const response = await axios.post(`${usersUrl}/block/${userId}`);
 
     if (response.status >= HttpStatusCode.MultipleChoices) {
         console.error(response.status);

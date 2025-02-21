@@ -5,10 +5,10 @@ import { HttpStatusCode } from 'axios';
 import { BehaviorSubject, combineLatest } from 'rxjs';
 import { trySendingMailTo } from 'src/app/api/server/actions/email-actions';
 import { getAllSchools } from 'src/app/api/server/actions/school-actions';
-import { createUserFromRequest, getAllBlockedUsers, getAllUserRequests, tryDeleteUserRequest, tryUnblockUser } from 'src/app/api/server/actions/user-status-actions';
+import { createUserFromRequest, getAllUsersByStatus, getAllUserRequests, tryDeleteUserRequest, tryUnblockUser, tryBlockUser } from 'src/app/api/server/actions/user-status-actions';
 import { MailInput } from 'src/app/api/server/types/email';
 import { School } from 'src/app/api/server/types/school';
-import { ApprovableUser } from 'src/app/api/server/types/user';
+import { ActivityStatus, GenericUser } from 'src/app/api/server/types/user';
 import { ConfirmationPopupComponent, ConfirmationResult } from 'src/app/components/ui/confirmation-popup/confirmation-popup.component';
 import { EntityGroup } from 'src/app/components/ui/list-view/list-view.component';
 import { PromptComponent } from 'src/app/components/ui/prompt/prompt.component';
@@ -16,25 +16,27 @@ import { NotificationsService } from 'src/app/services/notifications.service';
 import { PopupService } from 'src/app/services/popup.service';
 
 @Component({
-  selector: 'user-approval',
-  templateUrl: './user-approval.component.html',
-  styleUrls: ['./user-approval.component.less'],
+  selector: 'user-status-management',
+  templateUrl: './user-status-management.component.html',
+  styleUrls: ['./user-status-management.component.less'],
   providers: [],
 })
-export class UserApprovalComponent implements OnInit, OnDestroy {
+export class UserStatusManagementComponent implements OnInit, OnDestroy {
   private readonly USER_POLLING_RATE_MS = 5000;
   private intervals: number[] = [];
 
   private allSchools: School[] = [];
-  private pendingUsers = new BehaviorSubject<ApprovableUser[]>([]);
-  private bannedUsers = new BehaviorSubject<ApprovableUser[]>([]);
+  private pendingUsers = new BehaviorSubject<GenericUser[]>([]);
+  private bannedUsers = new BehaviorSubject<GenericUser[]>([]);
+  private activeUsers = new BehaviorSubject<GenericUser[]>([]);
   selectedUserId?: string;
 
-  approvalGroups: EntityGroup<ApprovableUser>[] = [];
+  approvalGroups: EntityGroup<GenericUser>[] = [];
+  readonly ActivityStatus = ActivityStatus;
   isLoading = false;
 
-  readonly userDataMapper = (user: ApprovableUser) => `${user.info.firstName} ${user.info.lastName}`;
-  readonly userTrackBy = (user1?: ApprovableUser) => user1?.id ?? `User doesn't exist`;
+  readonly userDataMapper = (user: GenericUser) => `${user.info.firstName} ${user.info.lastName}`;
+  readonly userTrackBy = (user1?: GenericUser) => user1?.id ?? `User doesn't exist`;
   readonly idToSchoolMapper = (schoolIds: string[]): string[] => {
     return this.allSchools
       .filter((school) => schoolIds.includes(school.id))
@@ -54,13 +56,15 @@ export class UserApprovalComponent implements OnInit, OnDestroy {
 
     await this.initSchools();
 
+    // TODO: (after login and routeguards are implemented) add headers to the requests with the current user's permissions and if the user is a SuperAdmin, only show Admins and below
     this.pollUserRequests();
     this.pollBannedUsers();
+    this.pollActiveUsers();
 
-    combineLatest([this.pendingUsers, this.bannedUsers])
+    combineLatest([this.pendingUsers, this.bannedUsers, this.activeUsers])
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(([pendingUsers, bannedUsers]) => {
-        this.initUserLists(pendingUsers, bannedUsers);
+      .subscribe(([pendingUsers, bannedUsers, activeUsers]) => {
+        this.initUserLists(pendingUsers, bannedUsers, activeUsers);
       });
   }
 
@@ -106,7 +110,7 @@ export class UserApprovalComponent implements OnInit, OnDestroy {
   private pollBannedUsers(): void {
     const bannedUsersInterval = window.setInterval(async () => {
       try {
-        const allBannedUsers = await getAllBlockedUsers();
+        const allBannedUsers = await getAllUsersByStatus(false);
 
         if (this.isFirstLoad) {
           this.isLoading = false;
@@ -124,13 +128,36 @@ export class UserApprovalComponent implements OnInit, OnDestroy {
     this.intervals.push(bannedUsersInterval);
   }
 
+  private pollActiveUsers(): void {
+    const activeUsersInterval = window.setInterval(async () => {
+      try {
+        const allActiveUsers = await getAllUsersByStatus(true);
+
+        if (this.isFirstLoad) {
+          this.isLoading = false;
+        }
+
+        this.activeUsers.next(allActiveUsers);
+      } catch (error) {
+        console.error(`Error polling active users - `, error);
+        this.notificationService.error(`לא הצלחנו לשלוף את המשתמשים הפעילים`, {
+          title: `שגיאה בשליפת משתמשים`,
+        });
+      }
+    }, this.USER_POLLING_RATE_MS);
+
+    this.intervals.push(activeUsersInterval);
+  }
+
   private initUserLists(
-    pendingUsers: ApprovableUser[],
-    bannedUsers: ApprovableUser[]
+    pendingUsers: GenericUser[],
+    bannedUsers: GenericUser[],
+    activeUsers: GenericUser[],
   ): void {
     this.approvalGroups = [
       { title: 'משתמשים חדשים', entities: pendingUsers },
       { title: 'משתמשים שנחסמו', entities: bannedUsers },
+      { title: 'משתמשים פעילים', entities: activeUsers }
     ];
   }
 
@@ -149,18 +176,24 @@ export class UserApprovalComponent implements OnInit, OnDestroy {
     return result === ConfirmationResult.OK;
   }
 
-  async onReject(userToReject: ApprovableUser): Promise<void> {
+  async onReject(userToReject: GenericUser): Promise<void> {
     this.isLoading = true;
     await this.rejectUser(userToReject);
     this.isLoading = false;
   }
 
-  private async rejectUser(userToReject: ApprovableUser): Promise<void> {
+  async onBlock(userToBlock: GenericUser): Promise<void> {
+    this.isLoading = true;
+    await this.rejectUser(userToBlock, true);
+    this.isLoading = false;
+  }
+
+  private async rejectUser(userToReject: GenericUser, isBlocking = false): Promise<void> {
     const modalRef = this.modalService.open(PromptComponent);
     const instance: PromptComponent = modalRef.componentInstance;
     instance.answerFieldType = instance.AnswerFieldTypeEnum.TEXTAREA;
-    instance.promptTitle = `הודעת דחיה`;
-    instance.promptText = `כתבו הסבר למשתמש, שיבין למה בקשתו נדחתה`;
+    instance.promptTitle = `הודעת ${isBlocking ? 'חסימה' : 'דחיה'}`;
+    instance.promptText = `כתבו הסבר למשתמש, שיבין למה ${isBlocking ? 'נחסם' : 'בקשתו נדחתה'}`;
 
     const rejectionReason = await modalRef.result;
 
@@ -168,38 +201,49 @@ export class UserApprovalComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const rejectionText = `דחיית הבקשה של ${this.userDataMapper(userToReject)} היא בלתי הפיכה.\n האם להמשיך?`;
+    const rejectionText = isBlocking
+      ? `הפעולה תחסום את ${this.userDataMapper(userToReject)}.\n האם להמשיך?`
+      : `דחיית הבקשה של ${this.userDataMapper(userToReject)} היא בלתי הפיכה.\n האם להמשיך?`;
 
     if (!await this.didConfirmAction(rejectionText)) {
       return;
     }
 
-    if (!await tryDeleteUserRequest(userToReject.id)) {
+    if (!isBlocking && !await tryDeleteUserRequest(userToReject.id)) {
       this.popupService.error(`דחיית הבקשה נכשלה. נסו שוב מאוחר יותר.`, { title: `שגיאה בדחיית בקשה` });
+
+      return;
+    } else if(isBlocking && !await tryBlockUser(userToReject.id)) {
+      this.popupService.error(`החסימה נכשלה. נסו שוב מאוחר יותר.`, { title: 'שגיאה בחסימת משתמש' });
 
       return;
     }
 
     this.selectUser(undefined);
 
-    const mailInput: MailInput = {
-      title: `דחיית בקשה ליצירת משתמש`,
-      content: `בקשתך לפתיחת משתמש נדחתה. להלן הסיבה:\n${rejectionReason}`
-    };
+    const mailInput: MailInput = isBlocking
+      ? {
+          title: 'חסימת משתמש',
+          content: `המשתמש שלך נחסם. להלן הסיבה\n${rejectionReason}`,
+        }
+      : {
+          title: `דחיית בקשה ליצירת משתמש`,
+          content: `בקשתך לפתיחת משתמש נדחתה. להלן הסיבה:\n${rejectionReason}`,
+        };
 
     if (!await trySendingMailTo(userToReject.email, mailInput)) {
-      this.notificationService.error(`לא הצלחנו לשלוח למשתמש את המייל`, { title: `שגיאה בשליחת הודעת דחייה` });
+      this.notificationService.error(`לא הצלחנו לשלוח למשתמש את המייל`, { title: `שגיאה בשליחת הודעת ${isBlocking ? 'חסימה': 'דחייה'}` });
     }
   }
 
-  async onAccept(userToAccept: ApprovableUser): Promise<void> {
+  async onAccept(userToAccept: GenericUser): Promise<void> {
     this.isLoading = true;
     await this.acceptUser(userToAccept);
     this.isLoading = false;
   }
 
-  private async acceptUser(userToAccept: ApprovableUser): Promise<void> {
-    const isNewUser = userToAccept?.role;
+  private async acceptUser(userToAccept: GenericUser): Promise<void> {
+    const isNewUser = userToAccept.activityStatus === ActivityStatus.Pending;
     const actionName = isNewUser ? 'תאשר' : 'תשחזר';
     const userDetails = `${this.userDataMapper(userToAccept)}(${userToAccept.govId})`;
     const popupText = `הפעולה ${actionName} את המשתמש ${userDetails}.\n האם להמשיך?`;

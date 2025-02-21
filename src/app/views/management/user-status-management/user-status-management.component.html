@@ -25,9 +25,9 @@
                 </p>
             </div>
 
-            <div *ngIf="selectedUser.role" class="role-message">
+            <div class="role-message">
                 <div class="role">
-                    <p>דרגת הרשאות רצויה: <span>{{ selectedUser.role }}</span></p>
+                    <p>דרגת הרשאות{{ selectedUser.activityStatus === ActivityStatus.Pending ? ' רצויה' : null }}: <span>{{ selectedUser.role }}</span></p>
                 </div>
                 <div class="message" *ngIf="selectedUser.message">
                     <p>הערה: <br /> {{ selectedUser.message }}</p>
@@ -35,13 +35,16 @@
             </div>
         </div>
 
-        <div class="submit-container">
-            <ng-container *ngIf="selectedUser.role">
+        <div [ngSwitch]="selectedUser.activityStatus" class="submit-container">
+            <ng-container *ngSwitchCase="ActivityStatus.Pending">
                 <button  class="reject-btn" (click)="onReject(selectedUser)">דחיה</button>
                 <button class="submit-btn" (click)="onAccept(selectedUser)">אישור</button>
             </ng-container>
-            <ng-container *ngIf="!selectedUser.role">
+            <ng-container *ngSwitchCase="ActivityStatus.Blocked">
                 <button class="submit-btn" (click)="onAccept(selectedUser)">שחזור</button>
+            </ng-container>
+            <ng-container *ngSwitchDefault>
+                <button class="reject-btn" (click)="onBlock(selectedUser)">חסימה</button>
             </ng-container>
         </div>
     </div>
