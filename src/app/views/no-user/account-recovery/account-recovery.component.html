@@ -1,0 +1,21 @@
+<loader *ngIf="isLoading; else recoveryPage"></loader>
+<ng-template #recoveryPage>
+    <div class="title-row">
+            <div class="title">שחזור משתמש</div>
+    </div>
+    <div class="input-row govid-email">
+        <div class="input-group">
+            <div class="field-name">תעודת זהות</div>
+            <input type="text" placeholder="תעודת זהות"
+                required pattern="^[\d]{7,9}$"
+                [ngModel]="govIdControl?.value"
+                (ngModelChange)="setGovId($event)">
+        </div>
+    </div>
+
+    <div class="submit-btn-container">
+        <button type="submit" [disabled]="govIdControl?.invalid ?? true" class="submit-btn" (click)="onSubmit()">
+            שליחת בקשה
+        </button>
+    </div>
+</ng-template>

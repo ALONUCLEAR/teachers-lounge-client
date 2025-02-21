@@ -1,11 +1,16 @@
 @import "~bootstrap/dist/css/bootstrap.min.css";
 
+@valid-color: #80bdff;
+@invalid-color: #ff8080;
+
 html,
 body {
   direction: rtl;
 
   input,
   search {
+    user-select: text;
+
     &[type="number"] {
       direction: ltr;
       text-align: right;
@@ -13,13 +18,13 @@ body {
 
     // double focus and invalid to override bootstrap defaults
     &:focus:focus {
-      border-color: #80bdff;
+      border-color: @valid-color;
       outline: 0;
       box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
     }
 
     &:invalid:invalid {
-      border-color: #ff8080;
+      border-color: @invalid-color;
 
       &:focus {
         box-shadow: 0 0 0 0.2rem rgba(255, 0, 0, 0.25);

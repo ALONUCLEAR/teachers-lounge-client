@@ -1,6 +1,8 @@
-import { Component, NgModule, Type } from '@angular/core';
+import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { SchoolManagementComponent } from 'src/app/views/management/school-management/school-management.component';
+import { AccountRecoveryComponent } from './views/no-user/account-recovery/account-recovery.component';
+import { SignUpComponent } from './views/no-user/sign-up/sign-up.component';
 
 // The routes are grouped by the lowest permission rank needed to access them
 const SupportRoutes: Routes = [];
@@ -13,7 +15,10 @@ const AdminRoutes: Routes = [];
 
 const BaseRoutes: Routes = [];
 
-const NoUserRoutes: Routes = [];
+const NoUserRoutes: Routes = [
+  { path: 'sign-up', pathMatch: 'full', component: SignUpComponent },
+  { path: 'recovery', pathMatch: 'full', component: AccountRecoveryComponent }
+];
 
 const AlwaysAvaiableRoutes: Routes = [];
 

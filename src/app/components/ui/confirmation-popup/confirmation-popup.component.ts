@@ -16,7 +16,7 @@ export class ConfirmationPopupComponent {
   @Input() title = "אתם בטוחים?";
   @Input() body?: string;
 
-  constructor(private modal: NgbActiveModal) {}
+  constructor(private readonly modal: NgbActiveModal) {}
 
   accept(): void {
     this.modal.close(ConfirmationResult.OK);

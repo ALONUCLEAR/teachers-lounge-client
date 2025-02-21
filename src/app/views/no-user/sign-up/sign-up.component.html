@@ -1,0 +1,69 @@
+<form *ngIf="signUpForm" [formGroup]="signUpForm">
+    <div class="title-row">
+        <div class="title">בקשת יצירת משתמש</div>
+    </div>
+    <div class="input-row govid-email">
+        <div class="input-group">
+            <div class="field-name">תעודת זהות</div>
+            <input type="text" placeholder="תעודת זהות" formControlName="govId" required pattern="^[\d]{7,9}$">
+        </div>
+        <div class="input-group">
+            <div class="field-name">דוא"ל</div>
+            <input type="email" placeholder="דואל" required formControlName="email">
+        </div>
+    </div>
+
+    <div class="input-row first-last-name">
+        <div class="input-group">
+            <div class="field-name">שם פרטי</div>
+            <input type="text" placeholder="שם פרטי" required formControlName="firstName">
+        </div>
+        <div class="input-group">
+            <div class="field-name">שם משפחה</div>
+            <input type="text" placeholder="שם משפחה" required formControlName="lastName">
+        </div>
+    </div>
+
+    <div class="input-row password-row">
+        <div class="input-group">
+            <div class="field-name">
+                סיסמה
+                <i class="fa-regular fa-circle-question color-secondary" [ngbTooltip]="passwordExplainer" placement="bottom"></i>
+              </div>
+            <password-input placeholder="סיסמה" [validationRegex]="passwordPattern" (passwordChange)="changeFormFieldValue('password', $event)"></password-input>
+        </div>
+        <div class="input-group">
+            <div class="field-name">אימות סיסמה</div>
+            <password-input placeholder="סיסמה (מאומתת)" [validationRegex]="passwordPattern" (passwordChange)="changeFormFieldValue('confirmedPassword', $event)"></password-input>
+        </div>
+    </div>
+
+    <div class="input-row role-school">
+        <div class="input-group" [style.justifyContent]="isSupportApprovalRequired ? 'center' : null">
+            <div class="field-name">תפקיד</div>
+            <drop-down [style.flex]="'unset'" [entities]="roleOptions" displayField="value"
+                [defaultValue]="defaultRole"
+                (onSelectionChanged)="changeSelectedRole($event.value)">
+            </drop-down>
+        </div>
+        <div class="input-group" *ngIf="!isSupportApprovalRequired">
+            <div class="field-name">בית ספר</div>
+            <search [entities]="schoolList || []" [displayField]="'display'"
+                placeholder="בחר בית ספר" (onEntitySelected)="changeSelectedSchool($event?.id)">
+            </search>
+        </div>
+    </div>
+
+    <div class="input-row remarks-row">
+        <div class="input-group full-width">
+            <div class="field-name">הערה</div>
+            <textarea placeholder="הכנס הערות נוספות כאן" formControlName="message"></textarea>
+        </div>
+    </div>
+
+    <div class="submit-btn-container">
+        <button type="submit" [disabled]="signUpForm!.invalid" class="submit-btn" (click)="onSubmit()">
+            שליחת בקשה
+        </button>
+    </div>
+</form>

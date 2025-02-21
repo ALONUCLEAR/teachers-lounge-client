@@ -16,6 +16,7 @@ export class SearchComponent<T> implements OnInit {
   @Input() initialValue?: T;
   @Input() markValidity = true;
   @Input() placeholder?: string;
+  @Input() maxSuggestedElements = 10;
   @Output() onEntitySelected = new EventEmitter<T>();
 
   @ViewChild('entityInput') entityInput!: ElementRef<HTMLInputElement>;
@@ -55,6 +56,14 @@ export class SearchComponent<T> implements OnInit {
     this.entityInput.nativeElement.setCustomValidity(isValid ? '' : 'invalid');
   }
 
+  public onFocus(e: Event): void {
+    e.stopPropagation();
+    setTimeout(() => {
+      const inputEvent: Event = new Event('input');
+      e.target?.dispatchEvent(inputEvent);
+    }, 0);
+  }
+
   search: OperatorFunction<string, readonly T[]> = (
     text$: Observable<string>
   ) =>
@@ -62,12 +71,12 @@ export class SearchComponent<T> implements OnInit {
       debounceTime(200),
       map((term) =>
         term === ''
-          ? []
+          ? this.entities
           : this.entities
               .filter(
                 (v) => this.formatter(v).toLowerCase().indexOf(term.toLowerCase()) > -1
               )
-              .slice(0, 10)
+              .slice(0, this.maxSuggestedElements)
       )
     );
 
