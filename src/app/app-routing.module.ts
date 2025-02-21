@@ -3,12 +3,14 @@ import { RouterModule, Routes } from '@angular/router';
 import { SchoolManagementComponent } from 'src/app/views/management/school-management/school-management.component';
 import { AccountRecoveryComponent } from './views/no-user/account-recovery/account-recovery.component';
 import { SignUpComponent } from './views/no-user/sign-up/sign-up.component';
+import { UserApprovalComponent } from './views/management/user-approval/user-approval.component';
 
 // The routes are grouped by the lowest permission rank needed to access them
 const SupportRoutes: Routes = [];
 
 const SuperAdminRoutes: Routes = [
-  { path: 'school-management', pathMatch: 'full', component: SchoolManagementComponent }
+  { path: 'school-management', pathMatch: 'full', component: SchoolManagementComponent },
+  { path: 'user-approval', pathMatch: 'full', component: UserApprovalComponent }
 ];
 
 const AdminRoutes: Routes = [];
