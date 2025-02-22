@@ -6,6 +6,7 @@ import { BasicModule } from './basic.module';
 import { ManagementModule } from './views/management/management.module';
 import { SignUpComponent } from './views/no-user/sign-up/sign-up.component';
 import { AccountRecoveryComponent } from './views/no-user/account-recovery/account-recovery.component';
+import { LoginComponent } from './views/no-user/login/login.component';
 
 const subModules = [ManagementModule];
 
@@ -13,7 +14,8 @@ const subModules = [ManagementModule];
   declarations: [
     AppComponent,
     SignUpComponent,
-    AccountRecoveryComponent
+    AccountRecoveryComponent,
+    LoginComponent
   ],
   imports: [
     AppRoutingModule,

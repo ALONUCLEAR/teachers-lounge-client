@@ -93,6 +93,16 @@ export const createUserFromRequest = async (requestId: string): Promise<number> 
     return response.status;
 }
 
+export const tryLogin = async(govId: string, password: string): Promise<GenericUser | null> => {
+    const response = await axios.post(`${usersUrl}/login`, { govId, password });
+
+    if (response.status >= HttpStatusCode.MultipleChoices) {
+        return null;
+    }
+
+    return response.data;
+}
+
 export const tryDeleteUserRequest = async (requestId: string): Promise<boolean> => {
     const response = await axios.delete(`${requestsUrl}/${requestId}`);
 
