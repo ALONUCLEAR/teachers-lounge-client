@@ -6,11 +6,10 @@ import {
     RouterStateSnapshot
 } from '@angular/router';
 import { hasPermissions, UserRoles } from './api/server/types/permissions';
-import { AuthState } from './stores/auth/auth.store';
 import { LocalAuthService } from './stores/auth/local-auth.service';
 
 @Injectable({
-  providedIn: 'root'  // Make sure the guard is provided in the root
+  providedIn: 'root'
 })
 export class AuthGuard implements CanActivate {
   constructor(
@@ -18,10 +17,8 @@ export class AuthGuard implements CanActivate {
   ) {}
 
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
-    const requiredRole = route.data['requiredRole'] as UserRoles; // Get the required role from route data
+    const requiredRole = route.data['requiredRole'] as UserRoles;
     const isLoggedIn = LocalAuthService.isLoggedIn();
-    console.log({user: LocalAuthService.getLoggedUser(), isLoggedIn,
-        requiredRole, hasPermissions: isLoggedIn ? hasPermissions(LocalAuthService.getLoggedUser()!.role, requiredRole) : false})
 
     if (requiredRole) {
       if (!isLoggedIn || !hasPermissions(LocalAuthService.getLoggedUser()!.role, requiredRole)) {
@@ -34,7 +31,6 @@ export class AuthGuard implements CanActivate {
     } else if (!isLoggedIn) {
         return true;
     } else {
-        // Trying to access a page like login that is only accessible to logged out users
         this.router.navigate(['/school-management']);
 
         return false;
