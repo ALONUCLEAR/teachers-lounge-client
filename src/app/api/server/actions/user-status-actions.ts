@@ -6,7 +6,7 @@ import { UserRoles } from "../types/permissions";
 const requestsUrl = `${environment.serverUrl}/requests`;
 const usersUrl = `${environment.serverUrl}/users`;
 
-const approvableUserRoleMapper = (user: GenericUser) => ({
+const genericUserRoleMapper = (user: GenericUser) => ({
   ...user,
   role: user.role
     ? UserRoles[`${user.role}` as keyof typeof UserRoles]
@@ -20,7 +20,7 @@ export const getAllUserRequests = async (): Promise<GenericUser[]> => {
         throw new Error(`Request to get all user requests failed, returned with status ${response.status}`);
     }
 
-    return response.data.map(approvableUserRoleMapper);
+    return response.data.map(genericUserRoleMapper);
 }
 
 export const getAllUsersByStatus = async (areActive: boolean): Promise<GenericUser[]> => {
@@ -30,7 +30,7 @@ export const getAllUsersByStatus = async (areActive: boolean): Promise<GenericUs
         throw new Error(`Request to get all blocked users failed, returned with status ${response.status}`);
     }
 
-    return response.data.map(approvableUserRoleMapper);
+    return response.data.map(genericUserRoleMapper);
 }
 
 export const trySendingUserRequest = async (userToCreate: UserRequest & { id: string }): Promise<boolean> => {
@@ -100,7 +100,7 @@ export const tryLogin = async(govId: string, password: string): Promise<GenericU
         return null;
     }
 
-    return response.data;
+    return response.data ? genericUserRoleMapper(response.data) : null;
 }
 
 export const tryDeleteUserRequest = async (requestId: string): Promise<boolean> => {
