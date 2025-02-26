@@ -58,7 +58,7 @@ export const trySendingUserRecoveryRequest = async (userGovId: string): Promise<
 }
 
 export const tryUnblockUser = async (requestingUserId: string, userId: string): Promise<boolean> => {
-    const response = await axios.post(`${usersUrl}/restore/${userId}`, { headers: { userId: requestingUserId }});
+    const response = await axios.post(`${usersUrl}/restore/${userId}`, undefined, { headers: { userId: requestingUserId }});
 
     if (response.status >= HttpStatusCode.MultipleChoices) {
         console.error(response.status);
@@ -70,7 +70,7 @@ export const tryUnblockUser = async (requestingUserId: string, userId: string): 
 }
 
 export const tryBlockUser = async (requestingUserId: string, userId: string): Promise<boolean> => {
-    const response = await axios.post(`${usersUrl}/block/${userId}`, { headers: { userId: requestingUserId }});
+    const response = await axios.post(`${usersUrl}/block/${userId}`, undefined, { headers: { userId: requestingUserId }});
 
     if (response.status >= HttpStatusCode.MultipleChoices) {
         console.error(response.status);
@@ -82,7 +82,7 @@ export const tryBlockUser = async (requestingUserId: string, userId: string): Pr
 }
 
 export const createUserFromRequest = async (requestingUserId: string, requestId: string): Promise<number> => {
-    const response = await axios.post(`${usersUrl}/from-request/${requestId}`, { userId: requestingUserId });
+    const response = await axios.post(`${usersUrl}/from-request/${requestId}`, undefined, { headers: { userId: requestingUserId } });
 
     if (response.status >= HttpStatusCode.MultipleChoices) {
         console.error(response.data);
