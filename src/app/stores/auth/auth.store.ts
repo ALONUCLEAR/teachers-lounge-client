@@ -44,7 +44,9 @@ persistState({
   deserialize: (encrypedState?: string) => {
     try {
       return encrypedState && typeof encrypedState === 'string' ? JSON.parse(decrypt(encrypedState)) : {}
-    } catch {
+    } catch(error) {
+      console.error(`Error decrypting state, was probably encrypted using a different key`);
+
       return {};
     }
   },
