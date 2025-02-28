@@ -10,14 +10,17 @@ const setEnv = () => {
     const envConfigFile = trimLines(`import { Config } from './types';
     import { defaultEnv } from './default';
 
-    export const environment: Config = {
-      ...defaultEnv,
+    const envValues: Partial<Config> = {
       env: ${optional(process.env['ENV'])},
       govUrl: ${optional(process.env['GOV_URL'])},
       serverUrl: ${optional(process.env['SERVER_URL'])},
       encryptionKey: ${optional(process.env['ENCRYPTION_KEY'])}
-    };    
-  `);
+    };
+
+    export const environment: Config = {
+      ...defaultEnv,
+      ...envValues
+    };`);
 
     writeFile(targetPath, envConfigFile, (err) => {
       if (err) {
