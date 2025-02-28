@@ -14,12 +14,14 @@ import { EntityGroup } from 'src/app/components/ui/list-view/list-view.component
 import { PromptComponent } from 'src/app/components/ui/prompt/prompt.component';
 import { NotificationsService } from 'src/app/services/notifications.service';
 import { PopupService } from 'src/app/services/popup.service';
+import { AuthQuery } from 'src/app/stores/auth/auth.query';
+import { AuthStore } from 'src/app/stores/auth/auth.store';
 
 @Component({
   selector: 'user-status-management',
   templateUrl: './user-status-management.component.html',
   styleUrls: ['./user-status-management.component.less'],
-  providers: [],
+  providers: [AuthQuery, AuthStore],
 })
 export class UserStatusManagementComponent implements OnInit, OnDestroy {
   private readonly USER_POLLING_RATE_MS = 5000;
@@ -49,6 +51,7 @@ export class UserStatusManagementComponent implements OnInit, OnDestroy {
     private readonly modalService: NgbModal,
     private readonly notificationService: NotificationsService,
     private readonly popupService: PopupService,
+    private readonly authQuery: AuthQuery,
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -56,7 +59,6 @@ export class UserStatusManagementComponent implements OnInit, OnDestroy {
 
     await this.initSchools();
 
-    // TODO: (after login and routeguards are implemented) add headers to the requests with the current user's permissions and if the user is a SuperAdmin, only show Admins and below
     this.pollUserRequests();
     this.pollBannedUsers();
     this.pollActiveUsers();
@@ -88,7 +90,7 @@ export class UserStatusManagementComponent implements OnInit, OnDestroy {
   private pollUserRequests(): void {
     const userRequestsInterval = window.setInterval(async () => {
       try {
-        const allPendingUsers = await getAllUserRequests();
+        const allPendingUsers = await getAllUserRequests(this.authQuery.getUserId()!);
         
         if (this.isFirstLoad) {
           this.isLoading = false;
@@ -110,7 +112,7 @@ export class UserStatusManagementComponent implements OnInit, OnDestroy {
   private pollBannedUsers(): void {
     const bannedUsersInterval = window.setInterval(async () => {
       try {
-        const allBannedUsers = await getAllUsersByStatus(false);
+        const allBannedUsers = await getAllUsersByStatus(this.authQuery.getUserId()!, false);
 
         if (this.isFirstLoad) {
           this.isLoading = false;
@@ -131,7 +133,7 @@ export class UserStatusManagementComponent implements OnInit, OnDestroy {
   private pollActiveUsers(): void {
     const activeUsersInterval = window.setInterval(async () => {
       try {
-        const allActiveUsers = await getAllUsersByStatus(true);
+        const allActiveUsers = await getAllUsersByStatus(this.authQuery.getUserId()!, true);
 
         if (this.isFirstLoad) {
           this.isLoading = false;
@@ -209,11 +211,11 @@ export class UserStatusManagementComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (!isBlocking && !await tryDeleteUserRequest(userToReject.id)) {
+    if (!isBlocking && !await tryDeleteUserRequest(this.authQuery.getUserId()!, userToReject.id)) {
       this.popupService.error(`דחיית הבקשה נכשלה. נסו שוב מאוחר יותר.`, { title: `שגיאה בדחיית בקשה` });
 
       return;
-    } else if(isBlocking && !await tryBlockUser(userToReject.id)) {
+    } else if(isBlocking && !await tryBlockUser(this.authQuery.getUserId()!, userToReject.id)) {
       this.popupService.error(`החסימה נכשלה. נסו שוב מאוחר יותר.`, { title: 'שגיאה בחסימת משתמש' });
 
       return;
@@ -260,7 +262,7 @@ export class UserStatusManagementComponent implements OnInit, OnDestroy {
   }
 
   private async createUser(requestId: string): Promise<void> {
-    const responseStatus = await createUserFromRequest(requestId);
+    const responseStatus = await createUserFromRequest(this.authQuery.getUserId()!, requestId);
 
     if (responseStatus >= HttpStatusCode.MultipleChoices) {
       this.popupService.error("שגיאה ביצירת משתמש");
@@ -273,7 +275,7 @@ export class UserStatusManagementComponent implements OnInit, OnDestroy {
   }
 
   private async unblockUser(userId: string): Promise<void> {
-    if (!await tryUnblockUser(userId)) {
+    if (!await tryUnblockUser(this.authQuery.getUserId()!, userId)) {
       this.popupService.error("שגיאה בשחזור משתמש");
     } else {
       await this.popupService.success("משתמש שוחזר בהצלחה");

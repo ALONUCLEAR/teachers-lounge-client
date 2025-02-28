@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { trySendingCodeToUserByGovId } from 'src/app/api/server/actions/email-actions';
 import { trySendingUserRecoveryRequest } from 'src/app/api/server/actions/user-status-actions';
@@ -17,6 +18,7 @@ export class AccountRecoveryComponent {
   govIdControl = this.formBuilder.control<string>('', { nonNullable: true, validators: [Validators.required, Validators.pattern(/^[\d]{8,10}$/)]});
 
   constructor(
+    private readonly router: Router,
     private readonly formBuilder: FormBuilder,
     private readonly popupService: PopupService,
     private readonly modalService: NgbModal,
@@ -66,7 +68,7 @@ export class AccountRecoveryComponent {
       }
 
       await this.popupService.success(`המאשרים יקבלו התראה בקרוב`, { title: `ההודעה נשלחה בהצלחה` });
-      // TODO: redirect to login page(when we have one)
+      this.router.navigate(['/login']);
     } catch (e) {
       console.error(e);
       this.popupService.error(`שגיאה בשליחת הבקשה`);

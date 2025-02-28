@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormControl, FormControlOptions, FormGroup, ValidatorFn, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { trySendingCodeToUser } from 'src/app/api/server/actions/email-actions';
 import { getAllSchools } from 'src/app/api/server/actions/school-actions';
@@ -47,6 +48,7 @@ export class SignUpComponent implements OnInit {
   isSupportApprovalRequired = false;
 
   constructor(
+    private readonly router: Router,
     private readonly formBuilder: FormBuilder,
     private readonly popupService: PopupService,
     private readonly modalService: NgbModal,
@@ -206,7 +208,7 @@ export class SignUpComponent implements OnInit {
       }
 
       await this.popupService.success(`תקבלו מייל על המשך התהליך בקרוב`, { title: `ההודעה נשלחה בהצלחה` });
-      // TODO: redirect to login page(when one exists)
+      this.router.navigate(['/login']);
     } catch (e) {
       console.error(e);
       this.popupService.error(`שגיאה בשליחת הבקשה`);

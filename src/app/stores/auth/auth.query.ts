@@ -7,4 +7,8 @@ export class AuthQuery extends Query<AuthState> {
   constructor(store: AuthStore) {
     super(store);
   }
+
+  public getUserId(): string | undefined {
+    return this.getValue()?.id;
+  }
 }
