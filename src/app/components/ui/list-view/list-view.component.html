@@ -1,0 +1,34 @@
+<div class="list">
+  <div class="search-container">
+    <input [(ngModel)]="searchTerm" (ngModelChange)="onSearchChanged()" placeholder="חיפוש..." class="search-input">
+  </div>
+
+  <div ngbAccordion class="lists-container">
+    <div ngbAccordionItem *ngFor="let group of filteredData; trackBy: trackByGroup" [collapsed]="shouldBeClose[group.title] ?? false">
+      <h2 ngbAccordionHeader class="group-header">
+        <button ngbAccordionButton>
+          <div class="group-title">{{ group.title }}{{ showCountInTitle ? ' (' + group.entities.length + ')' : null }}</div>
+        </button>
+      </h2>
+      <div ngbAccordionCollapse>
+        <div ngbAccordionBody>
+          <ng-template>
+            <ul class="entity-list">
+              <li *ngFor="let entity of group.entities; trackBy: trackByEntity" 
+                  (click)="selectEntity(entity)" 
+                  [ngClass]="{'selected': (selectedEntity | func: entityTrackBy) === (entity | func: entityTrackBy)}">
+                <div>{{ entity | func: displayMapper }}</div>
+              </li>
+            </ul>
+          </ng-template>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="selected-entity">
+  <ng-container *ngIf="selectedEntity">
+    <ng-container [ngTemplateOutlet]="template" [ngTemplateOutletContext]="{ selectedEntity }"></ng-container>
+  </ng-container>
+</div>

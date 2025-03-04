@@ -1,14 +1,22 @@
 <div class="modal-header">
   <h5 class="modal-title">{{ promptTitle }}</h5>
-  <button type="button" class="close" (click)="onAnswerSubmit()">
+  <button type="button" class="close" (click)="onCancel()">
     <span>&times;</span>
   </button>
 </div>
 <div class="modal-body">
-  <p>{{ promptText }}</p>
-  <input type="text" class="form-control" [(ngModel)]="promptInput"/>
+  <div class="prompt-line">
+    <ng-container *ngIf="isAnswerRequried">
+      <p>{{ promptText }} (<span class="required-star">*</span>)</p>
+    </ng-container>
+    <p *ngIf="!isAnswerRequried">{{ promptText }}</p>
+  </div>
+  <ng-container [ngSwitch]="answerFieldType">
+    <textarea *ngSwitchCase="AnswerFieldTypeEnum.TEXTAREA" class="form-control" [(ngModel)]="promptInput" required></textarea>
+    <input *ngSwitchDefault type="text" class="form-control" [(ngModel)]="promptInput" required/>
+  </ng-container>
 </div>
 <div class="modal-footer">
-  <button type="button" class="btn btn-secondary" (click)="onAnswerSubmit()">ביטול</button>
-  <button type="button" class="btn btn-primary" (click)="onAnswerSubmit(promptInput)">אישור</button>
+  <button type="button" class="btn btn-secondary" (click)="onCancel()">ביטול</button>
+  <button type="button" class="btn btn-primary" [disabled]="isAnswerRequried && !promptInput" (click)="onAnswerSubmit(promptInput)">אישור</button>
 </div>

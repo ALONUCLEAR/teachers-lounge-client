@@ -11,10 +11,8 @@ export const getRoleKey = (role?: UserRoles): keyof UserRoles | undefined => {
     return roleKey;
 }
 
-const getRoleLevel = (role: UserRoles): number => {
-    return Object.values(UserRoles).indexOf(role);
-} 
+const getRoleLevel = (role: UserRoles): number => Object.values(UserRoles).indexOf(role);
 
-export const hasPermiisions = (role: UserRoles, requiredRole: UserRoles): boolean => {
+export const hasPermissions = (role: UserRoles, requiredRole: UserRoles): boolean => {
     return getRoleLevel(role) >= getRoleLevel(requiredRole);
 }

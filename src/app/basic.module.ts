@@ -13,6 +13,8 @@ import { PasswordInputComponent } from "./components/ui/password-input/password-
 import { PopupService } from "./services/popup.service";
 import { PromptComponent } from "./components/ui/prompt/prompt.component";
 import { LoaderComponent } from "./components/ui/loader/loader.component";
+import { ListViewComponent } from "./components/ui/list-view/list-view.component";
+import { FuncPipe } from "./pipes/func.pipe";
 
 const basicModules = [
     BrowserModule, CommonModule,
@@ -25,6 +27,7 @@ const standaloneComponents = [
     SearchComponent,
     ConfirmationPopupComponent,
     PromptComponent,
+    ListViewComponent,
     MyTableComponent,
     PasswordInputComponent,
     LoaderComponent
@@ -32,10 +35,12 @@ const standaloneComponents = [
 
 const services = [NotificationsService, PopupService];
 
+const pipes = [FuncPipe];
+
 @NgModule({
     declarations: [],
-    imports: [...basicModules, ...standaloneComponents],
+    imports: [...basicModules, ...standaloneComponents, ...pipes],
     providers: [services],
-    exports: [...basicModules, ...standaloneComponents],
+    exports: [...basicModules, ...standaloneComponents, ...pipes],
   })
  export class BasicModule {}

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormControl, FormControlOptions, FormGroup, ValidatorFn, Validators } from '@angular/forms';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { trySendingCodeToUser } from 'src/app/api/server/actions/email-actions';
@@ -12,6 +12,8 @@ import { PopupService } from 'src/app/services/popup.service';
 
 const supportApprovalId = "SupportApproval";
 const SupportApprovedRoles = [UserRoles.SuperAdmin, UserRoles.Support];
+
+export const PASSWORD_PATTERN = /^(?=.*[A-Z])(?=.*[0-9])(?=.*[a-z]).{8,}$/;
 
 interface SignUpForm {
   govId: FormControl<string>;
@@ -31,12 +33,12 @@ interface SignUpForm {
   styleUrls: ['./sign-up.component.less'],
   providers: [],
 })
-export class SignUpComponent {
+export class SignUpComponent implements OnInit {
   schoolList: (School & { display: string })[] = [];
   signUpForm?: FormGroup<SignUpForm>;
   roleOptions = Object.entries(UserRoles).map(([key, value]) => ({key, value}));
   defaultRole = this.roleOptions.find(role => role.value === UserRoles.Base)!;
-  readonly passwordPattern = /^(?=.*[A-Z])(?=.*[0-9])(?=.*[a-z]).{8,}$/;
+  readonly passwordPattern = PASSWORD_PATTERN;
   passwordExplainer = `סיסמה תקינה מכילה:
   * אות גדולה באנגלית
   * אות קטנה באנגלית
@@ -52,10 +54,10 @@ export class SignUpComponent {
 
   async ngOnInit(): Promise<void> {
     this.signUpForm = this.createEmptySignUpForm();
-    await this.initSchoolList();
+    await this.initSchoolList(1000);
   }
 
-  async initSchoolList(): Promise<void> {
+  async initSchoolList(retryInterval: number): Promise<void> {
     try {
       const schools = await getAllSchools();
       this.schoolList = schools.map(school => ({
@@ -65,6 +67,12 @@ export class SignUpComponent {
     } catch(error) {
       console.error(error);
       this.schoolList = [];
+
+      if (retryInterval > 3600 * 1000) {
+        this.popupService.error("אחרי נסיונות רבים, לא הצלחנו לשלוף את רשימת בתי הספר.\n אם אתם מורים או מנהלים, נא נסו להרשם מאוחר יותר", { title: "שגיאה בשליפת בתי ספר" });
+      } else {
+        this.initSchoolList(retryInterval * 1.25);
+      }
     }
   }
 
@@ -76,7 +84,7 @@ export class SignUpComponent {
   }
 
   private createEmptySignUpForm(): FormGroup<SignUpForm> {
-    const passwordOptions = this.getFieldOptions([Validators.pattern(this.passwordPattern)]);
+    const passwordOptions = this.getFieldOptions([Validators.pattern(PASSWORD_PATTERN)]);
 
     return this.formBuilder.group<SignUpForm>({
       govId: this.formBuilder.control("", this.getFieldOptions([Validators.pattern(/^[\d]{8,10}$/)])),
@@ -197,7 +205,8 @@ export class SignUpComponent {
         throw new Error(`Error sending user request to db`);
       }
 
-      this.popupService.success(`תקבלו מייל על המשך התהליך בקרוב`, { title: `ההודעה נשלחה בהצלחה` });
+      await this.popupService.success(`תקבלו מייל על המשך התהליך בקרוב`, { title: `ההודעה נשלחה בהצלחה` });
+      // TODO: redirect to login page(when one exists)
     } catch (e) {
       console.error(e);
       this.popupService.error(`שגיאה בשליחת הבקשה`);

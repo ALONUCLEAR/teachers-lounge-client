@@ -1,0 +1,32 @@
+<form #form *ngIf="loginForm" [formGroup]="loginForm">
+    <div class="title-row">
+        <div class="title">מסך התחברות</div>
+    </div>
+    <div class="input-row govid-row">
+        <div class="input-group">
+            <div class="field-name">תעודת זהות</div>
+            <input type="text" placeholder="תעודת זהות" formControlName="govId" required pattern="^[\d]{8,10}$">
+        </div>
+    </div>
+
+    <div class="input-row password-row">
+        <div class="input-group">
+            <div class="field-name">סיסמה</div>
+            <password-input placeholder="סיסמה" [validationRegex]="passwordPattern" (passwordChange)="changeFormFieldValue('password', $event)"></password-input>
+        </div>
+    </div>
+
+    <div class="links-container">
+        <a class="forgot-password" routerLink="/forgot-password">שכחת סיסמה?</a>
+        <div class="user-activation-container">
+            <a routerLink="/sign-up">הרשמה</a>
+            <a routerLink="/recovery">שחזור</a>
+        </div>
+    </div>
+
+    <div class="submit-btn-container">
+        <button type="submit" [disabled]="loginForm!.invalid" class="submit-btn" (click)="onSubmit()">
+            שליחת בקשה
+        </button>
+    </div>
+</form>

@@ -1,0 +1,51 @@
+<loader *ngIf="isLoading"></loader>
+<list-view *ngIf="!isLoading"
+    [data]="approvalGroups" [displayMapper]="userDataMapper" [selectedEntityId]="selectedUserId"
+    [entityTrackBy]="userTrackBy" [template]="selectedUserTemplate"
+    (onEntitySelected)="selectUser($event)"></list-view>
+
+<ng-template #selectedUserTemplate let-selectedUser="selectedEntity">
+    <div *ngIf="selectedUser?.info" class="user-info">
+        <div class="user-header">
+            <div class="gov-id-email">
+                <p class="gov-id">תעודת זהות: {{ selectedUser.govId }}</p>
+                <p class="email">דוא"ל: {{ selectedUser.email }}</p>
+            </div>
+
+            <div class="full-name">
+                <p>{{ selectedUser.info.firstName }} {{ selectedUser.info.lastName }}</p>
+            </div>
+        </div>
+
+        <div class="user-details">
+            <div *ngIf="(selectedUser.associatedSchools | func: idToSchoolMapper) | func: joinStrings as joinedAssociatedSchoolNames"
+                class="schools">
+                <p *ngIf="joinedAssociatedSchoolNames.length">בתי ספר: 
+                    <span> {{ joinedAssociatedSchoolNames }} </span>
+                </p>
+            </div>
+
+            <div class="role-message">
+                <div class="role">
+                    <p>דרגת הרשאות{{ selectedUser.activityStatus === ActivityStatus.Pending ? ' רצויה' : null }}: <span>{{ selectedUser.role }}</span></p>
+                </div>
+                <div class="message" *ngIf="selectedUser.message">
+                    <p>הערה: <br /> {{ selectedUser.message }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div [ngSwitch]="selectedUser.activityStatus" class="submit-container">
+            <ng-container *ngSwitchCase="ActivityStatus.Pending">
+                <button  class="reject-btn" (click)="onReject(selectedUser)">דחיה</button>
+                <button class="submit-btn" (click)="onAccept(selectedUser)">אישור</button>
+            </ng-container>
+            <ng-container *ngSwitchCase="ActivityStatus.Blocked">
+                <button class="submit-btn" (click)="onAccept(selectedUser)">שחזור</button>
+            </ng-container>
+            <ng-container *ngSwitchDefault>
+                <button class="reject-btn" (click)="onBlock(selectedUser)">חסימה</button>
+            </ng-container>
+        </div>
+    </div>
+</ng-template>

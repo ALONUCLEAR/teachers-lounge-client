@@ -1,5 +1,6 @@
 import axios, { HttpStatusCode } from "axios";
 import { environment } from "src/environments/environment";
+import { MailInput } from "../types/email";
 
 const requestsUrl = `${environment.serverUrl}/emails`;
 
@@ -26,4 +27,16 @@ export const trySendingCodeToUserByGovId = async (govId: string): Promise<string
     }
 
     return response.data;
+}
+
+export const trySendingMailTo = async (emailAddress: string, mailInput: MailInput): Promise<boolean> => {    
+    const response = await axios.post(`${requestsUrl}/to/${emailAddress}`, mailInput);
+
+    if (response.status >= HttpStatusCode.MultipleChoices) {
+        console.error(`Request to send an email failed, returned with status ${response.status}`);
+
+        return false;
+    }
+
+    return true;
 }
