@@ -19,13 +19,13 @@
     <td>
         <search
             [entities]="allMunicipalities" [displayField]="'name'"
-            [initialValue]="editedEntity.municipality" (onEntitySelected)="changeMunicipality($event, editedEntity)">
+            [initialValues]="[editedEntity.municipality]" (onEntitySelected)="changeMunicipality($event[0], editedEntity)">
         </search>
     </td>
     <td>
         <search
             [entities]="streetsForEditedMunicipality" [displayField]="'name'"
-            [initialValue]="editedEntity.address.street" (onEntitySelected)="changeStreet($event, editedEntity)">
+            [initialValues]="[editedEntity.address.street]" (onEntitySelected)="changeStreet($event[0], editedEntity)">
         </search>
     </td>
     <td>
@@ -41,11 +41,11 @@
     <search
         [entities]="(filterMunicipalities$ | async) || []" [displayField]="'name'" [markValidity]="false"
         placeholder="ישוב" class="filter"
-        (onEntitySelected)="changeMunicipalityFilters($event)">
+        (onEntitySelected)="changeMunicipalityFilters($event[0])">
     </search>
     <search
         [entities]="filterStreets" [displayField]="'name'" [markValidity]="false"
         placeholder="רחוב" class="filter"
-        (onEntitySelected)="changeStreetFilters($event)">
+        (onEntitySelected)="changeStreetFilters($event[0])">
     </search>
 </ng-template>

@@ -21,15 +21,13 @@ const emptySchool: School = {
   id: '',
   name: '',
   municipality: {
-    fk: -1,
     id: -1,
     name: '',
   },
   address: {
     street: {
       id: -1,
-      fk: -1,
-      municipalityFk: -1,
+      municipalityId: -1,
       name: '',
     },
     houseNumber: 0,
@@ -369,7 +367,7 @@ export class SchoolManagementComponent implements OnInit, OnDestroy {
     const changedMunicipality = this.municipalityFilter?.id !== municipality?.id;
 
     this.municipalityFilter = municipality ? { ...municipality } : undefined;
-    this.filterStreets = municipality?.fk
+    this.filterStreets = municipality?.id
       ? this.streetsQuery.getStreetsByMunicipality(municipality)
       : [];
 

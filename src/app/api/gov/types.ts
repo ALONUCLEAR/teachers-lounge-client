@@ -1,11 +1,10 @@
 export interface GovernmentData {
     id: number;
     name: string;
-    fk: number;
 }
 
 export interface Street extends GovernmentData {
-    municipalityFk: number;
+    municipalityId: number;
 }
 
 export enum Resources {

@@ -37,9 +37,8 @@ const getAllEntitiesPaginated = async <T>(resource: Resources, converter: (recor
 }
 
 const municipalityRecordToGovData = (record: any): GovernmentData => ({
-    id: record._id,
-    name: record["שם_ישוב"].trim(),
-    fk: parseInt(record["סמל_ישוב"])
+    id: parseInt(record["סמל_ישוב"]),
+    name: record["שם_ישוב"].trim(), 
 });
 
 export const getAllMunicipalities = async (): Promise<GovernmentData[]> => {
@@ -47,10 +46,9 @@ export const getAllMunicipalities = async (): Promise<GovernmentData[]> => {
 }
 
 const streetRecordToStreet = (record: any): Street => ({
-    id: record._id,
+    id: parseInt(record["סמל_רחוב"]),
     name: record["שם_רחוב"].trim(),
-    fk: record["סמל_רחוב"],
-    municipalityFk: record["סמל_ישוב"]
+    municipalityId: parseInt(record["סמל_ישוב"])
 })
 
 export const getAllStreets = async (): Promise<Street[]> => {
