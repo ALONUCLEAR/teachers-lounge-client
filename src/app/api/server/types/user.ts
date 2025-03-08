@@ -1,3 +1,4 @@
+import { Association } from "./association";
 import { UserRoles } from "./permissions";
 
 export enum ActivityStatus {
@@ -26,3 +27,9 @@ export interface UserRequest extends BaseUser {
 
 export type GenericUser = Omit<UserRequest, 'password' | 'confirmedPassword' | 'requestedRole' | 'id'>
                               & { id: string, activityStatus: ActivityStatus, role?: UserRoles};
+
+// TODO: make it import the actual UserPreferences type when it's implemented
+type UserPreferences = Record<string, any>;
+
+export type User = Omit<GenericUser, 'role' | 'message'>
+  & { role: UserRoles, associations: Association[], preferences: UserPreferences }

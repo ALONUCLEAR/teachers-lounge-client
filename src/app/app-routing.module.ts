@@ -7,6 +7,7 @@ import { UserStatusManagementComponent } from './views/management/user-status-ma
 import { LoginComponent } from './views/no-user/login/login.component';
 import { UserRoles } from './api/server/types/permissions';
 import { AuthGuard } from './auth.guard';
+import { AssociationManagementComponent } from './views/management/association-management/association-management.component';
 
 const makeRouteGuarded = (route: Route, requiredRole?: UserRoles): Route => {
   return {
@@ -23,7 +24,9 @@ const SuperAdminRoutes: Routes = [
   { path: 'user-status-management', pathMatch: 'full', component: UserStatusManagementComponent }
 ].map(route => makeRouteGuarded(route as Route, UserRoles.SuperAdmin));
 
-const AdminRoutes: Routes = [].map(route => makeRouteGuarded(route as Route, UserRoles.Admin));
+const AdminRoutes: Routes = [
+  { path: 'association-management', pathMatch: 'full', component: AssociationManagementComponent },
+].map(route => makeRouteGuarded(route as Route, UserRoles.Admin));
 
 const BaseRoutes: Routes = [].map(route => makeRouteGuarded(route as Route, UserRoles.Base));
 

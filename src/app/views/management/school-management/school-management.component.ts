@@ -13,6 +13,7 @@ import {
   PropertyField,
 } from 'src/app/components/ui/my-table/my-table.components';
 import { NotificationsService } from 'src/app/services/notifications.service';
+import { AuthQuery } from 'src/app/stores/auth/auth.query';
 import { MunicipaitiesQuery } from 'src/app/stores/gov/municipalities/municipalities.query';
 import { StreetsQuery } from 'src/app/stores/gov/streets/streets.query';
 
@@ -39,7 +40,7 @@ const emptySchool: School = {
   selector: 'school-management',
   templateUrl: './school-management.component.html',
   styleUrls: ['./school-management.component.less'],
-  providers: [MunicipaitiesQuery, StreetsQuery],
+  providers: [MunicipaitiesQuery, StreetsQuery, AuthQuery],
 })
 export class SchoolManagementComponent implements OnInit, OnDestroy {
   fields: PropertyField<School>[] = [
@@ -97,7 +98,8 @@ export class SchoolManagementComponent implements OnInit, OnDestroy {
     private readonly municipaitiesQuery: MunicipaitiesQuery,
     private readonly streetsQuery: StreetsQuery,
     private readonly notificationsService: NotificationsService,
-    private readonly modalService: NgbModal
+    private readonly modalService: NgbModal,
+    private readonly authQuery: AuthQuery,
   ) {}
 
   ngOnInit(): void {
@@ -237,7 +239,7 @@ export class SchoolManagementComponent implements OnInit, OnDestroy {
     }
 
     if (school.id !== emptySchool.id) {
-      if (!(await tryDeleteSchool(school.id))) {
+      if (!(await tryDeleteSchool(this.authQuery.getUserId()!, school.id))) {
         this.notificationsService.error('אופס... משהו השתבש', {
           title: 'שגיאה במחיקת בית ספר',
         });
@@ -318,7 +320,7 @@ export class SchoolManagementComponent implements OnInit, OnDestroy {
       }
       this.filterSchools();
 
-      if (!(await tryUpsertSchool(schoolToEdit))) {
+      if (!(await tryUpsertSchool(this.authQuery.getUserId()!, schoolToEdit))) {
         this.notificationsService.error('אופס... משהו השתבש', {
           title: 'שגיאה בשמירת בית ספר',
         });

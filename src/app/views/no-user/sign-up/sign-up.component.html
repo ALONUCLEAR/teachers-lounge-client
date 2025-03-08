@@ -49,7 +49,7 @@
         <div class="input-group" *ngIf="!isSupportApprovalRequired">
             <div class="field-name">בית ספר</div>
             <search [entities]="schoolList || []" [displayField]="'display'"
-                placeholder="בחר בית ספר" (onEntitySelected)="changeSelectedSchool($event?.id)">
+                placeholder="בחר בית ספר" (onEntitySelected)="changeSelectedSchool($event?.[0]?.id)">
             </search>
         </div>
     </div>

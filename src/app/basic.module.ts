@@ -40,7 +40,7 @@ const pipes = [FuncPipe];
 @NgModule({
     declarations: [],
     imports: [...basicModules, ...standaloneComponents, ...pipes],
-    providers: [services],
+    providers: [...services],
     exports: [...basicModules, ...standaloneComponents, ...pipes],
   })
  export class BasicModule {}

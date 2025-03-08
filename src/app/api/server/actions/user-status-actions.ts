@@ -6,7 +6,7 @@ import { UserRoles } from "../types/permissions";
 const requestsUrl = `${environment.serverUrl}/requests`;
 const usersUrl = `${environment.serverUrl}/users`;
 
-const genericUserRoleMapper = (user: GenericUser) => ({
+const genericUserRoleMapper = (user: GenericUser): GenericUser => ({
   ...user,
   role: user.role
     ? UserRoles[`${user.role}` as keyof typeof UserRoles]

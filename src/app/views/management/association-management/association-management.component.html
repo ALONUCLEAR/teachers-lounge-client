@@ -1,0 +1,29 @@
+<loader *ngIf="isLoading"></loader>
+<list-view *ngIf="!isLoading"
+    [data]="associationGroups" [displayMapper]="associationDataMapper" [selectedEntityId]="selectedAssociationId"
+    [entityTrackBy]="associationTrackBy" [template]="selectedAssociationTemplate"
+    (onEntitySelected)="selectAssociation($event)"></list-view>
+
+<ng-template #selectedAssociationTemplate let-selectedAssociation="selectedEntity">
+    <div class="name">
+        <div class="title">שם:</div>
+        <input type="text" class="value" [ngModel]="selectedAssociation.name" (ngModelChange)="setAssociationName($event)"/>
+    </div>
+    
+    <ng-container [ngSwitch]="selectedAssociation.type">
+        <div *ngSwitchCase="AssociationType.Subject" class="associated-schools">
+            <div class="title">בתי ספר מקושרים:</div>
+            <select multiple>הולך להיות פה בחירה חולהההה</select>
+            <input type="text" class="value" [value]="selectedAssociation.associatedSchools | func: joinStrings" readonly />
+        </div>
+        <div *ngIf="selectedAssociation.type === AssociationType.Normal" class="associated-schools">
+            <div class="title">בית ספר מקושר:</div>
+            <div type="text" class="value">{{ selectedAssociation.associatedSchools[0] }}</div>
+        </div>
+    </ng-container>
+
+    <div [ngSwitch]="selectedAssociation.type" class="actions">
+        <button class="delete-btn" (click)="onDelete(selectedAssociation)">מחיקה</button>
+        <button class="save-btn" (click)="onUpsert(selectedAssociation)">שמירה</button>
+    </div>
+</ng-template>

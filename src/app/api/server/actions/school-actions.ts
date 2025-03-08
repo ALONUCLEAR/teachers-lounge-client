@@ -14,8 +14,8 @@ export const getAllSchools = async (): Promise<School[]> => {
     return response.data;
 }
 
-export const tryUpsertSchool = async (schoolToUpsert: School): Promise<boolean> => {
-    const response = await axios.post(`${schoolsUrl}/upsert`, schoolToUpsert);
+export const tryUpsertSchool = async (userId: string, schoolToUpsert: School): Promise<boolean> => {
+    const response = await axios.post(`${schoolsUrl}/upsert`, schoolToUpsert, { headers: { userId }});
 
     if (response.status >= HttpStatusCode.BadRequest) {
         console.error(`Request to get all schools failed, returned with status ${response.status}`);
@@ -26,8 +26,8 @@ export const tryUpsertSchool = async (schoolToUpsert: School): Promise<boolean> 
     return true;
 }
 
-export const tryDeleteSchool = async (schoolId: string): Promise<boolean> => {
-    const response = await axios.delete(`${schoolsUrl}/${schoolId}`);
+export const tryDeleteSchool = async (userId: string, schoolId: string): Promise<boolean> => {
+    const response = await axios.delete(`${schoolsUrl}/${schoolId}`, { headers: { userId } } );
 
     if (response.status >= HttpStatusCode.BadRequest) {
         console.error(`Request to get all schools failed, returned with status ${response.status}`);

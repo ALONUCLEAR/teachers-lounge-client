@@ -1,19 +1,10 @@
 import { Injectable } from "@angular/core";
 import { persistState, Store, StoreConfig } from "@datorama/akita";
 import { UserRoles } from "src/app/api/server/types/permissions";
-import { ActivityStatus } from "src/app/api/server/types/user";
+import { ActivityStatus, User } from "src/app/api/server/types/user";
 import { decrypt, encrypt } from "src/app/utils/encryption";
 
-export interface AuthState {
-  id: string;
-  govId: string;
-  role: UserRoles;
-  info: {
-    firstName: string;
-    lastName: string;
-  };
-  activityStatus: ActivityStatus;
- }
+export type AuthState = Omit<User, 'password' | 'email'>;
 
  export function createInitialState(): AuthState {
   return {
@@ -24,11 +15,14 @@ export interface AuthState {
       firstName: '',
       lastName: ''
     },
-    activityStatus: ActivityStatus.Pending
+    activityStatus: ActivityStatus.Pending,
+    associatedSchools: [],
+    associations: [],
+    preferences: {}
   };
 }
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 @StoreConfig({ name: 'auth' })
 export class AuthStore extends Store<AuthState> {
   constructor() {

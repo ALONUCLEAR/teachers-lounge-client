@@ -10,7 +10,6 @@ import { StreetsStore } from './stores/gov/streets/streets.store';
   providers: [MunicipaitiesStore, StreetsStore],
 })
 export class AppComponent implements OnInit {
-  title = 'teachers-lounge-client';
   readonly environment = environment.env;
   readonly url = environment.serverUrl;
 
