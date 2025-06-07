@@ -13,6 +13,7 @@ import { EntityGroup } from 'src/app/components/ui/list-view/list-view.component
 import { NotificationsService } from 'src/app/services/notifications.service';
 import { PopupService } from 'src/app/services/popup.service';
 import { AuthQuery } from 'src/app/stores/auth/auth.query';
+import { setFormArray } from 'src/app/utils/form-utils';
 
 interface AssociationForm {
   name: FormControl<string>;
@@ -30,7 +31,7 @@ export class AssociationManagementComponent implements OnInit, OnDestroy {
   private intervals: number[] = [];
 
   private schoolId?: string;
-  private allSchools: School[] = [];
+  allSchools: School[] = [];
   private schoolAssociations = new BehaviorSubject<Association[]>([]);
   private schoolSubjects = new BehaviorSubject<Association[]>([]);
   selectedAssociationId?: string;
@@ -101,9 +102,19 @@ export class AssociationManagementComponent implements OnInit, OnDestroy {
     return associationId ? this.getAllAssociations().find(({ id }) => associationId === id) : undefined;
   }
 
+  getAssociationSchools(association?: Association): School[] {
+    if (!association || !this.allSchools) {
+      return [];
+    }
+
+    return association.associatedSchools
+      .map(schoolId => this.allSchools.find(school => school.id === schoolId))
+      .filter(Boolean) as School[]; // I hate the fact that for filter(Boolean) it thinks there could still be an undefined school in the array
+  }
+
   selectAssociation(associationId?: string): void {
     this.selectedAssociationId = associationId;
-    this.createAssociationForm(this.getAssociationById(associationId));
+    this.associationForm = this.createAssociationForm(this.getAssociationById(associationId));
   }
 
   private get isFirstLoad(): boolean {
@@ -122,7 +133,7 @@ export class AssociationManagementComponent implements OnInit, OnDestroy {
     const normalAssociationsInterval = window.setInterval(async () => {
       try {
         const allNormalAssociations = await this.getAsssociationsByType(AssociationType.Normal);
-        
+
         if (this.isFirstLoad) {
           this.isLoading = false;
         }
@@ -187,7 +198,7 @@ export class AssociationManagementComponent implements OnInit, OnDestroy {
   }
 
   private getTypename(association: Association): string {
-    return association.type === AssociationType.Subject ? 'נושא': 'שיוך';
+    return association.type === AssociationType.Subject ? 'נושא' : 'שיוך';
   }
 
   private serializeForm(type: AssociationType): Association {
@@ -205,8 +216,9 @@ export class AssociationManagementComponent implements OnInit, OnDestroy {
     this.associationForm.controls.name.setValue(associationName);
   }
 
-  setAssociatedSchools(associatedSchools: string[]): void {
-    this.associationForm.controls.associatedSchools.setValue(associatedSchools.filter(Boolean));
+  setAssociatedSchools(associatedSchools: School[]): void {
+    const associatedSchoolIds = associatedSchools.map(({ id }) => id);
+    setFormArray(this.associationForm.controls.associatedSchools, associatedSchoolIds);
   }
 
   async onDelete(association: Association): Promise<void> {
@@ -249,7 +261,8 @@ export class AssociationManagementComponent implements OnInit, OnDestroy {
       this.popupService.error(`שדות לא תקינים`, { title: `נסיון ${actionName} נכשל` });
       return;
     }
-    
+
+    // TODO: make saving work cause WTF
     if (await tryUpsertAssociation(this.authQuery.getUserId()!, this.serializeForm(association.type))) {
       this.popupService.success(`פעולת ${actionName} הסתיימה בהצלחה`);
     } else {

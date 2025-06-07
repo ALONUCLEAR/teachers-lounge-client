@@ -10,6 +10,13 @@
       "url": "http://localhost:4200/"
     },
     {
+      "name": "run dev",
+      "type": "chrome",
+      "request": "launch",
+      "preLaunchTask": "npm: dev",
+      "url": "http://localhost:4200/"
+    },
+    {
       "name": "ng test",
       "type": "chrome",
       "request": "launch",
