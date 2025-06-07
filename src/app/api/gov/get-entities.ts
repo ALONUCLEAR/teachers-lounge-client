@@ -8,7 +8,7 @@ const getResourceQuery = (resourceId: string, limit: number, offset = 0) => {
     return `${environment.govUrl}?resource_id=${resourceId}&limit=${limit}${offsetString}`;
 }
 
-const getAllEntities = async <T>(resource: Resources, converter: (record: any) => T, limit=32_000, offset = 0): Promise<T[]> => {
+const getAllEntities = async <T extends GovernmentData>(resource: Resources, converter: (record: any) => T, limit=32_000, offset = 0): Promise<T[]> => {
     const response = await axios.get(getResourceQuery(resource, limit, offset));
     const resourceName = Object.entries(Resources).find(([_, resourceId]) => resourceId === resource)?.[0];
 
@@ -21,7 +21,7 @@ const getAllEntities = async <T>(resource: Resources, converter: (record: any) =
     return records.map(converter);
 }
 
-const getAllEntitiesPaginated = async <T>(resource: Resources, converter: (record: any) => T, limit=32_000): Promise<T[]> => {
+const getAllEntitiesPaginated = async <T extends GovernmentData>(resource: Resources, converter: (record: any) => T, limit=32_000): Promise<T[]> => {
     const fullList: T[] = [];
     let gotLastBatch = false;
     let offset = 0;
@@ -45,11 +45,19 @@ export const getAllMunicipalities = async (): Promise<GovernmentData[]> => {
     return getAllEntitiesPaginated(Resources.Municipalities, municipalityRecordToGovData);
 }
 
-const streetRecordToStreet = (record: any): Street => ({
-    id: parseInt(record["סמל_רחוב"]),
-    name: record["שם_רחוב"].trim(),
-    municipalityId: parseInt(record["סמל_ישוב"])
-})
+const streetRecordToStreet = (record: any): Street => {
+  const streetSign = parseInt(record['סמל_רחוב']);
+  const municipalityId = parseInt(record['סמל_ישוב']);
+  const municipalityIdSize = Math.ceil(Math.log10(municipalityId));
+
+  const streetId = streetSign * 10 ** municipalityIdSize + municipalityId;
+
+  return {
+    id: streetId,
+    name: record['שם_רחוב'].trim(),
+    municipalityId
+  };
+}
 
 export const getAllStreets = async (): Promise<Street[]> => {
     return getAllEntitiesPaginated(Resources.Streets, streetRecordToStreet);

@@ -137,7 +137,16 @@ export class SchoolManagementComponent implements OnInit, OnDestroy {
       const nonNewSchools = sortBy(this.schools.filter(({ id }) => id !== emptySchool.id), idSorter);
 
       if (!isEqual(upToDateSchools, nonNewSchools)) {
-        this.resetEditedFields();
+        // no need to check for editedEntity change if nothing's edited or the edited school is a new one being created
+        if (this.inputEditedEntityIndex >= 0 && nonNewSchools[this.inputEditedEntityIndex]?.id) {
+          const editedSchool = nonNewSchools[this.inputEditedEntityIndex];
+          const newEditedSchoolData = upToDateSchools.find(school => school.id === editedSchool.id);
+  
+          if (!isEqual(newEditedSchoolData, editedSchool)) {
+            this.resetEditedFields();
+          }
+        }
+
         this.setSchools(upToDateSchools);
 
         if (alertUserToChange) {
