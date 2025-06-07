@@ -15,25 +15,33 @@ export const getAllSchools = async (): Promise<School[]> => {
 }
 
 export const tryUpsertSchool = async (userId: string, schoolToUpsert: School): Promise<boolean> => {
-    const response = await axios.post(`${schoolsUrl}/upsert`, schoolToUpsert, { headers: { userId }});
+    try {
+        const response = await axios.post(`${schoolsUrl}/upsert`, schoolToUpsert, { headers: { userId } });
 
-    if (response.status >= HttpStatusCode.BadRequest) {
-        console.error(`Request to get all schools failed, returned with status ${response.status}`);
+        if (response.status >= HttpStatusCode.BadRequest) {
+            throw new Error(`Request to get all schools failed, returned with status ${response.status}`);
+        }
+
+        return true;
+    } catch (error) {
+        console.error(error);
 
         return false;
     }
-
-    return true;
 }
 
 export const tryDeleteSchool = async (userId: string, schoolId: string): Promise<boolean> => {
-    const response = await axios.delete(`${schoolsUrl}/${schoolId}`, { headers: { userId } } );
+    try {
+        const response = await axios.delete(`${schoolsUrl}/${schoolId}`, { headers: { userId } });
 
-    if (response.status >= HttpStatusCode.BadRequest) {
-        console.error(`Request to get all schools failed, returned with status ${response.status}`);
+        if (response.status >= HttpStatusCode.BadRequest) {
+            throw new Error(`Request to get all schools failed, returned with status ${response.status}`);
+        }
+
+        return response.data;
+    } catch (error) {
+        console.error(error);
 
         return false;
     }
-
-    return response.data;
 }

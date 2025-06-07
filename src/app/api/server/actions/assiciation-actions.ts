@@ -12,7 +12,7 @@ const associationMapper = (association: Association): Association => ({
 });
 
 export const getAllAssociations = async (requestingUserId: string): Promise<Association[]> => {
-    const response = await axios.get(associationsUrl, { headers: { userId: requestingUserId} });
+    const response = await axios.get(associationsUrl, { headers: { userId: requestingUserId } });
 
     if (response.status >= HttpStatusCode.BadRequest) {
         throw new Error(`Request to get all associations failed, returned with status ${response.status}`);
@@ -28,7 +28,7 @@ export const getAssociationsByType = async (requestingUserId: string, associatio
         throw new Error(`Invalid type ${associationType}`);
     }
 
-    const response = await axios.get(`${associationsUrl}/type/${typeName}/from/${schoolId}`, { headers: { userId: requestingUserId }});
+    const response = await axios.get(`${associationsUrl}/type/${typeName}/from/${schoolId}`, { headers: { userId: requestingUserId } });
 
     if (response.status >= HttpStatusCode.BadRequest) {
         throw new Error(`Request to get all associations of type ${typeName} from school ${schoolId} failed, returned with status ${response.status}`);
@@ -38,25 +38,33 @@ export const getAssociationsByType = async (requestingUserId: string, associatio
 }
 
 export const tryUpsertAssociation = async (requestingUserId: string, association: Association): Promise<boolean> => {
-    const response = await axios.post(`${associationsUrl}`, association, { headers: { userId: requestingUserId } });
+    try {
+        const response = await axios.post(`${associationsUrl}`, association, { headers: { userId: requestingUserId } });
 
-    if (response.status >= HttpStatusCode.MultipleChoices) {
-        console.error(`Request to upsert association failed, returned with status ${response.status}`);
+        if (response.status >= HttpStatusCode.MultipleChoices) {
+            throw new Error(`Request to upsert association failed, returned with status ${response.status}`);
+        }
+
+        return true;
+    } catch (error) {
+        console.error(error);
 
         return false;
     }
-
-    return true;
 }
 
 export const tryDeleteAssociation = async (requestingUserId: string, associationId: string): Promise<boolean> => {
-    const response = await axios.delete(`${associationsUrl}/${associationId}`, { headers: { userId: requestingUserId } });
+    try {
+        const response = await axios.delete(`${associationsUrl}/${associationId}`, { headers: { userId: requestingUserId } });
 
-    if (response.status >= HttpStatusCode.MultipleChoices) {
-        console.error(`Request to delete association failed, returned with status ${response.status}`);
+        if (response.status >= HttpStatusCode.MultipleChoices) {
+            throw new Error(`Request to delete association failed, returned with status ${response.status}`);
+        }
+
+        return response.data;
+    } catch (error) {
+        console.error(error);
 
         return false;
     }
-
-    return response.data;
 }
