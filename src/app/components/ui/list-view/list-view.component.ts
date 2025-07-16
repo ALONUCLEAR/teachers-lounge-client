@@ -16,9 +16,7 @@ export interface EntityGroup<Entity extends Record<string, any>> {
   styleUrls: ['./list-view.component.less'],
   imports: [CommonModule, FormsModule, FuncPipe, NgbAccordionModule],
 })
-export class ListViewComponent<Entity extends Record<string, any>>
-  implements OnChanges
-{
+export class ListViewComponent<Entity extends Record<string, any>> implements OnChanges {
   @Input({ required: true }) data: EntityGroup<Entity>[] = [];
   @Input({ required: true }) displayMapper!: (entity: Entity) => string;
   @Input({ required: true }) template!: TemplateRef<any>;

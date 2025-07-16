@@ -1,5 +1,5 @@
 import { CommonModule } from "@angular/common";
-import { Component, ElementRef, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild } from "@angular/core";
+import { AfterViewInit, Component, ElementRef, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { NgbTypeahead } from "@ng-bootstrap/ng-bootstrap";
 import { debounceTime, map, Observable, OperatorFunction } from "rxjs";
@@ -12,7 +12,7 @@ import { FuncPipe } from "src/app/pipes/func.pipe";
   standalone: true,
   imports: [FormsModule, NgbTypeahead, CommonModule, FuncPipe],
 })
-export class SearchComponent<T> implements OnInit {
+export class SearchComponent<T> implements OnInit, OnChanges, AfterViewInit {
   @Input({ required: true }) entities: T[] = [];
   @Input({ required: true }) displayField?: keyof T;
   @Input() initialValues?: T[];
@@ -20,12 +20,12 @@ export class SearchComponent<T> implements OnInit {
   @Input() placeholder?: string;
   @Input() maxSuggestedElements = 10;
   @Input() isMultiple = false;
+  @Input() allowReinitialization = false;
   @Output() onEntitySelected = new EventEmitter<T[]>();
 
   @ViewChild('entityInput') entityInput!: ElementRef<HTMLInputElement>;
 
   selectedEntities: T[] = [];
-  searchTerm: string = '';
 
   ngOnInit(): void {
     if (this.initialValues) {
@@ -43,9 +43,12 @@ export class SearchComponent<T> implements OnInit {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['entities']) {
+    if (changes['entities'] || changes['initialValues']) {
       if (this.displayField) {
-        this.selectedEntities = this.selectedEntities.filter(selectedEntity =>
+        const selectedEntities = changes['initialValues']?.currentValue && this.allowReinitialization
+          ? this.initialValues!
+          : this.selectedEntities;
+        this.selectedEntities = selectedEntities.filter(selectedEntity =>
           this.entities.some(entity => entity[this.displayField!] === selectedEntity[this.displayField!])
         );
       }
@@ -76,13 +79,17 @@ export class SearchComponent<T> implements OnInit {
     text$.pipe(
       debounceTime(200),
       map((term) =>
-        term === ''
-          ? this.entities
-          : this.entities
-              .filter(
-                (v) => this.formatter(v).toLowerCase().indexOf(term.toLowerCase()) > -1
-              )
-              .slice(0, this.maxSuggestedElements)
+        this.entities
+            .filter(
+              entity => {
+                const entityDisplay = this.formatter(entity).toLowerCase();
+                const shouldShowBySelected = !this.isMultiple ||
+                  !this.selectedEntities.some(selectedEntity => this.formatter(selectedEntity).toLowerCase() === entityDisplay);
+                const shouldShowByTerm = term === '' || entityDisplay.indexOf(term.toLowerCase()) > -1;
+
+                return shouldShowBySelected && shouldShowByTerm;
+              }
+            ).slice(0, this.maxSuggestedElements)
       )
     );
 

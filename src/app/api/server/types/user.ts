@@ -31,5 +31,6 @@ export type GenericUser = Omit<UserRequest, 'password' | 'confirmedPassword' | '
 // TODO: make it import the actual UserPreferences type when it's implemented
 type UserPreferences = Record<string, any>;
 
-export type User = Omit<GenericUser, 'role' | 'message'>
-  & { role: UserRoles, associations: Association[], preferences: UserPreferences }
+export type User = Omit<GenericUser, 'role' | 'message'> & { role: UserRoles, preferences: UserPreferences }
+
+export type DisplayedUser = User & { display: string };

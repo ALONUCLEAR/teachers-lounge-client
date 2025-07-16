@@ -1,12 +1,12 @@
 import { environment } from "src/environments/environment";
-import { GenericUser, UserRequest } from "../types/user";
+import { GenericUser, User, UserRequest } from "../types/user";
 import axios, { HttpStatusCode } from "axios";
 import { UserRoles } from "../types/permissions";
 
 const requestsUrl = `${environment.serverUrl}/requests`;
 const usersUrl = `${environment.serverUrl}/users`;
 
-const genericUserRoleMapper = (user: GenericUser): GenericUser => ({
+const userRoleMapper = <TUser extends GenericUser = GenericUser>(user: TUser): TUser => ({
     ...user,
     role: user.role
         ? UserRoles[`${user.role}` as keyof typeof UserRoles]
@@ -20,7 +20,7 @@ export const getAllUserRequests = async (requestingUserId: string): Promise<Gene
         throw new Error(`Request to get all user requests failed, returned with status ${response.status}`);
     }
 
-    return response.data.map(genericUserRoleMapper);
+    return response.data.map(userRoleMapper);
 }
 
 export const getAllUsersByStatus = async (requestingUserId: string, areActive: boolean): Promise<GenericUser[]> => {
@@ -30,7 +30,17 @@ export const getAllUsersByStatus = async (requestingUserId: string, areActive: b
         throw new Error(`Request to get all blocked users failed, returned with status ${response.status}`);
     }
 
-    return response.data.map(genericUserRoleMapper);
+    return response.data.map(userRoleMapper);
+}
+
+export const getUsersBySchool = async (requestingUserId: string, schoolId: string): Promise<User[]> => {
+    const response = await axios.get(`${usersUrl}/from-school/${schoolId}`, { headers: { userId: requestingUserId } });
+
+    if (response.status >= HttpStatusCode.BadRequest) {
+        throw new Error(`Request to get all users from school ${schoolId} failed, returned with status ${response.status}`);
+    }
+
+    return response.data.map(userRoleMapper<User>);
 }
 
 export const trySendingUserRequest = async (userToCreate: UserRequest & { id: string }): Promise<boolean> => {
@@ -123,7 +133,7 @@ export const tryLogin = async (govId: string, password: string): Promise<Generic
             throw new Error(`Login failed with status code ${response.status}`);
         }
 
-        return response.data ? genericUserRoleMapper(response.data) : null;
+        return response.data ? userRoleMapper(response.data) : null;
     } catch (error) {
         console.error(error);
 

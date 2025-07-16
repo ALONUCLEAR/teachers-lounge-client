@@ -2,12 +2,14 @@ import { Component, DestroyRef, OnDestroy, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormArray, FormBuilder, FormControl, FormGroup, FormsModule, Validators } from '@angular/forms';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { isEqual } from 'lodash';
 import { BehaviorSubject, combineLatest } from 'rxjs';
 import { getAssociationsByType, tryDeleteAssociation, tryUpsertAssociation } from 'src/app/api/server/actions/assiciation-actions';
 import { getAllSchools } from 'src/app/api/server/actions/school-actions';
+import { getAllUsersByStatus, getUsersBySchool } from 'src/app/api/server/actions/user-status-actions';
 import { Association, AssociationType, getAssociationTypeKey } from 'src/app/api/server/types/association';
 import { School } from 'src/app/api/server/types/school';
-import { GenericUser } from 'src/app/api/server/types/user';
+import { DisplayedUser, GenericUser, User } from 'src/app/api/server/types/user';
 import { ConfirmationPopupComponent, ConfirmationResult } from 'src/app/components/ui/confirmation-popup/confirmation-popup.component';
 import { EntityGroup } from 'src/app/components/ui/list-view/list-view.component';
 import { NotificationsService } from 'src/app/services/notifications.service';
@@ -18,6 +20,12 @@ import { setFormArray } from 'src/app/utils/form-utils';
 interface AssociationForm {
   name: FormControl<string>;
   associatedSchools: FormArray<FormControl<string>>;
+  associatedUsers: FormArray<FormControl<string>>;
+}
+
+interface DisplayedAssociationInfo {
+  associatedSchools: School[];
+  associatedUsers: DisplayedUser[];
 }
 
 @Component({
@@ -32,9 +40,15 @@ export class AssociationManagementComponent implements OnInit, OnDestroy {
 
   private schoolId?: string;
   allSchools: School[] = [];
+  allUsers: DisplayedUser[] = [];
+  allSchoolUsers: DisplayedUser[] = [];
   private schoolAssociations = new BehaviorSubject<Association[]>([]);
   private schoolSubjects = new BehaviorSubject<Association[]>([]);
   selectedAssociationId?: string;
+  selectedAssociationInfo: DisplayedAssociationInfo = {
+    associatedSchools: [],
+    associatedUsers: [],
+  };
   associationForm: FormGroup<AssociationForm> = this.createAssociationForm();
 
   associationGroups: EntityGroup<Association>[] = [];
@@ -43,12 +57,7 @@ export class AssociationManagementComponent implements OnInit, OnDestroy {
 
   readonly associationDataMapper = (association: Association) => association.name;
   readonly associationTrackBy = (association?: Association) => association?.id ?? `Association doesn't exist`;
-  readonly idToSchoolMapper = (schoolIds: string[]): string[] => {
-    return this.allSchools
-      .filter((school) => schoolIds.includes(school.id))
-      .map((school) => school.name);
-  };
-  readonly joinStrings = (list: string[]): string => list.join(', ');
+  private readonly userToNameMapper = (user: GenericUser): string => `${user.info.firstName} ${user.info.lastName}(${user.govId})`;
 
   constructor(
     private readonly destroyRef: DestroyRef,
@@ -62,8 +71,10 @@ export class AssociationManagementComponent implements OnInit, OnDestroy {
   async ngOnInit(): Promise<void> {
     this.isLoading = true;
 
+    // TODO: add a selection screen
     this.schoolId = "67178a86f7ae796d39447ae6" //?? this.authQuery.getValue()?.associatedSchools?.[0];
     await this.initSchools();
+    await this.initUsers();
 
     this.pollNormalAssociations();
     this.pollSubjects();
@@ -84,13 +95,29 @@ export class AssociationManagementComponent implements OnInit, OnDestroy {
     }
   }
 
+  private async initUsers(): Promise<void> {
+    try {
+      this.allUsers = (await getAllUsersByStatus(this.authQuery.getUserId()!, true))
+        .map(user => ({
+          ...user,
+          display: this.userToNameMapper(user)
+        }) as DisplayedUser);
+    } catch (error) {
+      console.error(`Error getting users - `, error);
+      this.notificationService.error(`שגיאה בשליפת המורים בבית הספר`);
+    }
+  }
+
   private createAssociationForm(association?: Association): FormGroup<AssociationForm> {
     const associatedSchools = association?.associatedSchools?.filter(Boolean) ?? [];
     const associatedSchoolControls = associatedSchools.map(schoolId => this.formBuilder.control(schoolId, { nonNullable: true }));
+    const associatedUsers = association?.associatedUsers?.filter(Boolean) ?? [];
+    const associatedUserControls = associatedUsers.map(userId => this.formBuilder.control(userId, { nonNullable: true }));
 
     return this.formBuilder.group<AssociationForm>({
       name: this.formBuilder.control<string>(association?.name || '', { nonNullable: true, validators: [Validators.required] }),
       associatedSchools: this.formBuilder.array(associatedSchoolControls, { validators: [Validators.required, Validators.minLength(1)] }),
+      associatedUsers: this.formBuilder.array(associatedUserControls, { validators: [Validators.required] }),
     });
   }
 
@@ -102,8 +129,8 @@ export class AssociationManagementComponent implements OnInit, OnDestroy {
     return associationId ? this.getAllAssociations().find(({ id }) => associationId === id) : undefined;
   }
 
-  getAssociationSchools(association?: Association): School[] {
-    if (!association || !this.allSchools) {
+  private getAssociationSchools(association?: Association): School[] {
+    if (!association || !this.allSchools?.length) {
       return [];
     }
 
@@ -112,9 +139,26 @@ export class AssociationManagementComponent implements OnInit, OnDestroy {
       .filter(Boolean) as School[]; // I hate the fact that for filter(Boolean) it thinks there could still be an undefined school in the array
   }
 
+  private getAssociationUsers(association?: Association): DisplayedUser[] {
+    if (!association || !this.allSchoolUsers?.length) {
+      return [];
+    }
+
+    return association.associatedUsers
+      .map(userId => this.allUsers.find(user => user.id === userId))
+      .filter(Boolean) as DisplayedUser[]; // I hate the fact that for filter(Boolean) it thinks there could still be an undefined user in the array
+  }
+
   selectAssociation(associationId?: string): void {
     this.selectedAssociationId = associationId;
-    this.associationForm = this.createAssociationForm(this.getAssociationById(associationId));
+    const association = this.getAssociationById(associationId);
+    this.allSchoolUsers = this.allUsers.filter(
+      user => association?.associatedSchools.some(schoolId => user.associatedSchools.includes(schoolId))
+    );
+    this.selectedAssociationInfo.associatedSchools = this.getAssociationSchools(association);
+    this.selectedAssociationInfo.associatedUsers = this.getAssociationUsers(association);
+
+    this.associationForm = this.createAssociationForm(association);
   }
 
   private get isFirstLoad(): boolean {
@@ -176,10 +220,14 @@ export class AssociationManagementComponent implements OnInit, OnDestroy {
     normalAssociations: Association[],
     subjects: Association[]
   ): void {
-    this.associationGroups = [
+    const newAssociationLists = [
       { title: 'שיוכים', entities: normalAssociations },
       { title: 'נושאים', entities: subjects },
     ];
+
+    if (!isEqual(newAssociationLists, this.associationGroups)) {
+      this.associationGroups = newAssociationLists;
+    }
   }
 
   private async didConfirmAction(popupPrompt: string): Promise<boolean> {
@@ -206,6 +254,7 @@ export class AssociationManagementComponent implements OnInit, OnDestroy {
       id: this.selectedAssociationId,
       name: this.associationForm.value.name!,
       associatedSchools: this.associationForm.value.associatedSchools!,
+      associatedUsers: this.associationForm.value.associatedUsers ?? [],
       // We turn it into a string that would't be a real AssociationType but thankfully in typescript types are suggestions
       // And the value we're turning it into is really a valid value when it comes to the server
       type: getAssociationTypeKey(type) as AssociationType,
@@ -219,6 +268,11 @@ export class AssociationManagementComponent implements OnInit, OnDestroy {
   setAssociatedSchools(associatedSchools: School[]): void {
     const associatedSchoolIds = associatedSchools.map(({ id }) => id);
     setFormArray(this.associationForm.controls.associatedSchools, associatedSchoolIds);
+  }
+
+  setAssociatedUsers(associatedUsers: DisplayedUser[]): void {
+    const associatedUserIds = associatedUsers.map(({ id }) => id);
+    setFormArray(this.associationForm.controls.associatedUsers, associatedUserIds);
   }
 
   async onDelete(association: Association): Promise<void> {
@@ -254,6 +308,7 @@ export class AssociationManagementComponent implements OnInit, OnDestroy {
     this.isLoading = false;
   }
 
+  // TODO: need to actually add a button to create an association
   private async upsertAssociation(association: Association): Promise<void> {
     const actionName = `${association.id ? 'עדכון' : 'יצירת'} ${association.type}`;
 
@@ -262,9 +317,9 @@ export class AssociationManagementComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // TODO: make saving work cause WTF
     if (await tryUpsertAssociation(this.authQuery.getUserId()!, this.serializeForm(association.type))) {
       this.popupService.success(`פעולת ${actionName} הסתיימה בהצלחה`);
+      this.selectAssociation(undefined);
     } else {
       this.popupService.error(`שגיאה ב${actionName}`);
     }

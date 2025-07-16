@@ -13,14 +13,20 @@
     <ng-container [ngSwitch]="selectedAssociation.type">
         <div *ngSwitchCase="AssociationType.Subject" class="associated-schools">
             <div class="title-container"><div class="title">בתי ספר מקושרים:</div><p class="requirement">(לפחות אחד)</p></div>
-            <search [entities]="allSchools" displayField="name" [initialValues]="selectedAssociation | func: getAssociationSchools.bind(this)"
-            [isMultiple]="true" (onEntitySelected)="setAssociatedSchools($event)" [markValidity]="false"></search>
+            <search [entities]="allSchools" displayField="name" [initialValues]="selectedAssociationInfo.associatedSchools"
+            [isMultiple]="true" [allowReinitialization]="true" (onEntitySelected)="setAssociatedSchools($event)" [markValidity]="false"></search>
         </div>
         <div *ngIf="selectedAssociation.type === AssociationType.Normal" class="associated-schools">
             <div class="title">בית ספר מקושר:</div>
-            <div type="text" class="value" readonly>{{ selectedAssociation.associatedSchools[0] }}</div>
+            <div type="text" class="value" readonly>{{ selectedAssociationInfo.associatedSchools[0]?.name }}</div>
         </div>
     </ng-container>
+
+    <div class="associated-users">
+        <div class="title">משתמשים מקושרים:</div>
+        <search [entities]="allSchoolUsers" displayField="display" [initialValues]="selectedAssociationInfo.associatedUsers"
+        [isMultiple]="true" [allowReinitialization]="true" (onEntitySelected)="setAssociatedUsers($event)" [markValidity]="false"></search>
+    </div>
 
     <div [ngSwitch]="selectedAssociation.type" class="actions">
         <button class="delete-btn" (click)="onDelete(selectedAssociation)">מחיקה</button>

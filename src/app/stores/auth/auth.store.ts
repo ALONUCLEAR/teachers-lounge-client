@@ -17,7 +17,6 @@ export type AuthState = Omit<User, 'password' | 'email'>;
     },
     activityStatus: ActivityStatus.Pending,
     associatedSchools: [],
-    associations: [],
     preferences: {}
   };
 }

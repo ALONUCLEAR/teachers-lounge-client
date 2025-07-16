@@ -8,6 +8,7 @@ export interface Association {
   name: string;
   type: AssociationType;
   associatedSchools: string[];
+  associatedUsers: string[];
 }
 
 export const getAssociationTypeKey = (associationType?: AssociationType): keyof AssociationType | undefined => {
