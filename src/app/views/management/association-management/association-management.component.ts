@@ -1,29 +1,22 @@
 import { Component, DestroyRef, OnDestroy, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { FormArray, FormBuilder, FormControl, FormGroup, FormsModule, Validators } from '@angular/forms';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { FormGroup } from '@angular/forms';
 import { isEqual } from 'lodash';
 import { BehaviorSubject, combineLatest } from 'rxjs';
-import { getAssociationsByType, tryDeleteAssociation, tryUpsertAssociation } from 'src/app/api/server/actions/assiciation-actions';
+import { getAssociationsByType } from 'src/app/api/server/actions/association-actions';
 import { getAllSchools } from 'src/app/api/server/actions/school-actions';
-import { getAllUsersByStatus, getUsersBySchool } from 'src/app/api/server/actions/user-status-actions';
-import { Association, AssociationType, getAssociationTypeKey } from 'src/app/api/server/types/association';
+import { getAllUsersByStatus } from 'src/app/api/server/actions/user-status-actions';
+import { Association, AssociationType } from 'src/app/api/server/types/association';
 import { School } from 'src/app/api/server/types/school';
-import { DisplayedUser, GenericUser, User } from 'src/app/api/server/types/user';
-import { ConfirmationPopupComponent, ConfirmationResult } from 'src/app/components/ui/confirmation-popup/confirmation-popup.component';
+import { DisplayedUser, GenericUser } from 'src/app/api/server/types/user';
 import { EntityGroup } from 'src/app/components/ui/list-view/list-view.component';
 import { NotificationsService } from 'src/app/services/notifications.service';
-import { PopupService } from 'src/app/services/popup.service';
 import { AuthQuery } from 'src/app/stores/auth/auth.query';
 import { setFormArray } from 'src/app/utils/form-utils';
+import { SchoolSelectionService } from '../../school-selection/school-selection.service';
+import { AssociationForm, AssociationManagementService } from './association-management.service';
 
-interface AssociationForm {
-  name: FormControl<string>;
-  associatedSchools: FormArray<FormControl<string>>;
-  associatedUsers: FormArray<FormControl<string>>;
-}
-
-interface DisplayedAssociationInfo {
+export interface DisplayedAssociationInfo {
   associatedSchools: School[];
   associatedUsers: DisplayedUser[];
 }
@@ -39,6 +32,7 @@ export class AssociationManagementComponent implements OnInit, OnDestroy {
   private intervals: number[] = [];
 
   private schoolId?: string;
+  selectedSchoolName: string = '';
   allSchools: School[] = [];
   allUsers: DisplayedUser[] = [];
   allSchoolUsers: DisplayedUser[] = [];
@@ -49,11 +43,12 @@ export class AssociationManagementComponent implements OnInit, OnDestroy {
     associatedSchools: [],
     associatedUsers: [],
   };
-  associationForm: FormGroup<AssociationForm> = this.createAssociationForm();
+  associationForm: FormGroup<AssociationForm> = this.associationManagementService.createFilledAssociationForm();
 
   associationGroups: EntityGroup<Association>[] = [];
   readonly AssociationType = AssociationType;
   isLoading = false;
+  readonly pageName = 'ניהול שיוכים ונושאים';
 
   readonly associationDataMapper = (association: Association) => association.name;
   readonly associationTrackBy = (association?: Association) => association?.id ?? `Association doesn't exist`;
@@ -61,19 +56,24 @@ export class AssociationManagementComponent implements OnInit, OnDestroy {
 
   constructor(
     private readonly destroyRef: DestroyRef,
-    private readonly modalService: NgbModal,
     private readonly notificationService: NotificationsService,
-    private readonly popupService: PopupService,
     private readonly authQuery: AuthQuery,
-    private readonly formBuilder: FormBuilder,
-  ) {}
+    private readonly associationManagementService: AssociationManagementService,
+    private readonly schoolSelectionService: SchoolSelectionService,
+  ) { }
 
   async ngOnInit(): Promise<void> {
     this.isLoading = true;
 
-    // TODO: add a selection screen
-    this.schoolId = "67178a86f7ae796d39447ae6" //?? this.authQuery.getValue()?.associatedSchools?.[0];
+    this.schoolId = this.authQuery.getSelectedSchoolId();
+
+    if (!this.schoolId) {
+      this.schoolSelectionService.startSchoolSelection(this.pageName);
+      return;
+    }
+
     await this.initSchools();
+    this.selectedSchoolName = this.allSchools.find(school => school.id === this.schoolId)?.name ?? '';
     await this.initUsers();
 
     this.pollNormalAssociations();
@@ -106,19 +106,6 @@ export class AssociationManagementComponent implements OnInit, OnDestroy {
       console.error(`Error getting users - `, error);
       this.notificationService.error(`שגיאה בשליפת המורים בבית הספר`);
     }
-  }
-
-  private createAssociationForm(association?: Association): FormGroup<AssociationForm> {
-    const associatedSchools = association?.associatedSchools?.filter(Boolean) ?? [];
-    const associatedSchoolControls = associatedSchools.map(schoolId => this.formBuilder.control(schoolId, { nonNullable: true }));
-    const associatedUsers = association?.associatedUsers?.filter(Boolean) ?? [];
-    const associatedUserControls = associatedUsers.map(userId => this.formBuilder.control(userId, { nonNullable: true }));
-
-    return this.formBuilder.group<AssociationForm>({
-      name: this.formBuilder.control<string>(association?.name || '', { nonNullable: true, validators: [Validators.required] }),
-      associatedSchools: this.formBuilder.array(associatedSchoolControls, { validators: [Validators.required, Validators.minLength(1)] }),
-      associatedUsers: this.formBuilder.array(associatedUserControls, { validators: [Validators.required] }),
-    });
   }
 
   private getAllAssociations(): Association[] {
@@ -158,7 +145,7 @@ export class AssociationManagementComponent implements OnInit, OnDestroy {
     this.selectedAssociationInfo.associatedSchools = this.getAssociationSchools(association);
     this.selectedAssociationInfo.associatedUsers = this.getAssociationUsers(association);
 
-    this.associationForm = this.createAssociationForm(association);
+    this.associationForm = this.associationManagementService.createFilledAssociationForm(association);
   }
 
   private get isFirstLoad(): boolean {
@@ -230,36 +217,6 @@ export class AssociationManagementComponent implements OnInit, OnDestroy {
     }
   }
 
-  private async didConfirmAction(popupPrompt: string): Promise<boolean> {
-    const modalRef = this.modalService.open(ConfirmationPopupComponent);
-    const componentInstance: ConfirmationPopupComponent = modalRef.componentInstance;
-    componentInstance.body = popupPrompt;
-    let result = ConfirmationResult.CANCEL;
-
-    try {
-      result = await modalRef.result;
-    } catch {
-      // user clicked outside the modal to close
-    }
-
-    return result === ConfirmationResult.OK;
-  }
-
-  private getTypename(association: Association): string {
-    return association.type === AssociationType.Subject ? 'נושא' : 'שיוך';
-  }
-
-  private serializeForm(type: AssociationType): Association {
-    return {
-      id: this.selectedAssociationId,
-      name: this.associationForm.value.name!,
-      associatedSchools: this.associationForm.value.associatedSchools!,
-      associatedUsers: this.associationForm.value.associatedUsers ?? [],
-      // We turn it into a string that would't be a real AssociationType but thankfully in typescript types are suggestions
-      // And the value we're turning it into is really a valid value when it comes to the server
-      type: getAssociationTypeKey(type) as AssociationType,
-    };
-  }
 
   setAssociationName(associationName: string): void {
     this.associationForm.controls.name.setValue(associationName);
@@ -276,52 +233,35 @@ export class AssociationManagementComponent implements OnInit, OnDestroy {
   }
 
   async onDelete(association: Association): Promise<void> {
+    if (await this.associationManagementService.deleteAssociation(association)) {
+      this.selectAssociation(undefined);
+    }
+  }
+
+  async onUpdate(association: Association): Promise<void> {
     this.isLoading = true;
-    await this.deleteAssociation(association);
+
+    const oldAssociationName = this.getAssociationById(association.id)?.name;
+
+    if (await this.associationManagementService.upsertAssociation(association, this.associationForm, this.schoolId!, oldAssociationName)) {
+      this.selectAssociation(undefined);
+    }
+
     this.isLoading = false;
   }
 
-  private async deleteAssociation(association: Association): Promise<void> {
-    if (!association?.id) {
-      return;
-    }
+  async createAssociation(groupTitle: string): Promise<void> {
+    const type = groupTitle === this.associationGroups[0].title ? AssociationType.Normal : AssociationType.Subject;
 
-    const confirmationPrompt = `לחיצה על אישור תמחק את ה${this.getTypename(association)}`;
+    const didCreationSucceed = await this.associationManagementService.createAssociation(
+      this.schoolId!,
+      this.allSchools,
+      this.allUsers,
+      type
+    );
 
-    if (!this.didConfirmAction(confirmationPrompt)) {
-      return;
-    }
-
-    const actionName = `מחיקת ה${this.getTypename(association)}`;
-
-    if (await tryDeleteAssociation(this.authQuery.getUserId()!, association.id)) {
-      this.popupService.success(`${actionName} הושלמה בהצלחה`);
+    if (didCreationSucceed) {
       this.selectAssociation(undefined);
-    } else {
-      this.popupService.error(`${actionName} נכשלה. אנא נסו שוב במועד מאוחר יותר.`);
-    }
-  }
-
-  async onUpsert(association: Association): Promise<void> {
-    this.isLoading = true;
-    await this.upsertAssociation(association);
-    this.isLoading = false;
-  }
-
-  // TODO: need to actually add a button to create an association
-  private async upsertAssociation(association: Association): Promise<void> {
-    const actionName = `${association.id ? 'עדכון' : 'יצירת'} ${association.type}`;
-
-    if (!this.associationForm.valid) {
-      this.popupService.error(`שדות לא תקינים`, { title: `נסיון ${actionName} נכשל` });
-      return;
-    }
-
-    if (await tryUpsertAssociation(this.authQuery.getUserId()!, this.serializeForm(association.type))) {
-      this.popupService.success(`פעולת ${actionName} הסתיימה בהצלחה`);
-      this.selectAssociation(undefined);
-    } else {
-      this.popupService.error(`שגיאה ב${actionName}`);
     }
   }
 

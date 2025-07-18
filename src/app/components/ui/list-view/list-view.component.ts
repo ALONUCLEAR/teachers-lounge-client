@@ -23,6 +23,7 @@ export class ListViewComponent<Entity extends Record<string, any>> implements On
   @Input() entityTrackBy: (entity?: Entity) => string = (entity?: Entity) => JSON.stringify(entity);
   @Input() selectedEntityId?: string;
   @Input() showCountInTitle = true;
+  @Input() creationFunction?: (groupTitle: string) => Promise<void>;
   @Output() onEntitySelected = new EventEmitter<string | undefined>();
 
   selectedEntity?: Entity;
@@ -65,6 +66,17 @@ export class ListViewComponent<Entity extends Record<string, any>> implements On
 
   selectEntity(entity?: Entity): void {
     this.onEntitySelected.emit(this.entityTrackBy(entity));
+  }
+
+  async createEntity(group: EntityGroup<Entity>, click: Event): Promise<void> {
+    click.stopPropagation();
+
+    if (!this.creationFunction) {
+      console.error(`Add button accessible even without function!`);
+      return;
+    }
+
+    await this.creationFunction(group.title);
   }
 
   trackByGroup(_: number, group: EntityGroup<Entity>): string {

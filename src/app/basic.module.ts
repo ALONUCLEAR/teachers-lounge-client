@@ -13,6 +13,7 @@ import { PasswordInputComponent } from "./components/ui/password-input/password-
 import { PopupService } from "./services/popup.service";
 import { PromptComponent } from "./components/ui/prompt/prompt.component";
 import { LoaderComponent } from "./components/ui/loader/loader.component";
+import { SelectedSchoolInfoComponent } from "./components/selected-school-info/selected-school-info.component";
 import { ListViewComponent } from "./components/ui/list-view/list-view.component";
 import { FuncPipe } from "./pipes/func.pipe";
 
@@ -30,7 +31,8 @@ const standaloneComponents = [
     ListViewComponent,
     MyTableComponent,
     PasswordInputComponent,
-    LoaderComponent
+    LoaderComponent,
+    SelectedSchoolInfoComponent,
 ];
 
 const services = [NotificationsService, PopupService];

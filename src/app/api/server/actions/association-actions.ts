@@ -37,6 +37,22 @@ export const getAssociationsByType = async (requestingUserId: string, associatio
     return response.data.map(associationMapper);
 }
 
+export const isAssociationValid = async (requestingUserId: string, association: Association): Promise<boolean> => {
+    try {
+        const response = await axios.post(`${associationsUrl}/is-valid`, association, { headers: { userId: requestingUserId } });
+
+        if (response.status != HttpStatusCode.Ok) {
+            throw new Error(`the response status was ${response.status}`);
+        }
+
+        return response.data;
+    } catch (error: any) {
+        console.error(`Request to validate association failed: ${error.message}`, error);
+
+        return false;
+    }
+}
+
 export const tryUpsertAssociation = async (requestingUserId: string, association: Association): Promise<boolean> => {
     try {
         const response = await axios.post(`${associationsUrl}`, association, { headers: { userId: requestingUserId } });

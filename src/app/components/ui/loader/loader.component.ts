@@ -15,6 +15,7 @@ export enum LoaderChoice {
 })
 export class LoaderComponent {
   @Input() choice = LoaderChoice.Whiteboard;
+  @Input() margin?: string;
 
   public readonly LoaderChoice = LoaderChoice;
 }

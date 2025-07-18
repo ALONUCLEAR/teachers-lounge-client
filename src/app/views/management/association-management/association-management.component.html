@@ -1,13 +1,16 @@
 <loader *ngIf="isLoading"></loader>
-<list-view *ngIf="!isLoading"
-    [data]="associationGroups" [displayMapper]="associationDataMapper" [selectedEntityId]="selectedAssociationId"
-    [entityTrackBy]="associationTrackBy" [template]="selectedAssociationTemplate"
-    (onEntitySelected)="selectAssociation($event)"></list-view>
+<ng-container *ngIf="!isLoading">
+    <selected-school-info [selectedSchoolName]="selectedSchoolName" [pageName]="pageName"></selected-school-info>
+    <list-view
+        [data]="associationGroups" [displayMapper]="associationDataMapper" [selectedEntityId]="selectedAssociationId"
+        [entityTrackBy]="associationTrackBy" [template]="selectedAssociationTemplate"
+        (onEntitySelected)="selectAssociation($event)" [creationFunction]="createAssociation.bind(this)"></list-view>
+</ng-container>
 
 <ng-template #selectedAssociationTemplate let-selectedAssociation="selectedEntity">
     <div class="name">
         <div class="title">שם:</div>
-        <input type="text" class="value" [ngModel]="selectedAssociation.name" (ngModelChange)="setAssociationName($event)"/>
+        <input type="text" class="value" [ngModel]="associationForm.value.name" (ngModelChange)="setAssociationName($event)"/>
     </div>
     
     <ng-container [ngSwitch]="selectedAssociation.type">
@@ -30,6 +33,6 @@
 
     <div [ngSwitch]="selectedAssociation.type" class="actions">
         <button class="delete-btn" (click)="onDelete(selectedAssociation)">מחיקה</button>
-        <button class="save-btn" (click)="onUpsert(selectedAssociation)">שמירה</button>
+        <button class="save-btn" (click)="onUpdate(selectedAssociation)">שמירה</button>
     </div>
 </ng-template>

@@ -121,7 +121,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
         throw new Error("Inactive user login attempt");
       }
 
-      this.authStore.update(user);
+      this.authStore.updateUser({ ...user, role: user.role! });
 
       // TODO: move to forum page when exists
       this.router.navigate(['/school-management']);

@@ -11,4 +11,8 @@ export class AuthQuery extends Query<AuthState> {
   public getUserId(): string | undefined {
     return this.getValue()?.id;
   }
+
+  public getSelectedSchoolId(): string | undefined {
+    return this.getValue()?.selectedSchoolId ?? sessionStorage.getItem('selectedSchoolId') ?? undefined;
+  }
 }

@@ -1,0 +1,5 @@
+<ng-container *ngIf="hasOtherOptions">
+    <i class="fa-solid fa-school"></i>
+    <div class="school-name"> {{ selectedSchoolName }} </div>
+    <i class="change-school fa-solid fa-right-from-bracket" (click)="changeSchool()"></i>
+</ng-container>

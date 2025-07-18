@@ -8,6 +8,7 @@ import { LoginComponent } from './views/no-user/login/login.component';
 import { UserRoles } from './api/server/types/permissions';
 import { AuthGuard } from './auth.guard';
 import { AssociationManagementComponent } from './views/management/association-management/association-management.component';
+import { SchoolSelectionComponent } from './views/school-selection/school-selection.component';
 
 const makeRouteGuarded = (route: Route, requiredRole?: UserRoles): Route => {
   return {
@@ -28,7 +29,9 @@ const AdminRoutes: Routes = [
   { path: 'association-management', pathMatch: 'full', component: AssociationManagementComponent },
 ].map(route => makeRouteGuarded(route as Route, UserRoles.Admin));
 
-const BaseRoutes: Routes = [].map(route => makeRouteGuarded(route as Route, UserRoles.Base));
+const BaseRoutes: Routes = [
+  { path: 'school-selection', pathMatch: 'full', component: SchoolSelectionComponent }
+].map(route => makeRouteGuarded(route as Route, UserRoles.Base));
 
 const NoUserRoutes: Routes = [
   { path: 'login', pathMatch: 'full', component: LoginComponent },

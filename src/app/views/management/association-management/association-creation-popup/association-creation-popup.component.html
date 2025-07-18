@@ -1,0 +1,53 @@
+<loader *ngIf="isLoading" [margin]="'10em'"></loader>
+<ng-container *ngIf="!isLoading">
+  <div class="modal-header">
+      <h4 class="modal-title" id="modal-title"> יצירת {{ selectedAssociationType }} חדש </h4>
+      <button
+          type="button"
+          class="btn-close"
+          aria-label="Close button"
+          aria-describedby="modal-title"
+          (click)="cancel()"
+      ></button>
+  </div>
+  <div class="modal-body">
+      <div class="form-group">
+        <label class="title">שם:</label>
+        <input type="text" [ngModel]="associationForm!.value.name" (ngModelChange)="setAssociationName($event)" class="value" />
+      </div>
+
+      <!-- additional Associated Schools (only if Subject) -->
+      <div *ngIf="selectedAssociationType === AssociationType.Subject" class="form-group associated-schools">
+        <div class="title-container">
+          <div class="title">בתי ספר מקושרים:</div>
+        </div>
+        <search
+          [entities]="allSchools"
+          displayField="name"
+          [initialValues]="newAssociationInfo.associatedSchools"
+          [isMultiple]="true"
+          [allowReinitialization]="true"
+          (onEntitySelected)="setAssociatedSchools($event)"
+          [markValidity]="false"
+        ></search>
+      </div>
+
+      <!-- Associated Users -->
+      <div class="form-group associated-users">
+        <div class="title">משתמשים מקושרים:</div>
+        <search
+          [entities]="allSchoolUsers"
+          displayField="display"
+          [initialValues]="newAssociationInfo.associatedUsers"
+          [isMultiple]="true"
+          [allowReinitialization]="true"
+          (onEntitySelected)="setAssociatedUsers($event)"
+          [markValidity]="false"
+        ></search>
+      </div>
+  </div>
+  <div class="modal-footer">
+      <button type="button" #cancelButton class="btn btn-outline-secondary" (click)="cancel()">ביטול</button>
+      <button type="button" #okButton class="btn btn-outline-primary" (click)="save()">שמירה</button>
+  </div>
+</ng-container>

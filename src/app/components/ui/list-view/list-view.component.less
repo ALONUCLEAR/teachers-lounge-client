@@ -50,19 +50,53 @@
 
     .lists-container {
       direction: rtl;
+      margin-right: 10dvw;
 
       --bs-accordion-active-color: black;
       --bs-accordion-active-bg: transparent;
       --bs-accordion-btn-focus-box-shadow: transparent;
 
       .group-header {
+        display: flex;
         position: sticky;
         top: 1.4em;
+        align-items: center;
+        z-index: 1;
 
-        .group-title {
-          font-weight: bold;
-          margin: 0;
-          font-size: 1em;
+        .group-header-content {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          width: 100%;
+          padding-left: 1em;
+          padding-right: 1em;
+
+          .group-title {
+            font-weight: bold;
+            margin: 0;
+            font-size: 1em;
+            flex-grow: 1;
+            text-align: right;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+
+          .add-btn {
+            background-color: #007bff;
+            border: none;
+            color: white;
+            padding: 0.3em 0.9em;
+            border-radius: 0.3em;
+            cursor: pointer;
+            margin: 0 1em;
+            flex-shrink: 0;
+            transition: background-color 0.2s ease;
+
+            &:hover {
+              background-color: #0056b3;
+            }
+          }
         }
       }
 

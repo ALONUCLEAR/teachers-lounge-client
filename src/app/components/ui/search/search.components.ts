@@ -45,8 +45,8 @@ export class SearchComponent<T> implements OnInit, OnChanges, AfterViewInit {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['entities'] || changes['initialValues']) {
       if (this.displayField) {
-        const selectedEntities = changes['initialValues']?.currentValue && this.allowReinitialization
-          ? this.initialValues!
+        const selectedEntities = this.initialValues && this.allowReinitialization
+          ? this.initialValues
           : this.selectedEntities;
         this.selectedEntities = selectedEntities.filter(selectedEntity =>
           this.entities.some(entity => entity[this.displayField!] === selectedEntity[this.displayField!])
