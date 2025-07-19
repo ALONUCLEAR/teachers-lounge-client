@@ -1,6 +1,6 @@
 <loader *ngIf="isLoading"></loader>
 <ng-container *ngIf="!isLoading">
-    <selected-school-info [selectedSchoolName]="selectedSchoolName" [pageName]="pageName"></selected-school-info>
+    <selected-school-info [selectedSchoolName]="selectedSchoolName" [pageName]="PAGE_NAME"></selected-school-info>
     <list-view
         [data]="associationGroups" [displayMapper]="associationDataMapper" [selectedEntityId]="selectedAssociationId"
         [entityTrackBy]="associationTrackBy" [template]="selectedAssociationTemplate"

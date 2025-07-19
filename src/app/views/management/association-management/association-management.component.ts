@@ -48,7 +48,7 @@ export class AssociationManagementComponent implements OnInit, OnDestroy {
   associationGroups: EntityGroup<Association>[] = [];
   readonly AssociationType = AssociationType;
   isLoading = false;
-  readonly pageName = 'ניהול שיוכים ונושאים';
+  readonly PAGE_NAME = 'ניהול שיוכים ונושאים';
 
   readonly associationDataMapper = (association: Association) => association.name;
   readonly associationTrackBy = (association?: Association) => association?.id ?? `Association doesn't exist`;
@@ -68,7 +68,7 @@ export class AssociationManagementComponent implements OnInit, OnDestroy {
     this.schoolId = this.authQuery.getSelectedSchoolId();
 
     if (!this.schoolId) {
-      this.schoolSelectionService.startSchoolSelection(this.pageName);
+      this.schoolSelectionService.startSchoolSelection(this.PAGE_NAME);
       return;
     }
 
