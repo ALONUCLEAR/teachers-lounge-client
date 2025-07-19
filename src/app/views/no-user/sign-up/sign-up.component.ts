@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { trySendingCodeToUser } from 'src/app/api/server/actions/email-actions';
 import { getAllSchools } from 'src/app/api/server/actions/school-actions';
-import { trySendingUserRequest } from 'src/app/api/server/actions/user-status-actions';
+import { trySendingUserRequest } from 'src/app/api/server/actions/user-actions';
 import { getRoleKey, UserRoles } from 'src/app/api/server/types/permissions';
 import { School } from 'src/app/api/server/types/school';
 import { UserRequest } from 'src/app/api/server/types/user';

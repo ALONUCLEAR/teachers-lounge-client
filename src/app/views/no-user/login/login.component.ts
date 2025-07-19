@@ -1,15 +1,14 @@
 import { AfterViewInit, Component, DestroyRef, ElementRef, HostBinding, OnInit, ViewChild } from '@angular/core';
-import { FormBuilder, FormControl, FormControlOptions, FormGroup, ValidatorFn, Validators } from '@angular/forms';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { tryLogin } from 'src/app/api/server/actions/user-status-actions';
-import { PopupService } from 'src/app/services/popup.service';
-import { PASSWORD_PATTERN } from '../sign-up/sign-up.component';
-import { AuthStore } from 'src/app/stores/auth/auth.store';
-import { Router } from '@angular/router';
-import { ActivityStatus } from 'src/app/api/server/types/user';
-import { trySendingMailTo } from 'src/app/api/server/actions/email-actions';
-import { buffer, debounceTime, filter, fromEvent, map, throttleTime } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { FormBuilder, FormControl, FormControlOptions, FormGroup, ValidatorFn, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
+import { buffer, debounceTime, filter, fromEvent, map, throttleTime } from 'rxjs';
+import { trySendingMailTo } from 'src/app/api/server/actions/email-actions';
+import { tryLogin } from 'src/app/api/server/actions/user-actions';
+import { ActivityStatus } from 'src/app/api/server/types/user';
+import { PopupService } from 'src/app/services/popup.service';
+import { AuthStore } from 'src/app/stores/auth/auth.store';
+import { PASSWORD_PATTERN } from '../sign-up/sign-up.component';
 
 interface LoginForm {
   govId: FormControl<string>;

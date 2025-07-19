@@ -1,0 +1,14 @@
+<loader *ngIf="isLoading"></loader>
+<ng-container *ngIf="!isLoading">
+    <selected-school-info [pageName]="PAGE_NAME" [selectedSchoolName]="schoolName"></selected-school-info>
+    <my-table [fields]="fields" [entities]="filteredUsers" [filterTemplate]="userFilters" [allowEdit]="false"
+        [deleteIcon]="deleteIcon" [additionalActionInputs]="additionalActions"
+        (onAction)="handleAction($event)" (onFiltersCleared)="clearFilters()">
+    </my-table>
+</ng-container>
+
+<ng-template #userFilters>
+    <input [ngModel]="nameorGoveIdFilter" class="form-control filter" placeholder="שם מלא או תעודת זהות"
+        (ngModelChange)="changeNameOrGovIdFilter($event)" [maxlength]="255">
+    <drop-down [entities]="statuses" displayField="name" [defaultValue]="statuses[0]" [allowReset]="true" [resetVar]="resetVar" (onSelectionChanged)="changeActivityStatusFilter($event)"></drop-down>
+</ng-template>

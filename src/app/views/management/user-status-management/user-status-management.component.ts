@@ -5,7 +5,7 @@ import { HttpStatusCode } from 'axios';
 import { BehaviorSubject, combineLatest } from 'rxjs';
 import { trySendingMailTo } from 'src/app/api/server/actions/email-actions';
 import { getAllSchools } from 'src/app/api/server/actions/school-actions';
-import { createUserFromRequest, getAllUsersByStatus, getAllUserRequests, tryDeleteUserRequest, tryUnblockUser, tryBlockUser } from 'src/app/api/server/actions/user-status-actions';
+import { createUserFromRequest, getAllUsersByStatus, getAllUserRequests, tryDeleteUserRequest, tryUnblockUser, tryBlockUser } from 'src/app/api/server/actions/user-actions';
 import { MailInput } from 'src/app/api/server/types/email';
 import { School } from 'src/app/api/server/types/school';
 import { ActivityStatus, GenericUser } from 'src/app/api/server/types/user';

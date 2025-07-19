@@ -33,8 +33,8 @@ export const getAllUsersByStatus = async (requestingUserId: string, areActive: b
     return response.data.map(userRoleMapper);
 }
 
-export const getUsersBySchool = async (requestingUserId: string, schoolId: string): Promise<User[]> => {
-    const response = await axios.get(`${usersUrl}/from-school/${schoolId}`, { headers: { userId: requestingUserId } });
+export const getUsersBySchool = async (requestingUserId: string, schoolId: string, includePending = false): Promise<User[]> => {
+    const response = await axios.get(`${usersUrl}/from-school/${schoolId}?includePending=${includePending}`, { headers: { userId: requestingUserId } });
 
     if (response.status >= HttpStatusCode.BadRequest) {
         throw new Error(`Request to get all users from school ${schoolId} failed, returned with status ${response.status}`);
@@ -122,6 +122,38 @@ export const createUserFromRequest = async (requestingUserId: string, requestId:
         console.error(error);
 
         return HttpStatusCode.InternalServerError;
+    }
+}
+
+export const tryUnlinkUserFromSchool = async (requestingUserId: string, targetUserId: string, schoolId: string): Promise<boolean> => {
+    try {
+        const response = await axios.post(`${usersUrl}/${targetUserId}/unlink-school/${schoolId}`, undefined, { headers: { userId: requestingUserId } });
+
+        if (response.status >= HttpStatusCode.MultipleChoices) {
+            throw new Error(`Error unlinking user ${targetUserId} from school ${schoolId}, returned with status ${response.status}`);
+        }
+
+        return true;
+    } catch (error) {
+        console.error(error);
+
+        return false;
+    }
+}
+
+export const tryLinkUserToSchool = async (requestingUserId: string, targetUserIds: string[], schoolId: string): Promise<boolean> => {
+    try {
+        const response = await axios.post(`${usersUrl}/link-school/${schoolId}`, targetUserIds, { headers: { userId: requestingUserId } });
+
+        if (response.status >= HttpStatusCode.MultipleChoices) {
+            throw new Error(`Error linking users ${targetUserIds.join(", ")} to school ${schoolId}, returned with status ${response.status}`);
+        }
+
+        return true;
+    } catch (error) {
+        console.error(error);
+
+        return false;
     }
 }
 

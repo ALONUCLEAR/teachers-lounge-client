@@ -5,7 +5,7 @@ import { isEqual } from 'lodash';
 import { BehaviorSubject, combineLatest } from 'rxjs';
 import { getAssociationsByType } from 'src/app/api/server/actions/association-actions';
 import { getAllSchools } from 'src/app/api/server/actions/school-actions';
-import { getAllUsersByStatus } from 'src/app/api/server/actions/user-status-actions';
+import { getAllUsersByStatus } from 'src/app/api/server/actions/user-actions';
 import { Association, AssociationType } from 'src/app/api/server/types/association';
 import { School } from 'src/app/api/server/types/school';
 import { DisplayedUser, GenericUser } from 'src/app/api/server/types/user';

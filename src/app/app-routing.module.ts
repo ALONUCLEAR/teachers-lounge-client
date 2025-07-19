@@ -9,6 +9,7 @@ import { UserRoles } from './api/server/types/permissions';
 import { AuthGuard } from './auth.guard';
 import { AssociationManagementComponent } from './views/management/association-management/association-management.component';
 import { SchoolSelectionComponent } from './views/school-selection/school-selection.component';
+import { TeacherManagementComponent } from './views/management/teacher-management/teacher-management.component';
 
 const makeRouteGuarded = (route: Route, requiredRole?: UserRoles): Route => {
   return {
@@ -27,6 +28,7 @@ const SuperAdminRoutes: Routes = [
 
 const AdminRoutes: Routes = [
   { path: 'association-management', pathMatch: 'full', component: AssociationManagementComponent },
+  { path: 'teacher-management', pathMatch: 'full', component: TeacherManagementComponent },
 ].map(route => makeRouteGuarded(route as Route, UserRoles.Admin));
 
 const BaseRoutes: Routes = [

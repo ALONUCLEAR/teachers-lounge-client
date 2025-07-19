@@ -3,7 +3,7 @@ import { FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { trySendingCodeToUserByGovId } from 'src/app/api/server/actions/email-actions';
-import { trySendingUserRecoveryRequest } from 'src/app/api/server/actions/user-status-actions';
+import { trySendingUserRecoveryRequest } from 'src/app/api/server/actions/user-actions';
 import { PromptComponent } from 'src/app/components/ui/prompt/prompt.component';
 import { PopupService } from 'src/app/services/popup.service';
 

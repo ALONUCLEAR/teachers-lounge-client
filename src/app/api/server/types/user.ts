@@ -7,6 +7,21 @@ export enum ActivityStatus {
   Pending = "Pending"
 }
 
+export interface DisplayedStatus {
+  name: string;
+  value: ActivityStatus;
+}
+
+export const getHebrewwActivityStatus = (status: ActivityStatus): string => {
+  switch(status) {
+    case ActivityStatus.Active: return "פעיל";
+    case ActivityStatus.Pending: return "ממתין לאישור";
+    default: break;
+  }
+
+  return "חסום";
+}
+
 export interface BaseUser {
   id?: string;
   govId: string;

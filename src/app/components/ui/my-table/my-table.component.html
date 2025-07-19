@@ -24,7 +24,8 @@
                     <th *ngIf="field.title === 'מזהה'" scope="row" container="body" [ngbTooltip]="copiedEntities[index].id"> {{ entity['מזהה'] }} </th>
                     <td *ngIf="field.title !== 'מזהה'"> {{ entity[field.title] }} </td>
                 </ng-container>
-                <td class="action-button" (click)="editEntity(copiedEntities[index], index)"> <i class="fa-solid fa-pen-to-square"></i></td>
+                <td *ngIf="allowEdit" class="action-button" (click)="editEntity(copiedEntities[index], index)"> <i class="fa-solid fa-pen-to-square"></i></td>
+                <td *ngFor="let action of additionalActions" class="action-button" (click)="fireCustomAction(action, copiedEntities[index])"> <i [ngClass]="action.iconClasses"></i></td>
                 <ng-container [ngTemplateOutlet]="deleteBtn" [ngTemplateOutletContext]="{ entity: copiedEntities[index] }"></ng-container>
             </tr>
         </ng-container>
@@ -43,6 +44,6 @@
 
 <ng-template #deleteBtn let-entity="entity">
     <td class="action-button delete" (click)="onAction.emit({action: ActionType.DELETE, entity, editedEntity })">
-        <i class="fa-solid fa-trash"></i>
+        <i [ngClass]="deleteIconClasses"></i>
     </td>
 </ng-template>

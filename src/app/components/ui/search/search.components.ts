@@ -104,7 +104,12 @@ export class SearchComponent<T> implements OnInit, OnChanges, AfterViewInit {
   selectionChanged(selection: T | string): void {
     if (typeof selection === 'string') {
         this.setValidity(false);
-        this.onEntitySelected.emit([]);
+
+        // if multiple, we don't want it to affect the rest, but if not, we do want to know our one value is now null
+        // (eg if we use it in a filter, the filter should be empty)
+        if (!this.isMultiple) {
+          this.onEntitySelected.emit([]);
+        }
 
         return;
     }

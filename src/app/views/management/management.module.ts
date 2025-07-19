@@ -5,6 +5,8 @@ import { UserStatusManagementComponent } from './user-status-management/user-sta
 import { AssociationManagementComponent } from './association-management/association-management.component';
 import { AssociationCreationPopupComponent } from './association-management/association-creation-popup/association-creation-popup.component';
 import { AssociationManagementService } from './association-management/association-management.service';
+import { TeacherManagementComponent } from './teacher-management/teacher-management.component';
+import { SchoolLinkingPopupComponent } from './teacher-management/school-linking-popup/school-linking-popup.component';
 
 @NgModule({
   declarations: [
@@ -12,6 +14,8 @@ import { AssociationManagementService } from './association-management/associati
     UserStatusManagementComponent,
     AssociationManagementComponent,
     AssociationCreationPopupComponent,
+    TeacherManagementComponent,
+    SchoolLinkingPopupComponent,
   ],
   providers: [AssociationManagementService],
   imports: [BasicModule],
