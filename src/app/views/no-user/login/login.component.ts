@@ -135,7 +135,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
     try {
       const userId: string | undefined = await tryGettingUserIdByGovId(this.loginForm!.value["govId"]!);
 
-      userId ? this.router.navigate(["/forgot-password"], {queryParams: {userId}}) : this.popupService.warn("הנה הזן תז נכון");
+      userId ? this.router.navigate(["/forgot-password"], {queryParams: {userId}}) : this.popupService.warn("אנא הזן תז נכון");
     } catch (e) {
       this.popupService.warn("הנה הזן תז נכון");
       console.error(e);

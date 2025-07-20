@@ -6,7 +6,7 @@ import { PASSWORD_PATTERN } from '../sign-up/sign-up.component';
 import { PasswordInputComponent } from 'src/app/components/ui/password-input/password-input.component';
 import { PopupService } from 'src/app/services/popup.service';
 import { trySendingForgotPasswordRequest } from 'src/app/api/server/actions/user-status-actions';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-change-password',
@@ -25,10 +25,13 @@ export class ChangePasswordComponent implements AfterViewInit, OnInit {
     newPassword: string = "";
     userId: string = "";
 
-    constructor(private destroyRef: DestroyRef, private popupService: PopupService, private router: ActivatedRoute) {}
+    constructor(private destroyRef: DestroyRef, private popupService: PopupService, private route: ActivatedRoute, private router: Router) {}
 
     ngOnInit(): void {
-      this.router.queryParamMap.subscribe(params => this.userId = params.get("userId")!);
+      this.route.queryParamMap.pipe(takeUntilDestroyed()).subscribe(params => {
+        const userId = params.get("userId");
+        userId === null || userId === undefined ?  this.router.navigate(["/login"]) : this.userId = userId;
+      });
     }
 
     ngAfterViewInit(): void {
@@ -77,19 +80,15 @@ export class ChangePasswordComponent implements AfterViewInit, OnInit {
           console.error(e);
           this.isLoading = false;
         } 
+      } else {
+          this.popupService.warn("הנותים שהזנת אינם נכונים. אנא תעבור שוב ואז נסה שוב", {title: "בעיה בביצוע הפעולה"});
       }
 
       this.isLoading = false;
     }
 
     private validateSumbit(): boolean {
-      if (new RegExp(PASSWORD_PATTERN).test(this.newPassword) && this.repeatPasswordComponent!.isValid) {
-
-        return true;
-      }
-      
-      this.popupService.warn("הנותים שהזנת אינם נכונים. אנא תעבור שוב ואז נסה שוב", {title: "בעיה בביצוע הפעולה"});
-      return false;
+      return new RegExp(PASSWORD_PATTERN).test(this.newPassword) && this.repeatPasswordComponent!.isValid
     }
 
     private getImageStyleFromName(imageName: string): string {
