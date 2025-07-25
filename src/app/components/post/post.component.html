@@ -1,0 +1,13 @@
+<!--TODO: make this look nice-->
+<div class="card">
+    <div class="card-header">
+        {{post.title}}
+    </div>
+    <div class="card-body">
+        <pre>{{post.body}}</pre>
+    </div>
+    <div class="card-footer">
+        <!--TODO: style this(as well as the rest), add comment count, publishedAt, updatededAt, comment handling to show the most popular(has most children) comment-->
+        {{post.authorId}} | {{post.publishedAt | date : 'dd/MM/yyyy HH:mm' : undefined : 'en-IL' }} <i class="fa-regular fa-comment"></i>
+    </div>
+</div>

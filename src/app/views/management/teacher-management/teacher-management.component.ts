@@ -13,7 +13,7 @@ import { NotificationsService } from 'src/app/services/notifications.service';
 import { AuthQuery } from 'src/app/stores/auth/auth.query';
 import { SchoolSelectionService } from '../../school-selection/school-selection.service';
 import { createUserFromRequest, getAllUsersByStatus, getUsersBySchool, tryDeleteUserRequest, tryUnlinkUserFromSchool } from 'src/app/api/server/actions/user-actions';
-import { getAllSchools } from 'src/app/api/server/actions/school-actions';
+import { getAllSchools, getSchoolById } from 'src/app/api/server/actions/school-actions';
 import { PromptComponent } from 'src/app/components/ui/prompt/prompt.component';
 import { MailInput } from 'src/app/api/server/types/email';
 import { trySendingMailTo } from 'src/app/api/server/actions/email-actions';
@@ -87,14 +87,13 @@ export class TeacherManagementComponent implements OnInit, OnDestroy {
   async ngOnInit(): Promise<void> {
     this.isLoading = true;
 
-    this.schoolId = this.authQuery.getSelectedSchoolId();
+    this.schoolId = this.schoolSelectionService.getSelectedSchoolId(this.PAGE_NAME);
 
     if (!this.schoolId) {
-      this.schoolSelectionService.startSchoolSelection(this.PAGE_NAME);
       return;
     }
 
-    this.schoolName = (await getAllSchools()).find(school => school.id === this.schoolId)!.name;
+    this.schoolName = (await getSchoolById(this.schoolId))!.name;
 
     this.fetchUsers();
   }

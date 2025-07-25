@@ -14,6 +14,16 @@ export const getAllSchools = async (): Promise<School[]> => {
     return response.data;
 }
 
+export const getSchoolById = async (schoolId: string): Promise<School | undefined> => {
+    const reponse = await axios.get(`${schoolsUrl}/${schoolId}`);
+
+    if (reponse.status > HttpStatusCode.Ok) {
+        return;
+    }
+
+    return reponse.data;
+}
+
 export const tryUpsertSchool = async (userId: string, schoolToUpsert: School): Promise<boolean> => {
     try {
         const response = await axios.post(`${schoolsUrl}/upsert`, schoolToUpsert, { headers: { userId } });

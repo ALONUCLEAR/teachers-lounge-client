@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthStore } from '../../stores/auth/auth.store';
+import { AuthQuery } from 'src/app/stores/auth/auth.query';
 
 export interface Page {
   name: string;
@@ -16,6 +17,7 @@ export class SchoolSelectionService {
     constructor(
         private readonly router: Router,
         private readonly authStore: AuthStore,
+        private readonly authQuery: AuthQuery
     ) {}
 
     startSchoolSelection(pageName: string): void {
@@ -25,6 +27,17 @@ export class SchoolSelectionService {
             url: this.router.url
         });
         this.router.navigate(['/school-selection']);
+    }
+
+    getSelectedSchoolId(pageName: string): string {
+        const selectedSchoolId = this.authQuery.getSelectedSchoolId();
+
+        if (!selectedSchoolId) {
+            this.startSchoolSelection(pageName);
+            return "";
+        }
+
+        return selectedSchoolId;
     }
 
     setRedirectPage(page: Page): void {

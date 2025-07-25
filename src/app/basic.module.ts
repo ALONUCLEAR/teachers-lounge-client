@@ -3,7 +3,7 @@ import { NgModule } from "@angular/core";
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BrowserModule } from "@angular/platform-browser";
-import { NgbModule, NgbTooltipModule } from "@ng-bootstrap/ng-bootstrap";
+import { NgbModule, NgbNavModule, NgbTooltipModule } from "@ng-bootstrap/ng-bootstrap";
 import { DropDownComponent } from "./components/ui/drop-down/drop-down.component";
 import { SearchComponent } from "./components/ui/search/search.components";
 import { ConfirmationPopupComponent } from "./components/ui/confirmation-popup/confirmation-popup.component";
@@ -16,11 +16,12 @@ import { LoaderComponent } from "./components/ui/loader/loader.component";
 import { SelectedSchoolInfoComponent } from "./components/selected-school-info/selected-school-info.component";
 import { ListViewComponent } from "./components/ui/list-view/list-view.component";
 import { FuncPipe } from "./pipes/func.pipe";
+import { PostComponent } from "./components/post/post.component";
 
 const basicModules = [
     BrowserModule, CommonModule,
     FormsModule, ReactiveFormsModule,
-    NgbModule, NgbTooltipModule
+    NgbModule, NgbTooltipModule, NgbNavModule,
 ];
 
 const standaloneComponents = [
@@ -33,6 +34,7 @@ const standaloneComponents = [
     PasswordInputComponent,
     LoaderComponent,
     SelectedSchoolInfoComponent,
+    PostComponent,
 ];
 
 const services = [NotificationsService, PopupService];

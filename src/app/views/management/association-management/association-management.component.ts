@@ -65,10 +65,9 @@ export class AssociationManagementComponent implements OnInit, OnDestroy {
   async ngOnInit(): Promise<void> {
     this.isLoading = true;
 
-    this.schoolId = this.authQuery.getSelectedSchoolId();
+    this.schoolId = this.schoolSelectionService.getSelectedSchoolId(this.PAGE_NAME);
 
     if (!this.schoolId) {
-      this.schoolSelectionService.startSchoolSelection(this.PAGE_NAME);
       return;
     }
 

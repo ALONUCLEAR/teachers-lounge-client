@@ -1,0 +1,22 @@
+<loader *ngIf="isLoading"></loader>
+<ng-container *ngIf="!isLoading">
+    <selected-school-info [selectedSchoolName]="selectedSchoolName" [pageName]="PAGE_NAME"></selected-school-info>
+    <div *ngIf="!subjects?.length" class="no-subjects">לא קיימים נושאים בבית הספר {{selectedSchoolName}}.<br>{{noSubjectsInstructions}}</div>
+    <ng-container *ngIf="subjects?.length">
+        <ul ngbNav #nav="ngbNav" [(activeId)]="activeSubjectId" class="nav-tabs">
+            <li *ngFor="let subject of subjects" [ngbNavItem]="subject.id">
+                <button ngbNavLink>{{ subject.name }}</button>
+                <ng-template ngbNavContent>
+                    <post-card *ngFor="let post of postsBySubject[subject.id!]" [post]="post">
+                    </post-card>
+                    <div *ngIf="!postsBySubject[subject.id!]?.length" class="no-posts">
+                        עדיין לא קיימים פוסטים בנושא הזה.<br>
+                        כדי לשנות את זה, יש ללחוץ על "צור פוסט"
+                    </div>
+                </ng-template>
+            </li>
+        </ul>
+        <div [ngbNavOutlet]="nav" class="mt-2"></div>
+    </ng-container>
+</ng-container>
+
