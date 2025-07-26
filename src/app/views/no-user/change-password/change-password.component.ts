@@ -1,6 +1,6 @@
 import { AfterViewInit, Component, DestroyRef, ElementRef, HostBinding, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { buffer, debounceTime, filter, fromEvent, map, throttleTime } from 'rxjs';
+import { buffer, debounceTime, filter, firstValueFrom, fromEvent, map, throttleTime } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { PASSWORD_PATTERN } from '../sign-up/sign-up.component';
 import { PasswordInputComponent } from 'src/app/components/ui/password-input/password-input.component';
@@ -27,11 +27,10 @@ export class ChangePasswordComponent implements AfterViewInit, OnInit {
 
     constructor(private destroyRef: DestroyRef, private popupService: PopupService, private route: ActivatedRoute, private router: Router) {}
 
-    ngOnInit(): void {
-      this.route.queryParamMap.pipe(takeUntilDestroyed()).subscribe(params => {
-        const userId = params.get("userId");
-        userId === null || userId === undefined ?  this.router.navigate(["/login"]) : this.userId = userId;
-      });
+    async ngOnInit(): Promise<void> {
+      const params = await firstValueFrom(this.route.queryParamMap)
+      const userId = params.get("userId");
+      userId === null || userId === undefined ?  this.router.navigate(["/login"]) : this.userId = userId;
     }
 
     ngAfterViewInit(): void {
