@@ -6,31 +6,31 @@ import { UserRoles } from "../types/permissions";
 const requestsUrl = `${environment.serverUrl}/requests`;
 const usersUrl = `${environment.serverUrl}/users`;
 
-const approvableUserRoleMapper = (user: GenericUser) => ({
+const genericUserRoleMapper = (user: GenericUser) => ({
   ...user,
   role: user.role
     ? UserRoles[`${user.role}` as keyof typeof UserRoles]
     : undefined,
 });
 
-export const getAllUserRequests = async (): Promise<GenericUser[]> => {
-    const response = await axios.get(requestsUrl);
+export const getAllUserRequests = async (requestingUserId: string): Promise<GenericUser[]> => {
+    const response = await axios.get(requestsUrl, { headers: { userId: requestingUserId} });
 
     if (response.status >= HttpStatusCode.BadRequest) {
         throw new Error(`Request to get all user requests failed, returned with status ${response.status}`);
     }
 
-    return response.data.map(approvableUserRoleMapper);
+    return response.data.map(genericUserRoleMapper);
 }
 
-export const getAllUsersByStatus = async (areActive: boolean): Promise<GenericUser[]> => {
-    const response = await axios.get(`${usersUrl}/active/${areActive}`);
+export const getAllUsersByStatus = async (requestingUserId: string, areActive: boolean): Promise<GenericUser[]> => {
+    const response = await axios.get(`${usersUrl}/active/${areActive}`, { headers: { userId: requestingUserId }});
 
     if (response.status >= HttpStatusCode.BadRequest) {
         throw new Error(`Request to get all blocked users failed, returned with status ${response.status}`);
     }
 
-    return response.data.map(approvableUserRoleMapper);
+    return response.data.map(genericUserRoleMapper);
 }
 
 export const trySendingUserRequest = async (userToCreate: UserRequest & { id: string }): Promise<boolean> => {
@@ -69,8 +69,8 @@ export const trySendingForgotPasswordRequest = async (userId: string, newPasswor
     return true;
 }
 
-export const tryUnblockUser = async (userId: string): Promise<boolean> => {
-    const response = await axios.post(`${usersUrl}/restore/${userId}`);
+export const tryUnblockUser = async (requestingUserId: string, userId: string): Promise<boolean> => {
+    const response = await axios.post(`${usersUrl}/restore/${userId}`, undefined, { headers: { userId: requestingUserId }});
 
     if (response.status >= HttpStatusCode.MultipleChoices) {
         console.error(response.status);
@@ -81,8 +81,8 @@ export const tryUnblockUser = async (userId: string): Promise<boolean> => {
     return true;
 }
 
-export const tryBlockUser = async (userId: string): Promise<boolean> => {
-    const response = await axios.post(`${usersUrl}/block/${userId}`);
+export const tryBlockUser = async (requestingUserId: string, userId: string): Promise<boolean> => {
+    const response = await axios.post(`${usersUrl}/block/${userId}`, undefined, { headers: { userId: requestingUserId }});
 
     if (response.status >= HttpStatusCode.MultipleChoices) {
         console.error(response.status);
@@ -93,8 +93,8 @@ export const tryBlockUser = async (userId: string): Promise<boolean> => {
     return true;
 }
 
-export const createUserFromRequest = async (requestId: string): Promise<number> => {
-    const response = await axios.post(`${usersUrl}/from-request/${requestId}`);
+export const createUserFromRequest = async (requestingUserId: string, requestId: string): Promise<number> => {
+    const response = await axios.post(`${usersUrl}/from-request/${requestId}`, undefined, { headers: { userId: requestingUserId } });
 
     if (response.status >= HttpStatusCode.MultipleChoices) {
         console.error(response.data);
@@ -112,11 +112,11 @@ export const tryLogin = async(govId: string, password: string): Promise<GenericU
         return null;
     }
 
-    return response.data;
+    return response.data ? genericUserRoleMapper(response.data) : null;
 }
 
-export const tryDeleteUserRequest = async (requestId: string): Promise<boolean> => {
-    const response = await axios.delete(`${requestsUrl}/${requestId}`);
+export const tryDeleteUserRequest = async (requestingUserId: string, requestId: string): Promise<boolean> => {
+    const response = await axios.delete(`${requestsUrl}/${requestId}`, { headers: { userId: requestingUserId } });
 
     if (response.status >= HttpStatusCode.MultipleChoices) {
         console.error(`Request to reject user creation requestFailed, returned with status ${response.status}`);

@@ -124,7 +124,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
       this.authStore.update(user);
 
       // TODO: move to forum page when exists
-      this.router.navigate(['/forum']);
+      this.router.navigate(['/school-management']);
     } catch (e) {
       console.error(e);
       this.popupService.error(`בדקו את הפרטים שהזנתם או נסו שוב במועד מאוחר יותר.`, { title: "שגיאה בהתחברות" });
