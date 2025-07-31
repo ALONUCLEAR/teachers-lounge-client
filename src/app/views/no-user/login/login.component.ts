@@ -1,7 +1,7 @@
 import { AfterViewInit, Component, DestroyRef, ElementRef, HostBinding, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormControl, FormControlOptions, FormGroup, ValidatorFn, Validators } from '@angular/forms';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { tryLogin } from 'src/app/api/server/actions/user-status-actions';
+import { tryGettingUserIdByGovId, tryLogin } from 'src/app/api/server/actions/user-status-actions';
 import { PopupService } from 'src/app/services/popup.service';
 import { PASSWORD_PATTERN } from '../sign-up/sign-up.component';
 import { AuthStore } from 'src/app/stores/auth/auth.store';
@@ -128,6 +128,17 @@ export class LoginComponent implements OnInit, AfterViewInit {
     } catch (e) {
       console.error(e);
       this.popupService.error(`בדקו את הפרטים שהזנתם או נסו שוב במועד מאוחר יותר.`, { title: "שגיאה בהתחברות" });
+    }
+  }
+
+  async navigateToForgotPassword(): Promise<void> {
+    try {
+      const userId: string | undefined = await tryGettingUserIdByGovId(this.loginForm!.value["govId"]!);
+
+      userId ? this.router.navigate(["/forgot-password"], {queryParams: {userId}}) : this.popupService.warn("אנא הזן תז נכון");
+    } catch (e) {
+      this.popupService.warn("הנה הזן תז נכון");
+      console.error(e);
     }
   }
 }
