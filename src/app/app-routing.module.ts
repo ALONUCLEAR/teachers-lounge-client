@@ -5,6 +5,7 @@ import { AccountRecoveryComponent } from './views/no-user/account-recovery/accou
 import { SignUpComponent } from './views/no-user/sign-up/sign-up.component';
 import { UserStatusManagementComponent } from './views/management/user-status-management/user-status-management.component';
 import { LoginComponent } from './views/no-user/login/login.component';
+import { ChangePasswordComponent } from './views/no-user/change-password/change-password.component';
 import { UserRoles } from './api/server/types/permissions';
 import { AuthGuard } from './auth.guard';
 import { AssociationManagementComponent } from './views/management/association-management/association-management.component';
@@ -40,7 +41,8 @@ const BaseRoutes: Routes = [
 const NoUserRoutes: Routes = [
   { path: 'login', pathMatch: 'full', component: LoginComponent },
   { path: 'sign-up', pathMatch: 'full', component: SignUpComponent },
-  { path: 'recovery', pathMatch: 'full', component: AccountRecoveryComponent }
+  { path: 'recovery', pathMatch: 'full', component: AccountRecoveryComponent },
+  { path: 'forgot-password', pathMatch: 'full', component: ChangePasswordComponent },
 ].map(route => makeRouteGuarded(route as Route));
 
 const AlwaysAvaiableRoutes: Routes = [];

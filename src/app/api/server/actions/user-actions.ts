@@ -75,6 +75,18 @@ export const trySendingUserRecoveryRequest = async (userGovId: string): Promise<
     }
 }
 
+export const trySendingForgotPasswordRequest = async (userId: string, newPassword: string): Promise<boolean> => {
+    const response = await axios.post(`${usersUrl}/updatePassword`, {userId, newPassword});
+
+    if (response.status >= HttpStatusCode.MultipleChoices) {
+        console.error(`Request to send a password change request failed, returned with status ${response.status}`);
+
+        return false;
+    }
+
+    return true;
+}
+
 export const tryUnblockUser = async (requestingUserId: string, userId: string): Promise<boolean> => {
     try {
         const response = await axios.post(`${usersUrl}/restore/${userId}`, undefined, { headers: { userId: requestingUserId } });
@@ -187,4 +199,17 @@ export const tryDeleteUserRequest = async (requestingUserId: string, requestId: 
 
         return false;
     }
+}
+
+//TEMP
+export const tryGettingUserIdByGovId = async (govId: string): Promise<string | undefined> => {
+    const response = await axios.get(`${usersUrl}/${govId}`);
+
+    if (response.status >= HttpStatusCode.MultipleChoices) {
+        console.error(`Request to reject user creation requestFailed, returned with status ${response.status}`);
+
+        return undefined;
+    }
+
+    return response.data;
 }
