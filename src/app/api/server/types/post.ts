@@ -62,6 +62,10 @@ export const mockPosts: Post[] = [
         authorId: userId,
         body: 'זה הפוסט השני שלי\vהנה תו מיוחד אחר',
         publishedAt: new Date('6 JAN 2020').toISOString(),
+        comments: [
+            { id: 'c1', body: 'זוהי תגובה', publishedAt: new Date('11 SEP 2001 09:11').toISOString(), children: [] },
+        ],
+        lastUpdatedAt: new Date('7 JAN 2020').toISOString(),
     },
     {
         id: '3',
