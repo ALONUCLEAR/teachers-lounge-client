@@ -4,7 +4,7 @@ import { FormBuilder, FormControl, FormControlOptions, FormGroup, ValidatorFn, V
 import { Router } from '@angular/router';
 import { buffer, debounceTime, filter, fromEvent, map, throttleTime } from 'rxjs';
 import { trySendingMailTo } from 'src/app/api/server/actions/email-actions';
-import { tryLogin } from 'src/app/api/server/actions/user-actions';
+import { tryGettingUserIdByGovId, tryLogin } from 'src/app/api/server/actions/user-status-actions';
 import { ActivityStatus } from 'src/app/api/server/types/user';
 import { PopupService } from 'src/app/services/popup.service';
 import { AuthStore } from 'src/app/stores/auth/auth.store';
@@ -127,6 +127,17 @@ export class LoginComponent implements OnInit, AfterViewInit {
     } catch (e) {
       console.error(e);
       this.popupService.error(`בדקו את הפרטים שהזנתם או נסו שוב במועד מאוחר יותר.`, { title: "שגיאה בהתחברות" });
+    }
+  }
+
+  async navigateToForgotPassword(): Promise<void> {
+    try {
+      const userId: string | undefined = await tryGettingUserIdByGovId(this.loginForm!.value["govId"]!);
+
+      userId ? this.router.navigate(["/forgot-password"], {queryParams: {userId}}) : this.popupService.warn("אנא הזן תז נכון");
+    } catch (e) {
+      this.popupService.warn("אנא הזן תז נכון");
+      console.error(e);
     }
   }
 }
