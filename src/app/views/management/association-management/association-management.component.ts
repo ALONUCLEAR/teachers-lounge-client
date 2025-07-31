@@ -65,7 +65,7 @@ export class AssociationManagementComponent implements OnInit, OnDestroy {
   async ngOnInit(): Promise<void> {
     this.isLoading = true;
 
-    this.schoolId = this.schoolSelectionService.getSelectedSchoolId(this.PAGE_NAME);
+    this.schoolId = await this.schoolSelectionService.getSelectedSchoolId(this.PAGE_NAME);
 
     if (!this.schoolId) {
       return;

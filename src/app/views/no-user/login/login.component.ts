@@ -122,7 +122,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
 
       this.authStore.updateUser({ ...user, role: user.role! });
 
-      this.router.navigate(['/forum']);
+      await this.router.navigate(['/forum']);
     } catch (e) {
       console.error(e);
       this.popupService.error(`בדקו את הפרטים שהזנתם או נסו שוב במועד מאוחר יותר.`, { title: "שגיאה בהתחברות" });

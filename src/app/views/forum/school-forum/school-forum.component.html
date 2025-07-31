@@ -3,14 +3,21 @@
     <selected-school-info [selectedSchoolName]="selectedSchoolName" [pageName]="PAGE_NAME"></selected-school-info>
     <div *ngIf="!subjects?.length" class="no-subjects">לא קיימים נושאים בבית הספר {{selectedSchoolName}}.<br>{{noSubjectsInstructions}}</div>
     <ng-container *ngIf="subjects?.length">
-        <ul ngbNav #nav="ngbNav" [(activeId)]="activeSubjectId" class="nav-tabs">
+        <div class="filters">
+            <search [entities]="users" displayField="display" placeholder="משתמש מפרסם" (onEntitySelected)="updateAuthorFilter($event[0])"></search>
+            <input placeholder="טקסט(כותרת או גוף)" class="form-control" [ngModel]="textFilter" (ngModelChange)="updateTextFilter($event)"/>
+        </div>
+        <ul ngbNav #nav="ngbNav" [activeId]="activeSubjectId" (activeIdChange)="changeTab($event)" class="nav-tabs">
             <li *ngFor="let subject of subjects" [ngbNavItem]="subject.id">
-                <button ngbNavLink>{{ subject.name }}</button>
+                <button ngbNavLink class="subject-title">
+                    {{ subject.name }}
+                    <i *ngIf="subject.associatedSchools.length > 1" class="fa-solid fa-handshake" ngbTooltip="משותף לכמה בתי ספר" placement="top"></i>
+                </button>
                 <ng-template ngbNavContent>
-                    <post-card *ngFor="let post of postsBySubject[subject.id!]" [post]="post">
+                    <post-card *ngFor="let post of postsToDisplay" [post]="post" [users]="users">
                     </post-card>
-                    <div *ngIf="!postsBySubject[subject.id!]?.length" class="no-posts">
-                        עדיין לא קיימים פוסטים בנושא הזה.<br>
+                    <div *ngIf="!postsToDisplay?.length" class="no-posts">
+                        עדיין לא קיימים פוסטים התואמים לסינון.<br>
                         כדי לשנות את זה, יש ללחוץ על "צור פוסט"
                     </div>
                 </ng-template>

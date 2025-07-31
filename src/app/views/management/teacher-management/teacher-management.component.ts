@@ -87,7 +87,7 @@ export class TeacherManagementComponent implements OnInit, OnDestroy {
   async ngOnInit(): Promise<void> {
     this.isLoading = true;
 
-    this.schoolId = this.schoolSelectionService.getSelectedSchoolId(this.PAGE_NAME);
+    this.schoolId = await this.schoolSelectionService.getSelectedSchoolId(this.PAGE_NAME);
 
     if (!this.schoolId) {
       return;
@@ -251,7 +251,7 @@ export class TeacherManagementComponent implements OnInit, OnDestroy {
 
   async linkTeachersToSchool(): Promise<void> {
     const allActiveUsers = (await getAllUsersByStatus(this.authQuery.getUserId()!, true))
-      .map(user => ({...user, preferences: {}, display: getUserFullInfo(user), role: user.role!}));
+      .map(user => ({...user, display: getUserFullInfo(user), role: user.role!}));
 
     const modalRef = this.modalService.open(SchoolLinkingPopupComponent);
     const componentInstance: SchoolLinkingPopupComponent = modalRef.componentInstance;

@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { environment } from 'src/environments/environment';
 import { MunicipaitiesStore } from './stores/gov/municipalities/municipalities.store';
 import { StreetsStore } from './stores/gov/streets/streets.store';
+import { UserService } from './stores/user/user.service';
 
 @Component({
   selector: 'app-root',
@@ -9,13 +10,15 @@ import { StreetsStore } from './stores/gov/streets/streets.store';
   styleUrls: ['./app.component.less'],
   providers: [MunicipaitiesStore, StreetsStore],
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, OnDestroy {
   readonly environment = environment.env;
   readonly url = environment.serverUrl;
 
   constructor(
     private readonly municipalitiesStore: MunicipaitiesStore,
-    private readonly streetsStore: StreetsStore) {}
+    private readonly streetsStore: StreetsStore,
+    private readonly userService: UserService,
+  ) {}
 
   ngOnInit(): void {
     this.initializeStores();
@@ -34,5 +37,11 @@ export class AppComponent implements OnInit {
         );
       }
     });
+
+    await this.userService.poll$();
+  }
+
+  ngOnDestroy(): void {
+    this.userService.stopPolling();
   }
 }

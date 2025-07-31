@@ -23,14 +23,14 @@ export const getAllUserRequests = async (requestingUserId: string): Promise<Gene
     return response.data.map(userRoleMapper);
 }
 
-export const getAllUsersByStatus = async (requestingUserId: string, areActive: boolean): Promise<GenericUser[]> => {
+export const getAllUsersByStatus = async (requestingUserId: string, areActive: boolean): Promise<User[]> => {
     const response = await axios.get(`${usersUrl}/active/${areActive}`, { headers: { userId: requestingUserId } });
 
     if (response.status >= HttpStatusCode.BadRequest) {
         throw new Error(`Request to get all blocked users failed, returned with status ${response.status}`);
     }
 
-    return response.data.map(userRoleMapper);
+    return response.data.map(userRoleMapper<User>);
 }
 
 export const getUsersBySchool = async (requestingUserId: string, schoolId: string, includePending = false): Promise<User[]> => {

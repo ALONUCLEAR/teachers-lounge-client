@@ -1,4 +1,14 @@
 :host {
+    .filters {
+        display: flex;
+        justify-content: center;
+        gap: 1em;
+
+        search, input {
+            width: max-content;
+        }
+    }
+
     .no-subjects, .no-posts {
         text-align: center;
         font-weight: bold;
@@ -10,7 +20,13 @@
     }
 
     .no-posts {
-        color: #7af77a;
+        color: #a9a9a9;
+    }
+
+    .subject-title {
+        display: flex;
+        gap: 0.25em;
+        align-items: center;
     }
 
     post-card {

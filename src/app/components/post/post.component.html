@@ -1,13 +1,24 @@
 <!--TODO: make this look nice-->
 <div class="card">
     <div class="card-header">
-        {{post.title}}
+        <div class="header-right">
+            <div class="title">{{post.title}}</div>
+            <div *ngIf="post.lastUpdatedAt">(ערוך)</div>
+        </div>
+        <div class="header-left">
+            <div class="author-name">{{ authorName }}</div>
+            <div class="published-at">{{ post.publishedAt | date : 'dd/MM/yyyy HH:mm' : undefined : 'en-IL' }}</div>
+        </div>
     </div>
     <div class="card-body">
         <pre>{{post.body}}</pre>
     </div>
     <div class="card-footer">
-        <!--TODO: style this(as well as the rest), add comment count, publishedAt, updatededAt, comment handling to show the most popular(has most children) comment-->
-        {{post.authorId}} | {{post.publishedAt | date : 'dd/MM/yyyy HH:mm' : undefined : 'en-IL' }} <i class="fa-regular fa-comment"></i>
+        <div class="footer-data">
+            <div class="comment-count">{{commentCount}} <i class="fa-regular fa-comment"></i></div>
+            <div *ngIf="post.lastUpdatedAt" class="updated-at">נערך לאחרונה ב{{ post.lastUpdatedAt | date : 'dd/MM/yyyy HH:mm' : undefined : 'en-IL' }}</div>
+        </div>
+        <div *ngIf="mostPopularComment" class="most-popular-comment">{{ mostPopularComment.body }}</div>
+        <!--TODO: style this(as well as the rest)-->
     </div>
 </div>

@@ -20,20 +20,21 @@ export class SchoolSelectionService {
         private readonly authQuery: AuthQuery
     ) {}
 
-    startSchoolSelection(pageName: string): void {
+    async startSchoolSelection(pageName: string): Promise<boolean> {
         this.authStore.selectSchool(undefined);
         this.setRedirectPage({
             name: pageName,
             url: this.router.url
         });
-        this.router.navigate(['/school-selection']);
+
+        return await this.router.navigate(['/school-selection']);
     }
 
-    getSelectedSchoolId(pageName: string): string {
+    async getSelectedSchoolId(pageName: string): Promise<string> {
         const selectedSchoolId = this.authQuery.getSelectedSchoolId();
 
         if (!selectedSchoolId) {
-            this.startSchoolSelection(pageName);
+            await this.startSchoolSelection(pageName);
             return "";
         }
 

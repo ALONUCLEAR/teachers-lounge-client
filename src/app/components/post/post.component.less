@@ -1,10 +1,41 @@
 :host {
+    @default-margin: 1em;
+
     .card-header {
-        font-weight: bold;
-        font-size: 1.125em;
+        display: flex;
+
+        .header-right {
+            display: flex;
+
+            .title{
+                font-weight: bold;
+                font-size: 1.125em;
+            }
+        }
+
+        .header-left {
+            display: flex;
+            margin-right: auto;
+            margin-left: @default-margin;
+
+            .published-at {
+                margin-right: @default-margin;
+            }
+        }
     }
 
     pre {
         font-family: var(--bs-body-font-family);
+    }
+
+    .card-footer {
+        .footer-data {
+            display: flex;
+
+            .updated-at {
+                margin-right: auto;
+                margin-left: @default-margin;
+            }
+        }
     }
 }
