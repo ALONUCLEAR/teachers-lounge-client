@@ -1,17 +1,13 @@
-import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { FormArray, FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, Input, OnInit } from '@angular/core';
+import { FormGroup } from '@angular/forms';
+import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { getAssociationsByType } from 'src/app/api/server/actions/association-actions';
 import { Association, AssociationType } from 'src/app/api/server/types/association';
 import { AuthQuery } from 'src/app/stores/auth/auth.query';
 import { setFormArray } from 'src/app/utils/form-utils';
+import { PostForm, PostService } from 'src/app/views/forum/school-forum/post.service';
 import { SchoolSelectionService } from 'src/app/views/school-selection/school-selection.service';
 import { Post } from '../../../api/server/types/post';
-import { SearchComponent } from '../../ui/search/search.components';
-import { NgbActiveModal, NgbModalModule } from '@ng-bootstrap/ng-bootstrap';
-import { LoaderComponent } from '../../ui/loader/loader.component';
-import { PopupService } from 'src/app/services/popup.service';
-import { PostForm, PostService } from 'src/app/views/forum/school-forum/post.service';
 
 @Component({
     selector: 'post-form',
@@ -65,14 +61,16 @@ export class PostFormComponent implements OnInit {
         setFormArray(this.postForm.controls.importantParticipants, associationIds);
     }
 
-    onSubmit(): void {
+    async onSubmit(): Promise<void> {
         if (!this.postService.isFormValid(this.postForm)) {
             return;
         }
 
         const updatedPost = PostService.serializeForm(this.postForm, this.authorId, this.subject.id!, this.post);
 
-        this.modal.close(updatedPost);
+        if (await this.postService.upsertPost(updatedPost)) {
+            this.modal.close(updatedPost);
+        }
     }
 
     close(): void {

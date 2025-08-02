@@ -2,10 +2,11 @@ import { Component, DestroyRef, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { groupBy, orderBy } from 'lodash';
 import { getAssociationsByType } from 'src/app/api/server/actions/association-actions';
+import { getPostsBySubjects } from 'src/app/api/server/actions/post-actions';
 import { getSchoolById } from 'src/app/api/server/actions/school-actions';
 import { Association, AssociationType } from 'src/app/api/server/types/association';
 import { UserRoles } from 'src/app/api/server/types/permissions';
-import { mockPosts, Post } from 'src/app/api/server/types/post';
+import { Post } from 'src/app/api/server/types/post';
 import { DisplayedUser } from 'src/app/api/server/types/user';
 import { AuthQuery } from 'src/app/stores/auth/auth.query';
 import { UserQuery } from 'src/app/stores/user/user.query';
@@ -51,7 +52,8 @@ export class SchoolForumComponent implements OnInit {
         }
 
         this.selectedSchoolName = (await getSchoolById(this.selectedSchoolId))!.name;
-        const userId = this.authQuery.getUserId()!;
+        const userState = this.authQuery.getValue();
+        const userId = userState.id;
 
         this.userQuery.selectAllBySchool(this.selectedSchoolId)
             .pipe(takeUntilDestroyed(this.destroyRef))
@@ -59,16 +61,22 @@ export class SchoolForumComponent implements OnInit {
 
         this.subjects = await getAssociationsByType(userId, AssociationType.Subject, this.selectedSchoolId);
         this.associations = await getAssociationsByType(userId, AssociationType.Normal, this.selectedSchoolId);
-        this.activeSubjectId = this.subjects[0]?.id ?? '';
-        this.noSubjectsInstructions = this.authQuery.getValue().role === UserRoles.Base
+        this.activeSubjectId = this.subjects.find(({ id }) => id)?.id ?? '';
+        this.noSubjectsInstructions = userState.role === UserRoles.Base
             ? 'נא בקש/י ממנהל/ת בבית הספר ליצור נושא כדי להשמיש את הפורום.'
             : 'על מנת להשמיש את הפורום יש ליצור נושא חדש במסך "ניהול שיוכים ונושאים".';
 
-        const allPostsInSchool = mockPosts;
-        this.postsBySubject = groupBy(orderBy(allPostsInSchool, ['publishedAt', 'title'], ['desc', 'asc']), 'subjectId');
-        this.initFilters();
+        await this.fetchPosts();
 
         this.isLoading = false;
+    }
+
+    private async fetchPosts(): Promise<void> {
+        const userId = this.authQuery.getUserId()!;
+        const subjectIds = this.subjects.map(({ id }) => id!).filter(Boolean);
+        const allPostsInSchool = await getPostsBySubjects(userId, subjectIds);
+        this.postsBySubject = groupBy(orderBy(allPostsInSchool, ['publishedAt', 'title'], ['desc', 'asc']), 'subjectId');
+        this.initFilters();
     }
 
     private initFilters(): void {
@@ -101,9 +109,18 @@ export class SchoolForumComponent implements OnInit {
             ?? [];
     }
 
-    openPostForm(post?: Post): void {
+    async openPostForm(post?: Post): Promise<void> {
         const subject = this.subjects.find(subject => subject.id === this.activeSubjectId);
-        
-        this.postService.upsertPost(subject!, post);
+
+        if (await this.postService.openPostForm(subject!, post)) {
+            // post was saved
+            await this.fetchPosts();
+        }
+    }
+
+    async deletePost(postId: string): Promise<void> {
+        if (await this.postService.deletePost(postId)) {
+            this.fetchPosts();
+        }
     }
 }

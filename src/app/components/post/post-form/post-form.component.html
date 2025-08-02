@@ -16,7 +16,7 @@
       
         <div class="mb-3">
           <label class="form-label">כותרת</label><span class="text-danger">*</span>
-          <input type="text" class="form-control" formControlName="title" />
+          <input type="text" class="form-control" formControlName="title" [maxlength]="255"/>
         </div>
       
         <div *ngIf="!isEditing" class="mb-3">
@@ -30,7 +30,7 @@
       
         <div class="mb-3">
           <label class="form-label">גוף</label><span class="text-danger">*</span>
-          <textarea class="form-control" rows="5" formControlName="body" placeholder="התוכן של הפוסט..."></textarea>
+          <textarea class="form-control" rows="5" formControlName="body" placeholder="התוכן של הפוסט..." maxlength="4095"></textarea>
         </div>
       </form>
   </div>

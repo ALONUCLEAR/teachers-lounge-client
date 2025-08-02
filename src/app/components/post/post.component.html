@@ -3,7 +3,7 @@
         <div class="header-right">
             <div class="d-flex align-items-center gap-1">
                 <i *ngIf="canEdit" class="fa-solid fa-pen-to-square clickable" ngbTooltip="עריכת פוסט" placement="left" (click)="onEdit.emit()"></i>
-                <i *ngIf="canDelete" class="fa-solid fa-trash clickable" ngbTooltip="מחיקת פוסט" placement="left" (click)="deletePost()"></i>
+                <i *ngIf="canDelete" class="fa-solid fa-trash clickable" ngbTooltip="מחיקת פוסט" placement="left" (click)="onDelete.emit()"></i>
                 <div class="title">{{ post.title }}</div>
             </div>
             <div *ngIf="post.lastUpdatedAt" class="edited">(ערוך)</div>
@@ -19,10 +19,12 @@
     <div class="card-footer">
         <div class="footer-data">
             <div class="comment-count clickable" ngbTooltip="תגובות" placement="left" (click)="openCommentsView()">
-                {{ commentCount }} <i class="fa-regular fa-comment"></i>
+                {{ post.commentsCount }} <i class="fa-regular fa-comment"></i>
             </div>
             <div *ngIf="post.lastUpdatedAt" class="updated-at">נערך לאחרונה ב{{ post.lastUpdatedAt | date : 'dd/MM/yyyy HH:mm' : undefined : 'en-IL' }}</div>
         </div>
-        <div *ngIf="mostPopularComment" class="most-popular-comment">{{ mostPopularComment.body }}</div>
+        <!--TODO: replace it with a comment-card component(or whatever it'll be called)-->
+        <div *ngIf="post.mostPopularComment" class="most-popular-comment">{{ post.mostPopularComment.body }}</div>
+        <div *ngIf="!post.mostPopularComment">לא קיימות תגובות לפוסט</div>
     </div>
 </div>

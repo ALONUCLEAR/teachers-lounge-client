@@ -1,9 +1,11 @@
 import { Injectable } from "@angular/core";
 import { FormArray, FormBuilder, FormControl, FormGroup, Validators } from "@angular/forms";
 import { NgbModal } from "@ng-bootstrap/ng-bootstrap";
+import { tryDeletePost, tryUpsertPost } from "src/app/api/server/actions/post-actions";
 import { Association } from "src/app/api/server/types/association";
 import { Post } from "src/app/api/server/types/post";
 import { PostFormComponent } from "src/app/components/post/post-form/post-form.component";
+import { ConfirmationService } from "src/app/services/confirmation.service";
 import { PopupService } from "src/app/services/popup.service";
 import { AuthQuery } from "src/app/stores/auth/auth.query";
 
@@ -12,6 +14,8 @@ export interface PostForm {
     importantParticipants: FormArray<FormControl<string>>,
     body: FormControl<string>,
 }
+
+export type ExpandedPost = Post & { importantParticipants?: string[] };
 
 @Injectable({ providedIn: 'root' })
 export class PostService {
@@ -23,17 +27,14 @@ export class PostService {
     ) { }
 
     createPostForm(post?: Post): FormGroup<PostForm> {
-        const importantParticipantForms = (post?.importantParticipants ?? [])
-                .map(id => this.formBuilder.control(id, { nonNullable: true }));
-    
-            return this.formBuilder.group({
-                title: this.formBuilder.control(post?.title ?? '', { nonNullable: true, validators: [Validators.required] }),
-                importantParticipants: this.formBuilder.array(importantParticipantForms),
-                body: this.formBuilder.control(post?.body ?? '', { nonNullable: true, validators: [Validators.required] }),
-            });
+        return this.formBuilder.group({
+            title: this.formBuilder.control(post?.title ?? '', { nonNullable: true, validators: [Validators.required, Validators.maxLength(255)] }),
+            importantParticipants: this.formBuilder.array([] as FormControl<string>[]),
+            body: this.formBuilder.control(post?.body ?? '', { nonNullable: true, validators: [Validators.required, Validators.maxLength(4095)] }),
+        });
     }
 
-    static serializeForm(postForm: FormGroup<PostForm>, authorId: string, subjectId: string, previousPostState?: Post): Post {
+    static serializeForm(postForm: FormGroup<PostForm>, authorId: string, subjectId: string, previousPostState?: Post): ExpandedPost {
         const formValue = postForm.value;
         const isEdit = previousPostState?.id;
 
@@ -46,13 +47,14 @@ export class PostService {
             };
 
         return {
+            id: previousPostState?.id,
             authorId,
             subjectId,
             title: formValue.title!,
             // importatnParticipants is irrelavent for existing posts
             importantParticipants: isEdit ? undefined : formValue.importantParticipants,
             body: formValue.body!,
-            comments: previousPostState?.comments ??[],
+            commentsCount: previousPostState?.commentsCount ?? 0,
             ...timeData
         };
     }
@@ -67,30 +69,38 @@ export class PostService {
         return true;
     }
 
-    async upsertPost(subject: Pick<Association, 'id' | 'name'>, post?: Post): Promise<void> {
+    async openPostForm(subject: Pick<Association, 'id' | 'name'>, post?: Post): Promise<ExpandedPost | undefined> {
         const modalRef = this.modalService.open(PostFormComponent);
         const componentInstance: PostFormComponent = modalRef.componentInstance;
         componentInstance.subject = subject;
         componentInstance.post = post;
 
-        const resultPost: Post = await modalRef.result;
+        return modalRef.result;
+    }
 
-        if (!resultPost) {
-            // didn't save
-            return;
-        }
-
-        // save
-        if (savePost(this.authQuery.getUserId()!, resultPost)) {
+    async upsertPost(inputPost: ExpandedPost): Promise<boolean> {
+        if (await tryUpsertPost(this.authQuery.getUserId()!, inputPost, inputPost.importantParticipants)) {
             this.popupService.success(`הפוסט נשמר בהצלחה`);
+            return true;
         } else {
-            this.popupService.error(`שמירת הפוסט נכשלה`)
+            this.popupService.error(`שמירת הפוסט נכשלה`);
+            return false;
         }
     }
-}
 
-function savePost(requestingUserId: string, post: Post): boolean {
-    console.log({requestingUserId, post});
+    async deletePost(postId: string): Promise<boolean> {
+        const deletePrompt = `זוהי פעולה בלתי הפיכה. מחיקת הפוסט תמחק גם את כל התגובות המקושרות אליו. האם להמשיך?`;
 
-    return true;
+        if (!await ConfirmationService.didConfirmAction(this.modalService, deletePrompt)) {
+            return false;
+        }
+
+        if (!await tryDeletePost(this.authQuery.getUserId()!, postId)) {
+            this.popupService.error(`מחיקת הפוסט נכשלה`);
+            return false;
+        } else {
+            this.popupService.success(`פוסט נמחק בהצלחה`);
+            return true;
+        }
+    }
 }

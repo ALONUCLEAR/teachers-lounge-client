@@ -9,6 +9,7 @@ import { ConfirmationPopupComponent, ConfirmationResult } from "src/app/componen
 import { PopupService } from "src/app/services/popup.service";
 import { AuthQuery } from "src/app/stores/auth/auth.query";
 import { AssociationCreationPopupComponent } from "./association-creation-popup/association-creation-popup.component";
+import { ConfirmationService } from "src/app/services/confirmation.service";
 
 export interface AssociationForm {
   name: FormControl<string>;
@@ -29,7 +30,7 @@ export class AssociationManagementService {
         const associatedSchoolControls = [this.formBuilder.control(schoolId, { nonNullable: true })];
 
         return this.formBuilder.group<AssociationForm>({
-            name: this.formBuilder.control<string>('', { nonNullable: true, validators: [Validators.required] }),
+            name: this.formBuilder.control<string>('', { nonNullable: true, validators: [Validators.required, Validators.maxLength(255)] }),
             associatedSchools: this.formBuilder.array(associatedSchoolControls, { validators: [Validators.required, Validators.minLength(1)] }),
             associatedUsers: this.formBuilder.array<FormControl<string>>([]),
         });
@@ -112,7 +113,7 @@ export class AssociationManagementService {
         if (!associatedSchools.includes(currentSchoolId)) {
             const warningMessage = `הפעולה תנתק את בית הספר שלך מה${this.getTypename(association)} הזה.\nרק מנהל מבית ספר מקושר יוכל לקשר את בית הספר שלך חזרה.`;
             
-            if (!await this.didConfirmAction(warningMessage)) {
+            if (!await ConfirmationService.didConfirmAction(this.modalService, warningMessage)) {
                 return false;
             }
         }
@@ -136,7 +137,7 @@ export class AssociationManagementService {
         const confirmationPrompt = generalConfirmationPrompt + 
             (association.type === AssociationType.Subject ? ` ${additionalSubjectWarning}` : '');
 
-        if (!await this.didConfirmAction(confirmationPrompt)) {
+        if (!await ConfirmationService.didConfirmAction(this.modalService, confirmationPrompt)) {
             return false;
         }
 
@@ -151,21 +152,6 @@ export class AssociationManagementService {
         this.popupService.error(`${actionName} נכשלה. אנא נסו שוב במועד מאוחר יותר.`);
 
         return false;
-    }
-
-    private async didConfirmAction(popupPrompt: string): Promise<boolean> {
-        const modalRef = this.modalService.open(ConfirmationPopupComponent);
-        const componentInstance: ConfirmationPopupComponent = modalRef.componentInstance;
-        componentInstance.body = popupPrompt;
-        let result = ConfirmationResult.CANCEL;
-    
-        try {
-          result = await modalRef.result;
-        } catch {
-          // user clicked outside the modal to close
-        }
-    
-        return result === ConfirmationResult.OK;
     }
     
     public async createAssociation(

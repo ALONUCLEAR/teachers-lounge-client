@@ -4,7 +4,7 @@
       (focus)="onFocus($event)"
       [ngModel]="selectedEntities[selectedEntities.length - 1]" (ngModelChange)="selectionChanged($event)"
       [ngbTypeahead]="search" [selectOnExact]="true" [attr.placeholder]="placeholder ? placeholder : null"
-      [inputFormatter]="formatter" [resultFormatter]="formatter"/>
+      [inputFormatter]="formatter" [resultFormatter]="formatter" container="body"/>
   
     <div class="selected-items">
       <div *ngFor="let entity of selectedEntities" class="selected-item" (click)="removeSelection(entity)">
@@ -20,5 +20,5 @@
     (focus)="onFocus($event)"
     [ngModel]="selectedEntities[0]" (ngModelChange)="selectionChanged($event)"
     [ngbTypeahead]="search" [selectOnExact]="true" [attr.placeholder]="placeholder ? placeholder : null"
-    [inputFormatter]="formatter" [resultFormatter]="formatter"/>
+    [inputFormatter]="formatter" [resultFormatter]="formatter" container="body"/>
 </ng-template>

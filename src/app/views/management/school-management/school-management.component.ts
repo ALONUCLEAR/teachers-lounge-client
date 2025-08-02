@@ -270,11 +270,13 @@ export class SchoolManagementComponent implements OnInit, OnDestroy {
       return false;
     }
 
-    if (!municipality) {
+    const isGovDataValid = (data: GovernmentData): boolean => data?.id >= 0 && data.id <= 20_000;
+
+    if (!isGovDataValid(municipality)) {
       return false;
     }
 
-    if (!street) {
+    if (!isGovDataValid(street)) {
       return false;
     }
 

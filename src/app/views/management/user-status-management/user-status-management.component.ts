@@ -12,6 +12,7 @@ import { ActivityStatus, GenericUser } from 'src/app/api/server/types/user';
 import { ConfirmationPopupComponent, ConfirmationResult } from 'src/app/components/ui/confirmation-popup/confirmation-popup.component';
 import { EntityGroup } from 'src/app/components/ui/list-view/list-view.component';
 import { PromptComponent } from 'src/app/components/ui/prompt/prompt.component';
+import { ConfirmationService } from 'src/app/services/confirmation.service';
 import { NotificationsService } from 'src/app/services/notifications.service';
 import { PopupService } from 'src/app/services/popup.service';
 import { AuthQuery } from 'src/app/stores/auth/auth.query';
@@ -163,21 +164,6 @@ export class UserStatusManagementComponent implements OnInit, OnDestroy {
     ];
   }
 
-  private async didConfirmAction(popupPrompt: string): Promise<boolean> {
-    const modalRef = this.modalService.open(ConfirmationPopupComponent);
-    const componentInstance: ConfirmationPopupComponent = modalRef.componentInstance;
-    componentInstance.body = popupPrompt;
-    let result = ConfirmationResult.CANCEL;
-
-    try {
-      result = await modalRef.result;
-    } catch {
-      // user clicked outside the modal to close
-    }
-
-    return result === ConfirmationResult.OK;
-  }
-
   async onReject(userToReject: GenericUser): Promise<void> {
     this.isLoading = true;
     await this.rejectUser(userToReject);
@@ -207,7 +193,7 @@ export class UserStatusManagementComponent implements OnInit, OnDestroy {
       ? `הפעולה תחסום את ${this.userDataMapper(userToReject)}.\n האם להמשיך?`
       : `דחיית הבקשה של ${this.userDataMapper(userToReject)} היא בלתי הפיכה.\n האם להמשיך?`;
 
-    if (!await this.didConfirmAction(rejectionText)) {
+    if (!await ConfirmationService.didConfirmAction(this.modalService, rejectionText)) {
       return;
     }
 
@@ -250,7 +236,7 @@ export class UserStatusManagementComponent implements OnInit, OnDestroy {
     const userDetails = `${this.userDataMapper(userToAccept)}(${userToAccept.govId})`;
     const popupText = `הפעולה ${actionName} את המשתמש ${userDetails}.\n האם להמשיך?`;
 
-    if (!await this.didConfirmAction(popupText)) {
+    if (!await ConfirmationService.didConfirmAction(this.modalService, popupText)) {
       return;
     }
 

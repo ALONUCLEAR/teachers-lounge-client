@@ -21,6 +21,7 @@ import { PopupService } from 'src/app/services/popup.service';
 import { HttpStatusCode } from 'axios';
 import { SchoolLinkingPopupComponent } from './school-linking-popup/school-linking-popup.component';
 import { uniqBy } from 'lodash';
+import { ConfirmationService } from 'src/app/services/confirmation.service';
 
 const getUserFullName = ({ info: { firstName, lastName } }: Pick<User, 'info'>) => `${firstName} ${lastName}`;
 const getUserFullInfo = (user: Pick<User, 'govId' | 'info'>) => `${getUserFullName(user)}(${user.govId})`;
@@ -182,7 +183,7 @@ export class TeacherManagementComponent implements OnInit, OnDestroy {
     const username = getUserFullName(userRequest);
     const rejectionText = `דחיית הבקשה של ${username} היא בלתי הפיכה.\n האם להמשיך?`;
 
-    if (!await this.didConfirmAction(rejectionText)) {
+    if (!await ConfirmationService.didConfirmAction(this.modalService, rejectionText)) {
       return;
     }
 
@@ -206,23 +207,6 @@ export class TeacherManagementComponent implements OnInit, OnDestroy {
     this.setUsers(this.users.filter(({ id }) => id !== userRequest.id));
   }
 
-  private async didConfirmAction(body: string, title = `שימו לב - פעולה בלתי הפיכה`): Promise<boolean> {
-    const modalRef = this.modalService.open(ConfirmationPopupComponent);
-    const componentInstance: ConfirmationPopupComponent = modalRef.componentInstance;
-
-    componentInstance.title = title;
-    componentInstance.body = body;
-    let result = ConfirmationResult.CANCEL;
-
-    try {
-      result = await modalRef.result;
-    } catch {
-      // user clicked outside the modal to close
-    }
-
-    return result === ConfirmationResult.OK;
-  }
-
   async unlinkUser(user?: User): Promise<void> {
     if (!user) {
       this.notificationsService.error(`לא נבחר מורה לניתוק`);
@@ -233,7 +217,7 @@ export class TeacherManagementComponent implements OnInit, OnDestroy {
     const userName = getUserFullName(user);
     const confirmationBody = `אתם בטוחים שברצונכם לבצע את הניתוק? לא ישארו ל${userName} שום בתי ספר מקושרים!`;;
 
-    if (user.associatedSchools.length === 1 && !await this.didConfirmAction(confirmationBody)) {
+    if (user.associatedSchools.length === 1 && !await ConfirmationService.didConfirmAction(this.modalService, confirmationBody)) {
       return;
     }
 

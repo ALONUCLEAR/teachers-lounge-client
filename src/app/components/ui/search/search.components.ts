@@ -20,6 +20,7 @@ export class SearchComponent<T> implements OnInit, OnChanges, AfterViewInit {
   @Input() placeholder?: string;
   @Input() maxSuggestedElements = 10;
   @Input() isMultiple = false;
+  @Input() autoComplete = true;
   @Input() allowReinitialization = false;
   @Output() onEntitySelected = new EventEmitter<T[]>();
 
@@ -78,19 +79,25 @@ export class SearchComponent<T> implements OnInit, OnChanges, AfterViewInit {
   ) =>
     text$.pipe(
       debounceTime(200),
-      map((term) =>
-        this.entities
-            .filter(
-              entity => {
-                const entityDisplay = this.formatter(entity).toLowerCase();
-                const shouldShowBySelected = !this.isMultiple ||
-                  !this.selectedEntities.some(selectedEntity => this.formatter(selectedEntity).toLowerCase() === entityDisplay);
-                const shouldShowByTerm = term === '' || entityDisplay.indexOf(term.toLowerCase()) > -1;
+      map(term => {
+        const options = this.entities
+          .filter(
+            entity => {
+              const entityDisplay = this.formatter(entity).toLowerCase();
+              const shouldShowBySelected = !this.isMultiple ||
+                !this.selectedEntities.some(selectedEntity => this.formatter(selectedEntity).toLowerCase() === entityDisplay);
+              const shouldShowByTerm = term === '' || entityDisplay.indexOf(term.toLowerCase()) > -1;
 
-                return shouldShowBySelected && shouldShowByTerm;
-              }
-            ).slice(0, this.maxSuggestedElements)
-      )
+              return shouldShowBySelected && shouldShowByTerm;
+            }
+          ).slice(0, this.maxSuggestedElements);
+
+        if (options.length == 1 && this.autoComplete) {
+          this.selectionChanged(options[0]);
+        }
+
+        return options;
+      })
     );
 
   formatter = (entity: T): string => {
