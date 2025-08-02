@@ -5,7 +5,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { PASSWORD_PATTERN } from '../sign-up/sign-up.component';
 import { PasswordInputComponent } from 'src/app/components/ui/password-input/password-input.component';
 import { PopupService } from 'src/app/services/popup.service';
-import { trySendingForgotPasswordRequest } from 'src/app/api/server/actions/user-status-actions';
+import { trySendingForgotPasswordRequest } from 'src/app/api/server/actions/user-actions';
 import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({

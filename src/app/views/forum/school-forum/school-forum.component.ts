@@ -1,22 +1,23 @@
-import { Component, DestroyRef } from '@angular/core';
-import { SchoolSelectionService } from '../../school-selection/school-selection.service';
+import { Component, DestroyRef, OnInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { groupBy, orderBy } from 'lodash';
+import { getAssociationsByType } from 'src/app/api/server/actions/association-actions';
 import { getSchoolById } from 'src/app/api/server/actions/school-actions';
 import { Association, AssociationType } from 'src/app/api/server/types/association';
-import { getAssociationsByType } from 'src/app/api/server/actions/association-actions';
-import { AuthQuery } from 'src/app/stores/auth/auth.query';
 import { UserRoles } from 'src/app/api/server/types/permissions';
 import { mockPosts, Post } from 'src/app/api/server/types/post';
-import { groupBy, orderBy } from 'lodash';
-import { UserQuery } from 'src/app/stores/user/user.query';
 import { DisplayedUser } from 'src/app/api/server/types/user';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { AuthQuery } from 'src/app/stores/auth/auth.query';
+import { UserQuery } from 'src/app/stores/user/user.query';
+import { SchoolSelectionService } from '../../school-selection/school-selection.service';
+import { PostService } from './post.service';
 
 @Component({
     selector: 'school-forum',
     templateUrl: './school-forum.component.html',
     styleUrls: ['./school-forum.component.less']
 })
-export class SchoolForumComponent {
+export class SchoolForumComponent implements OnInit {
     readonly PAGE_NAME = "פורום";
     isLoading = false;
     selectedSchoolId?: string;
@@ -37,6 +38,7 @@ export class SchoolForumComponent {
         private readonly authQuery: AuthQuery,
         private readonly userQuery: UserQuery,
         private readonly destroyRef: DestroyRef,
+        private readonly postService: PostService,
     ) { }
 
     async ngOnInit(): Promise<void> {
@@ -97,5 +99,11 @@ export class SchoolForumComponent {
         this.postsToDisplay = this.postsBySubject[this.activeSubjectId]
             ?.filter(post => passesAuthorFilter(post) && passesTextFilter(post))
             ?? [];
+    }
+
+    openPostForm(post?: Post): void {
+        const subject = this.subjects.find(subject => subject.id === this.activeSubjectId);
+        
+        this.postService.upsertPost(subject!, post);
     }
 }

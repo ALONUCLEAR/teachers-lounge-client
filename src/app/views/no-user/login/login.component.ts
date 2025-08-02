@@ -4,7 +4,7 @@ import { FormBuilder, FormControl, FormControlOptions, FormGroup, ValidatorFn, V
 import { Router } from '@angular/router';
 import { buffer, debounceTime, filter, fromEvent, map, throttleTime } from 'rxjs';
 import { trySendingMailTo } from 'src/app/api/server/actions/email-actions';
-import { tryGettingUserIdByGovId, tryLogin } from 'src/app/api/server/actions/user-status-actions';
+import { tryGettingUserIdByGovId, tryLogin } from 'src/app/api/server/actions/user-actions';
 import { ActivityStatus } from 'src/app/api/server/types/user';
 import { PopupService } from 'src/app/services/popup.service';
 import { AuthStore } from 'src/app/stores/auth/auth.store';

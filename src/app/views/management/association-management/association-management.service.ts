@@ -16,7 +16,7 @@ export interface AssociationForm {
   associatedUsers: FormArray<FormControl<string>>;
 }
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class AssociationManagementService {
     constructor(
         private readonly formBuilder: FormBuilder,

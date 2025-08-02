@@ -9,6 +9,10 @@
     @border-radius: 8px;
     @box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 
+    .clickable {
+        cursor: pointer;
+    }
+
     .card {
         background: @card-background;
         border-radius: @border-radius;
@@ -91,6 +95,7 @@
                 .comment-count {
                     display: flex;
                     align-items: center;
+                    gap: 0.25em;
 
                     i {
                         margin-left: 0.25em;

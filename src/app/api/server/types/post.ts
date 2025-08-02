@@ -9,7 +9,7 @@ export interface Post {
     // media: Media[],
     publishedAt: string,
     lastUpdatedAt?: string,
-    comments?: Comment[],
+    comments: Comment[],
 }
 
 // TODO: add more when we actually care, move it to a separate file for consistancy
@@ -75,5 +75,6 @@ export const mockPosts: Post[] = [
         body: 'זה הפוסט השלישי שלי\tהנה טאב',
         publishedAt: new Date().toISOString(),
         lastUpdatedAt: new Date().toISOString(),
+        comments: [],
     }
 ]

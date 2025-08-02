@@ -1,0 +1,49 @@
+.btn-close {
+  margin: 0 auto 0 0;
+}
+
+.modal-title {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+form {
+  max-width: 44em;
+  margin: 0 auto;
+  background-color: #fff;
+  border-radius: 0.5em;
+
+  .form-label {
+    font-weight: 500;
+    margin-bottom: 0.25em;
+  }
+
+  input,
+  textarea {
+    border-radius: 0.375em;
+    border: 1px solid #ced4da;
+    padding: 0.5em 0.75em;
+    transition: border-color 0.3s;
+
+    &:focus {
+      border-color: #0d6efd;
+      box-shadow: 0 0 0 0.25em fade(#0d6efd, 25%);
+      outline: none;
+    }
+  }
+
+  search {
+    display: block;
+    border: 1px solid #ced4da;
+    border-radius: 0.375em;
+    padding: 0.5em;
+    background-color: #f8f9fa;
+  }
+
+  button {
+    min-width: 8em;
+    font-weight: 500;
+    padding: 0.5em 1.25em;
+  }
+}

@@ -1,0 +1,42 @@
+<loader *ngIf="isLoading"></loader>
+<ng-container *ngIf="!isLoading">
+      <div class="modal-header">
+      <h4 class="modal-title" id="modal-title"> {{ subject.name }} - {{ postForm.value.title }} </h4>
+      <button
+          type="button"
+          class="btn-close"
+          aria-label="Close button"
+          aria-describedby="modal-title"
+          (click)="close()"
+      ></button>
+  </div>
+  <div class="modal-body">
+      <form [formGroup]="postForm" (ngSubmit)="onSubmit()" class="bg-light p-4 rounded shadow-sm">
+        <h4 class="mb-4 text-primary">{{ post ? 'עדכון פוסט' : 'יצירת פוסט' }}</h4>
+      
+        <div class="mb-3">
+          <label class="form-label">כותרת</label><span class="text-danger">*</span>
+          <input type="text" class="form-control" formControlName="title" />
+        </div>
+      
+        <div *ngIf="!isEditing" class="mb-3">
+          <label class="form-label">נחוצים לדיון</label>
+          <search
+              [entities]="associationEntities" displayField="name"
+              [isMultiple]="true" [markValidity]="false"
+              (onEntitySelected)="updateImportantParticipants($event)"
+              ></search>
+        </div>
+      
+        <div class="mb-3">
+          <label class="form-label">גוף</label><span class="text-danger">*</span>
+          <textarea class="form-control" rows="5" formControlName="body" placeholder="התוכן של הפוסט..."></textarea>
+        </div>
+      </form>
+  </div>
+  <div class="modal-footer d-flex justify-content-end gap-1">
+    <p class="text-secondary">שדות המסומנים ב<span class="text-danger">*</span> הם שדות חובה</p>
+    <button type="button" #cancelButton class="btn btn-outline-secondary" (click)="close()">ביטול</button>
+    <button type="button" [disabled]="postForm.invalid" #okButton class="btn btn-outline-primary" (click)="onSubmit()">שמירה</button>
+  </div>
+</ng-container>
