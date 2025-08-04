@@ -7,7 +7,7 @@ export interface Post {
     // media: Media[],
     publishedAt: string,
     lastUpdatedAt?: string,
-    commentsCount: number,
+    totalChildrenCount: number,
     mostPopularComment?: Comment,
 }
 

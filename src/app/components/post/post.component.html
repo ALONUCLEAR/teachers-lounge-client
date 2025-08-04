@@ -19,7 +19,7 @@
     <div class="card-footer">
         <div class="footer-data">
             <div class="comment-count clickable" ngbTooltip="תגובות" placement="left" (click)="openCommentsView()">
-                {{ post.commentsCount }} <i class="fa-regular fa-comment"></i>
+                {{ post.totalChildrenCount }} <i class="fa-regular fa-comment"></i>
             </div>
             <div *ngIf="post.lastUpdatedAt" class="updated-at">נערך לאחרונה ב{{ post.lastUpdatedAt | date : 'dd/MM/yyyy HH:mm' : undefined : 'en-IL' }}</div>
         </div>

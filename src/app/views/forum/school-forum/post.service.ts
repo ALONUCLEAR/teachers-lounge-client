@@ -54,7 +54,7 @@ export class PostService {
             // importatnParticipants is irrelavent for existing posts
             importantParticipants: isEdit ? undefined : formValue.importantParticipants,
             body: formValue.body!,
-            commentsCount: previousPostState?.commentsCount ?? 0,
+            totalChildrenCount: previousPostState?.totalChildrenCount ?? 0,
             ...timeData
         };
     }
