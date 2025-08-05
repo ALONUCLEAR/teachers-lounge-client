@@ -1,20 +1,21 @@
-export interface Post {
-    id?: string,
-    title: string,
-    subjectId: string,
-    authorId: string,
-    body: string,
-    // media: Media[],
-    publishedAt: string,
-    lastUpdatedAt?: string,
-    totalChildrenCount: number,
-    mostPopularComment?: Comment,
+/**Technically the @interface ContentEntity here is an @interface ExpandedContentEntity but there's no use for the non expanded ones in the client*/
+interface ContentEntity {
+    id?: string;
+    authorId: string;
+    body: string;
+    // Media: Media[]
+    publishedAt: string;
+    lastUpdatedAt?: string;
+    totalChildrenCount: number;
+    children?: Comment[];
 }
 
-// TODO: add more when we actually care, move it to a separate file for consistancy
-export type Comment = {
-    id?: string,
-    body: string,
-    publishedAt: string,
-    children: Comment[]
+export interface Post extends ContentEntity {
+    title: string,
+    subjectId: string,
+}
+
+export interface Comment extends ContentEntity {
+    parentPostId: string,
+    parentId: string,
 }

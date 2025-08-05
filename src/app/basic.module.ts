@@ -16,7 +16,7 @@ import { LoaderComponent } from "./components/ui/loader/loader.component";
 import { SelectedSchoolInfoComponent } from "./components/selected-school-info/selected-school-info.component";
 import { ListViewComponent } from "./components/ui/list-view/list-view.component";
 import { FuncPipe } from "./pipes/func.pipe";
-import { PostComponent } from "./components/post/post.component";
+import { PostComponent } from "./components/post/post-card/post-card.component";
 
 const basicModules = [
     BrowserModule, CommonModule,

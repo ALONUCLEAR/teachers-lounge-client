@@ -24,7 +24,7 @@
             <div *ngIf="post.lastUpdatedAt" class="updated-at">נערך לאחרונה ב{{ post.lastUpdatedAt | date : 'dd/MM/yyyy HH:mm' : undefined : 'en-IL' }}</div>
         </div>
         <!--TODO: replace it with a comment-card component(or whatever it'll be called)-->
-        <div *ngIf="post.mostPopularComment" class="most-popular-comment">{{ post.mostPopularComment.body }}</div>
-        <div *ngIf="!post.mostPopularComment">לא קיימות תגובות לפוסט</div>
+        <div *ngIf="mostPopularComment" class="most-popular-comment">{{ mostPopularComment.body }}</div>
+        <div *ngIf="!mostPopularComment">לא קיימות תגובות לפוסט</div>
     </div>
 </div>

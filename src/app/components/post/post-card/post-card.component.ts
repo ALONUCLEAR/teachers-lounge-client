@@ -2,15 +2,15 @@ import { CommonModule } from "@angular/common";
 import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from "@angular/core";
 import { NgbTooltipModule } from "@ng-bootstrap/ng-bootstrap";
 import { hasPermissions, UserRoles } from "src/app/api/server/types/permissions";
-import { Post } from "src/app/api/server/types/post";
+import { Comment, Post } from "src/app/api/server/types/post";
 import { DisplayedUser } from 'src/app/api/server/types/user';
 import { AuthQuery } from "src/app/stores/auth/auth.query";
 
 @Component({
     standalone: true,
     selector: 'post-card',
-    templateUrl: './post.component.html',
-    styleUrls: ['./post.component.less'],
+    templateUrl: './post-card.component.html',
+    styleUrls: ['./post-card.component.less'],
     imports: [CommonModule, NgbTooltipModule],
 })
 export class PostComponent implements OnChanges {
@@ -22,6 +22,8 @@ export class PostComponent implements OnChanges {
     authorName: string = 'משתמש מחוק';
     canEdit = false;
     canDelete = false;
+
+    mostPopularComment?: Comment;
 
     constructor(private readonly authQuery: AuthQuery) { }
 
@@ -36,6 +38,7 @@ export class PostComponent implements OnChanges {
 
         if (changes['post']) {
             this.initPermissions();
+            this.mostPopularComment = this.getMostPopularComment(this.post);
         }
     }
 
@@ -43,6 +46,10 @@ export class PostComponent implements OnChanges {
         const userState = this.authQuery.getValue();
         this.canEdit = userState.id === this.post.authorId;
         this.canDelete = this.canEdit || hasPermissions(userState.role, UserRoles.Admin);
+    }
+
+    private getMostPopularComment(post: Post): Comment | undefined {
+        return (post.children ?? []).sort((a, b) => b.totalChildrenCount - a.totalChildrenCount)?.[0];
     }
 
     openCommentsView(): void {
