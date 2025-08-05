@@ -12,6 +12,7 @@ import { AssociationManagementComponent } from './views/management/association-m
 import { SchoolSelectionComponent } from './views/school-selection/school-selection.component';
 import { TeacherManagementComponent } from './views/management/teacher-management/teacher-management.component';
 import { SchoolForumComponent } from './views/forum/school-forum/school-forum.component';
+import { PostViewComponent } from './views/forum/school-forum/post-view/post-view.component';
 
 const makeRouteGuarded = (route: Route, requiredRole?: UserRoles): Route => {
   return {
@@ -35,7 +36,8 @@ const AdminRoutes: Routes = [
 
 const BaseRoutes: Routes = [
   { path: 'school-selection', pathMatch: 'full', component: SchoolSelectionComponent },
-  { path: 'forum', pathMath: 'full', component: SchoolForumComponent },
+  { path: 'forum', pathMatch: 'full', component: SchoolForumComponent },
+  { path: 'posts/:postId', pathMatch: 'full', component: PostViewComponent }
 ].map(route => makeRouteGuarded(route as Route, UserRoles.Base));
 
 const NoUserRoutes: Routes = [

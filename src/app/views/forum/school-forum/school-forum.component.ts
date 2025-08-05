@@ -55,9 +55,9 @@ export class SchoolForumComponent implements OnInit {
         const userState = this.authQuery.getValue();
         const userId = userState.id;
 
-        this.userQuery.selectAllBySchool(this.selectedSchoolId)
+        this.userQuery.selectAllDisplayedBySchool(this.selectedSchoolId)
             .pipe(takeUntilDestroyed(this.destroyRef))
-            .subscribe(users => this.users = users.map(user => ({...user, display: `${user.info.firstName} ${user.info.lastName}(${user.govId})`})));
+            .subscribe(users => this.users = users);
 
         this.subjects = await getAssociationsByType(userId, AssociationType.Subject, this.selectedSchoolId);
         this.associations = await getAssociationsByType(userId, AssociationType.Normal, this.selectedSchoolId);

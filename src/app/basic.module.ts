@@ -16,7 +16,8 @@ import { LoaderComponent } from "./components/ui/loader/loader.component";
 import { SelectedSchoolInfoComponent } from "./components/selected-school-info/selected-school-info.component";
 import { ListViewComponent } from "./components/ui/list-view/list-view.component";
 import { FuncPipe } from "./pipes/func.pipe";
-import { PostComponent } from "./components/post/post-card/post-card.component";
+import { PostCardComponent } from "./components/post/post-card/post-card.component";
+import { CommentTreeComponent } from "./components/post/comments/comment-tree/comment-tree.component";
 
 const basicModules = [
     BrowserModule, CommonModule,
@@ -34,7 +35,8 @@ const standaloneComponents = [
     PasswordInputComponent,
     LoaderComponent,
     SelectedSchoolInfoComponent,
-    PostComponent,
+    PostCardComponent,
+    CommentTreeComponent,
 ];
 
 const services = [NotificationsService, PopupService];

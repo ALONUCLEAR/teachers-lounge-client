@@ -15,6 +15,7 @@ import { AuthQuery } from 'src/app/stores/auth/auth.query';
 import { setFormArray } from 'src/app/utils/form-utils';
 import { SchoolSelectionService } from '../../school-selection/school-selection.service';
 import { AssociationForm, AssociationManagementService } from './association-management.service';
+import { UserQuery } from 'src/app/stores/user/user.query';
 
 export interface DisplayedAssociationInfo {
   associatedSchools: School[];
@@ -60,6 +61,7 @@ export class AssociationManagementComponent implements OnInit, OnDestroy {
     private readonly authQuery: AuthQuery,
     private readonly associationManagementService: AssociationManagementService,
     private readonly schoolSelectionService: SchoolSelectionService,
+    private readonly userQuery: UserQuery,
   ) { }
 
   async ngOnInit(): Promise<void> {
@@ -96,11 +98,7 @@ export class AssociationManagementComponent implements OnInit, OnDestroy {
 
   private async initUsers(): Promise<void> {
     try {
-      this.allUsers = (await getAllUsersByStatus(this.authQuery.getUserId()!, true))
-        .map(user => ({
-          ...user,
-          display: this.userToNameMapper(user)
-        }) as DisplayedUser);
+      this.allUsers = this.userQuery.getAllDisplayed();
     } catch (error) {
       console.error(`Error getting users - `, error);
       this.notificationService.error(`שגיאה בשליפת המורים בבית הספר`);
@@ -131,8 +129,8 @@ export class AssociationManagementComponent implements OnInit, OnDestroy {
     }
 
     return association.associatedUsers
-      .map(userId => this.allUsers.find(user => user.id === userId))
-      .filter(Boolean) as DisplayedUser[]; // I hate the fact that for filter(Boolean) it thinks there could still be an undefined user in the array
+      .map(userId => this.allUsers.find(user => user.id === userId)!) // lie here so filter knows no nulls can pass it
+      .filter(Boolean);
   }
 
   selectAssociation(associationId?: string): void {

@@ -13,7 +13,7 @@ import { AuthQuery } from "src/app/stores/auth/auth.query";
     styleUrls: ['./post-card.component.less'],
     imports: [CommonModule, NgbTooltipModule],
 })
-export class PostComponent implements OnChanges {
+export class PostCardComponent implements OnChanges {
     @Input({ required: true }) post: Post = {} as Post;
     @Input() users: DisplayedUser[] = [];
     @Output() onEdit = new EventEmitter<void>();

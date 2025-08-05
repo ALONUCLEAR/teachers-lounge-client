@@ -17,6 +17,18 @@ export const getPostsBySubjects = async (requestingUserId: string, subjectIds: s
     return response.data;
 }
 
+export const getPostById = async (requestingUserId: string, postId: string): Promise<Post | undefined> => {
+       const response = await axios.get(`${postsUrl}/${postId}`, {
+        headers: { userId: requestingUserId },
+    });
+
+    if (response.status >= HttpStatusCode.MultipleChoices) {
+        throw new Error(`Request to get post ${postId} failed, returned with status ${response.status}`);
+    }
+
+    return response.data;
+}
+
 export const tryUpsertPost = async (requestingUserId: string, post: Post, importantParticipants?: string[]): Promise<boolean> => {
     try {
         const response = await axios.post(postsUrl, post, {
@@ -41,7 +53,7 @@ export const tryDeletePost = async (requestingUserId: string, postId: string): P
         const response = await axios.delete(`${postsUrl}/${postId}`, { headers: { userId: requestingUserId } });
 
         if (response.status >= HttpStatusCode.MultipleChoices) {
-            throw new Error(`Request to delete association failed, returned with status ${response.status}`);
+            throw new Error(`Request to delete post failed, returned with status ${response.status}`);
         }
 
         return response.data;

@@ -1,0 +1,67 @@
+<div class="post-container card shadow-sm" *ngIf="post">
+  <div class="card-header d-flex justify-content-between align-items-start flex-wrap">
+    <div class="post-title mb-2">
+      <h2 class="m-0">{{ post.title }}</h2>
+    </div>
+    <div class="post-meta text-end">
+      <div class="author fw-bold">{{ authorName }}</div>
+      <div class="text-muted small">
+        {{ post.publishedAt | date : 'dd/MM/yyyy HH:mm' : undefined : 'en-IL' }}
+      </div>
+      <div *ngIf="post.lastUpdatedAt" class="text-muted small fst-italic">
+        נערך לאחרונה ב{{ post.lastUpdatedAt | date : 'dd/MM/yyyy HH:mm' : undefined : 'en-IL' }}
+      </div>
+    </div>
+  </div>
+
+  <div class="card-body">
+    <p class="post-body">{{ post.body }}</p>
+  </div>
+
+  <div class="card-footer">
+    <div class="comment-summary text-muted mb-3">
+      <i class="fa-regular fa-comment me-1"></i> {{ post.totalChildrenCount }} תגובות
+    </div>
+
+    <div class="comments-section">
+      <ng-container *ngIf="comments.length; else noComments">
+        <comment-tree
+          *ngFor="let comment of comments; let index = index"
+          [comment]="comment"
+          [expanded]="expanded"
+          [userIdToDisplayName]="userIdToDisplayName"
+          [postSchools]="postSchools"
+          (onExpand)="toggleCommentExpanding(index)"
+          (onReply)="setReplyParent(comment.id!)">
+        </comment-tree>
+      </ng-container>
+
+      <ng-template #noComments>
+        <div class="text-muted">לא קיימות תגובות לפוסט</div>
+      </ng-template>
+    </div>
+
+    <div class="comment-input mt-4">
+      <textarea
+        [(ngModel)]="newCommentBody"
+        rows="3"
+        class="form-control"
+        placeholder="כתוב תגובה...">
+      </textarea>
+      <div class="actions mt-2 d-flex justify-content-end gap-2">
+        <button
+          class="btn btn-primary"
+          (click)="submitComment()"
+          [disabled]="!newCommentBody.trim()">
+          שלח תגובה
+        </button>
+        <button
+          *ngIf="replyParentId"
+          class="btn btn-outline-secondary"
+          (click)="cancelReply()">
+          בטל תגובה
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

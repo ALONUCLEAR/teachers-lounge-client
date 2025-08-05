@@ -21,6 +21,16 @@ export const getAllAssociations = async (requestingUserId: string): Promise<Asso
     return response.data.map(associationMapper);
 }
 
+export const getAssociationById = async (requestingUserId: string, associationId: string): Promise<Association> => {
+    const response = await axios.get(`${associationsUrl}/${associationId}`, { headers: { userId: requestingUserId } });
+
+    if (response.status >= HttpStatusCode.BadRequest) {
+        throw new Error(`Request to get associations ${associationId} failed, returned with status ${response.status}`);
+    }
+
+    return associationMapper(response.data);
+}
+
 export const getAssociationsByType = async (requestingUserId: string, associationType: AssociationType, schoolId: string): Promise<Association[]> => {
     const typeName = getAssociationTypeKey(associationType) as string;
 

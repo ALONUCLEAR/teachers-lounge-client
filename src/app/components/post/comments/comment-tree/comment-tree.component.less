@@ -1,0 +1,58 @@
+.comment {
+  margin: 1rem 0;
+  padding-left: 1rem;
+  border-left: 2px solid #ccc;
+  background-color: #fdfdfd;
+  border-radius: 5px;
+  padding: 1rem;
+}
+
+.comment-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: #555;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.comment-body {
+  white-space: pre-wrap;
+  background: #f7f7f7;
+  padding: 0.75rem;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.comment-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.expand-button,
+.reply-button,
+.edit-button,
+.delete-button {
+  background: none;
+  border: none;
+  color: #007bff;
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 0.25rem 0.5rem;
+
+  i {
+    margin-left: 0.25rem;
+  }
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.comment-children {
+  margin-top: 1rem;
+  padding-left: 1rem;
+  border-left: 1px dashed #ccc;
+}

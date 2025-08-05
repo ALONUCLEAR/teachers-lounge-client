@@ -1,0 +1,49 @@
+<div class="comment">
+  <div class="comment-header">
+    <div class="author">{{ authorName }}</div>
+    <div class="timestamp">
+      {{ comment.publishedAt | date: 'dd/MM/yyyy HH:mm' : undefined : 'en-IL' }}
+    </div>
+  </div>
+
+  <div class="comment-body">{{ comment.body }}</div>
+
+  <div class="comment-actions">
+    <button *ngIf="comment.totalChildrenCount > 0" [disabled]="isExpanded" class="expand-button" (click)="handleExpandClick()">
+        <ng-container *ngIf="!isExpanded"> <i class="fa-solid fa-square-plus"></i> הצג תגובות </ng-container>
+        <ng-container *ngIf="isExpanded"> <i class="fa-solid fa-square-minus"></i> הסתר תגובות </ng-container>
+    </button>
+
+    <button class="reply-button" (click)="handleReplyClick()">
+      <i class="fa-solid fa-reply"></i> השב
+    </button>
+
+    <button
+      *ngIf="canEdit"
+      class="edit-button"
+      (click)="handleEditClick()">
+      <i class="fa-solid fa-pen-to-square"></i> ערוך
+    </button>
+
+    <button
+      *ngIf="canDelete"
+      class="delete-button"
+      (click)="handleDeleteClick()">
+      <i class="fa-solid fa-trash"></i> מחק
+    </button>
+  </div>
+
+  <div class="comment-children" *ngIf="isExpanded && comment.children?.length">
+    <comment-tree
+      *ngFor="let child of comment.children"
+      [comment]="child"
+      [expanded]="expanded"
+      [userIdToDisplayName]="userIdToDisplayName"
+      [postSchools]="postSchools"
+      (onExpand)="onExpand.emit()"
+      (onReply)="onReply.emit()"
+      (onEdit)="onEdit.emit()"
+      (onDelete)="onDelete.emit()">
+    </comment-tree>
+  </div>
+</div>
