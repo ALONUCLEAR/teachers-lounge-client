@@ -29,6 +29,11 @@ export class PostViewComponent implements OnInit {
     authorName = this.defaultUserName;
     postSchools: string[] = [];
 
+    // TODO: add edit and delete post functionality here to
+    // TODO: make delete and edit comment work
+    // TODO: make comment box customize based on if we reply, if we edit, etc.
+    // TODO: make comments expanding and unexpanding work 
+
     constructor(
         private readonly authQuery: AuthQuery,
         private readonly notificationsService: NotificationsService,
