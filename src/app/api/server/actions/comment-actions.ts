@@ -34,7 +34,7 @@ export const tryUpsertComment = async (requestingUserId: string, comment: Commen
     }
 }
 
-export const tryDeletePost = async (requestingUserId: string, commentId: string): Promise<boolean> => {
+export const tryDeleteComment = async (requestingUserId: string, commentId: string): Promise<boolean> => {
     try {
         const response = await axios.delete(`${commentsUrl}/${commentId}`, { headers: { userId: requestingUserId } });
 

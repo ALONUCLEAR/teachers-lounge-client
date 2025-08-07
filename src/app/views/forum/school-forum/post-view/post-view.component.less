@@ -1,14 +1,31 @@
+@bg-color: #f8f9fa;
+
 .post-container {
-  max-width: 850px;
-  margin: 2rem auto;
+  width: 100%;
+  min-height: 100%;
   font-family: 'Segoe UI', sans-serif;
 
   .card-header {
-    background-color: #f8f9fa;
+    background-color: @bg-color;
     border-bottom: 1px solid #dee2e6;
 
     .post-title h2 {
       font-size: 1.75rem;
+    }
+
+    .post-actions {
+      margin-right: auto;
+
+      button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.25rem 0.5rem;
+        font-size: 0.85rem;
+        i {
+          font-size: 1rem;
+        }
+      }
     }
 
     .post-meta {
@@ -33,6 +50,21 @@
     }
 
     .comment-input {
+      position: sticky;
+      bottom: 0;
+      background-color: @bg-color;
+      padding-top: 0.5em;
+      z-index: 1;
+
+      .comment-context {
+        font-size: 0.9rem;
+        background-color: #e9f6ff;
+        border-left: 4px solid #17a2b8;
+        padding: 0.75rem 1rem;
+        border-radius: 0.25rem;
+        margin-bottom: 1rem;
+      }
+
       textarea {
         resize: vertical;
       }

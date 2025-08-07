@@ -9,10 +9,15 @@
   <div class="comment-body">{{ comment.body }}</div>
 
   <div class="comment-actions">
-    <button *ngIf="comment.totalChildrenCount > 0" [disabled]="isExpanded" class="expand-button" (click)="handleExpandClick()">
-        <ng-container *ngIf="!isExpanded"> <i class="fa-solid fa-square-plus"></i> הצג תגובות </ng-container>
-        <ng-container *ngIf="isExpanded"> <i class="fa-solid fa-square-minus"></i> הסתר תגובות </ng-container>
-    </button>
+    <ng-container *ngIf="comment.totalChildrenCount > 0">
+      <div class="comment-summary text-muted">
+        <i class="fa-regular fa-comment me-1"></i> {{ comment.totalChildrenCount }} תגובות
+      </div>
+      <button [disabled]="isProcessing" class="expand-button" (click)="emitExpand([])">
+          <ng-container *ngIf="!isExpanded"> <i class="fa-solid fa-square-plus"></i> הצג תגובות </ng-container>
+          <ng-container *ngIf="isExpanded"> <i class="fa-solid fa-square-minus"></i> הסתר תגובות </ng-container>
+      </button>
+    </ng-container>
 
     <button class="reply-button" (click)="handleReplyClick()">
       <i class="fa-solid fa-reply"></i> השב
@@ -21,7 +26,7 @@
     <button
       *ngIf="canEdit"
       class="edit-button"
-      (click)="handleEditClick()">
+      (click)="emitEdit()">
       <i class="fa-solid fa-pen-to-square"></i> ערוך
     </button>
 
@@ -35,15 +40,15 @@
 
   <div class="comment-children" *ngIf="isExpanded && comment.children?.length">
     <comment-tree
-      *ngFor="let child of comment.children"
+      *ngFor="let child of comment.children; let childIndex = index"
       [comment]="child"
-      [expanded]="expanded"
+      [expanded]="expanded" [processed]="processed"
       [userIdToDisplayName]="userIdToDisplayName"
       [postSchools]="postSchools"
-      (onExpand)="onExpand.emit()"
-      (onReply)="onReply.emit()"
-      (onEdit)="onEdit.emit()"
-      (onDelete)="onDelete.emit()">
+      (onExpand)="emitExpand($event, childIndex)"
+      (onReply)="onReply.emit($event)"
+      (onEdit)="emitEdit($event)"
+      (onDelete)="onDelete.emit($event)">
     </comment-tree>
   </div>
 </div>

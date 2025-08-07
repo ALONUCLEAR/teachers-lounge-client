@@ -75,7 +75,13 @@ export class PostService {
         componentInstance.subject = subject;
         componentInstance.post = post;
 
-        return modalRef.result;
+        try {
+            return await modalRef.result;
+        } catch {
+            // we need to try catch cause there's no modalRef.result if the user clicked outside
+        }
+
+        return undefined;
     }
 
     async upsertPost(inputPost: ExpandedPost): Promise<boolean> {

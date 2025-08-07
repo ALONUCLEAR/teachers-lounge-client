@@ -1,5 +1,6 @@
 import { CommonModule } from "@angular/common";
 import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from "@angular/core";
+import { Router } from "@angular/router";
 import { NgbTooltipModule } from "@ng-bootstrap/ng-bootstrap";
 import { hasPermissions, UserRoles } from "src/app/api/server/types/permissions";
 import { Comment, Post } from "src/app/api/server/types/post";
@@ -25,7 +26,10 @@ export class PostCardComponent implements OnChanges {
 
     mostPopularComment?: Comment;
 
-    constructor(private readonly authQuery: AuthQuery) { }
+    constructor(
+        private readonly authQuery: AuthQuery,
+        private readonly router: Router,
+    ) { }
 
     ngOnChanges(changes: SimpleChanges) {
         if (changes['post'] || changes['users']) {
@@ -52,7 +56,7 @@ export class PostCardComponent implements OnChanges {
         return (post.children ?? []).sort((a, b) => b.totalChildrenCount - a.totalChildrenCount)?.[0];
     }
 
-    openCommentsView(): void {
-        alert(`Comments view not yet implemented :(`);
+    openPostView(): void {
+        this.router.navigate([`posts/${this.post.id!}`]);
     }
 }

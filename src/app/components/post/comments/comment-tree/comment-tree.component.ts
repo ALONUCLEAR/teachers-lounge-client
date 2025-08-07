@@ -14,16 +14,19 @@ import { AuthQuery } from 'src/app/stores/auth/auth.query';
 export class CommentTreeComponent implements OnChanges {
   @Input() comment!: Comment;
   @Input() expanded!: Set<string>;
+  @Input() processed!: Set<string>;
   @Input() userIdToDisplayName = new Map<string, string>();
   @Input() postSchools: string[] = [];
 
-  @Output() onExpand = new EventEmitter<void>();
-  @Output() onReply = new EventEmitter<void>();
-  @Output() onEdit = new EventEmitter<void>();
-  @Output() onDelete = new EventEmitter<void>();
+  /**Emits the array of indecies to get to it since just assigning comment = newValue would override the reference as well */
+  @Output() onExpand = new EventEmitter<number[]>();
+  @Output() onReply = new EventEmitter<Comment>();
+  @Output() onEdit = new EventEmitter<[Comment, Comment?]>();
+  @Output() onDelete = new EventEmitter<string>();
 
   authorName = 'משתמש מחוק';
   isExpanded = false;
+  isProcessing = false;
 
   canEdit = false;
   canDelete = false;
@@ -43,11 +46,19 @@ export class CommentTreeComponent implements OnChanges {
     if (changes['comment'] || changes['postSchools']) {
         this.initPermissions();
     }
+
+    if (changes['processed'] || changes['comment']) {
+      this.isProcessing = this.processed.has(this.comment.id!);
+    }
   }
 
-  // TODO: figure out why it doesn't close
-  handleExpandClick(): void {
-    this.onExpand.emit();
+  emitExpand(indecies: number[], newIndex?: number): void {
+    if (newIndex !== undefined) {
+      this.onExpand.emit([newIndex, ...indecies]);
+    } else {
+      this.isProcessing = true;
+      this.onExpand.emit([...indecies]);
+    }
   }
 
   initPermissions(): void {
@@ -61,14 +72,22 @@ export class CommentTreeComponent implements OnChanges {
 }
 
   handleReplyClick(): void {
-    this.onReply.emit();
+    this.onReply.emit(this.comment);
   }
 
-  handleEditClick(): void {
-    this.onEdit.emit();
+  emitEdit(previousEvent?: [Comment, Comment?]): void {
+    if (!previousEvent) {
+      // the comment we want to edit
+      this.onEdit.emit([this.comment]);
+    } else if (!previousEvent[1]) {
+      // the parent comment
+      this.onEdit.emit([previousEvent[0], this.comment]);
+    } else {
+      this.onEdit.emit(previousEvent);
+    }
   }
 
   handleDeleteClick(): void {
-    this.onDelete.emit();
+    this.onDelete.emit(this.comment.id!);
   }
 }

@@ -18,13 +18,13 @@
     </div>
     <div class="card-footer">
         <div class="footer-data">
-            <div class="comment-count clickable" ngbTooltip="תגובות" placement="left" (click)="openCommentsView()">
+            <div class="comment-count clickable" ngbTooltip="תגובות" placement="left" (click)="openPostView()">
                 {{ post.totalChildrenCount }} <i class="fa-regular fa-comment"></i>
             </div>
             <div *ngIf="post.lastUpdatedAt" class="updated-at">נערך לאחרונה ב{{ post.lastUpdatedAt | date : 'dd/MM/yyyy HH:mm' : undefined : 'en-IL' }}</div>
         </div>
         <!--TODO: replace it with a comment-card component(or whatever it'll be called)-->
-        <div *ngIf="mostPopularComment" class="most-popular-comment">{{ mostPopularComment.body }}</div>
-        <div *ngIf="!mostPopularComment">לא קיימות תגובות לפוסט</div>
+        <div *ngIf="mostPopularComment" (click)="openPostView()" class="most-popular-comment clickable">{{ mostPopularComment.body }}</div>
+        <div *ngIf="!mostPopularComment" (click)="openPostView()" class="clickable">לא קיימות תגובות לפוסט</div>
     </div>
 </div>

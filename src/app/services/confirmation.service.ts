@@ -1,6 +1,8 @@
 import { NgbModal } from "@ng-bootstrap/ng-bootstrap";
 import { ConfirmationPopupComponent, ConfirmationResult } from "../components/ui/confirmation-popup/confirmation-popup.component";
+import { Injectable } from "@angular/core";
 
+@Injectable({providedIn: 'root'})
 export class ConfirmationService {
     constructor(private readonly modalService: NgbModal) { }
 

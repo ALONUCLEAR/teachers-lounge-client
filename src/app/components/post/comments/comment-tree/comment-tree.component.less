@@ -33,6 +33,7 @@
 
 .expand-button,
 .reply-button,
+.comment-summary,
 .edit-button,
 .delete-button {
   background: none;
@@ -48,6 +49,16 @@
 
   &:hover {
     text-decoration: underline;
+  }
+
+  &.comment-summary&:hover {
+    text-decoration: none;
+    cursor: initial;
+  }
+
+  &:disabled {
+    color: #ccc;
+    cursor: progress;
   }
 }
 

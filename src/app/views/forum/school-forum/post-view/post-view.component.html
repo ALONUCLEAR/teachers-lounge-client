@@ -1,6 +1,22 @@
 <div class="post-container card shadow-sm" *ngIf="post">
   <div class="card-header d-flex justify-content-between align-items-start flex-wrap">
-    <div class="post-title mb-2">
+    <div class="post-title d-flex mb-2 gap-3 align-items-center">      
+      <div *ngIf="canEdit || canDelete" class="post-actions ms-auto d-flex gap-2">
+        <button
+          *ngIf="canEdit" [disabled]="isProcessing"
+          class="btn btn-sm btn-outline-primary"
+          (click)="editPost()"
+          title="ערוך פוסט">
+          <i class="fa-regular fa-pen-to-square"></i>
+        </button>
+        <button
+          *ngIf="canDelete" [disabled]="isProcessing"
+          class="btn btn-sm btn-outline-danger"
+          (click)="deletePost()"
+          title="מחק פוסט">
+          <i class="fa-regular fa-trash-can"></i>
+        </button>
+      </div>
       <h2 class="m-0">{{ post.title }}</h2>
     </div>
     <div class="post-meta text-end">
@@ -28,11 +44,13 @@
         <comment-tree
           *ngFor="let comment of comments; let index = index"
           [comment]="comment"
-          [expanded]="expanded"
+          [expanded]="expanded" [processed]="processedComments"
           [userIdToDisplayName]="userIdToDisplayName"
           [postSchools]="postSchools"
-          (onExpand)="toggleCommentExpanding(index)"
-          (onReply)="setReplyParent(comment.id!)">
+          (onExpand)="toggleCommentExpanding(index, $event)"
+          (onEdit)="setEditingComment($event)"
+          (onDelete)="deleteComment($event)"
+          (onReply)="setReplyParent(comment)">
         </comment-tree>
       </ng-container>
 
@@ -42,23 +60,40 @@
     </div>
 
     <div class="comment-input mt-4">
+      <div *ngIf="replyParentId || editingComment" class="comment-context alert alert-info d-flex justify-content-between align-items-center">
+        <div>
+          <span *ngIf="editingComment">
+            <i class="fa-regular fa-pen-to-square me-1"></i>
+            עריכת תגובה
+          </span>
+          <span *ngIf="replyParentId">
+            <i class="fa-solid fa-reply me-1"></i>
+            תגובה ל{{ repliedUserName }}
+          </span>
+        </div>
+        <button class="btn btn-sm btn-outline-danger" (click)="initNewComment()">
+          ביטול
+        </button>
+      </div>
+
       <textarea
         [(ngModel)]="newCommentBody"
         rows="3"
         class="form-control"
         placeholder="כתוב תגובה...">
       </textarea>
+
       <div class="actions mt-2 d-flex justify-content-end gap-2">
         <button
           class="btn btn-primary"
           (click)="submitComment()"
-          [disabled]="!newCommentBody.trim()">
-          שלח תגובה
+          [disabled]="!newCommentBody || this.isProcessing">
+          {{ editingComment ? 'שמור שינויים' : 'שלח תגובה' }}
         </button>
         <button
-          *ngIf="replyParentId"
+          *ngIf="replyParentId && !editingComment"
           class="btn btn-outline-secondary"
-          (click)="cancelReply()">
+          (click)="initNewComment()">
           בטל תגובה
         </button>
       </div>

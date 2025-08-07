@@ -1,16 +1,20 @@
 import { Component, DestroyRef, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
-import { isEqual, keyBy } from 'lodash';
-import { distinctUntilChanged, map } from 'rxjs';
+import { cloneDeep, isEqual, keyBy } from 'lodash';
+import { distinctUntilChanged, first, map } from 'rxjs';
 import { getAssociationById } from 'src/app/api/server/actions/association-actions';
-import { getCommentById, tryUpsertComment } from 'src/app/api/server/actions/comment-actions';
+import { getCommentById, tryDeleteComment, tryUpsertComment } from 'src/app/api/server/actions/comment-actions';
 import { getPostById } from 'src/app/api/server/actions/post-actions';
+import { hasPermissions, UserRoles } from 'src/app/api/server/types/permissions';
 import { Comment, Post } from 'src/app/api/server/types/post';
 import { DisplayedUser } from 'src/app/api/server/types/user';
+import { ConfirmationService } from 'src/app/services/confirmation.service';
 import { NotificationsService } from 'src/app/services/notifications.service';
 import { AuthQuery } from 'src/app/stores/auth/auth.query';
 import { UserQuery } from 'src/app/stores/user/user.query';
+import { PostService } from '../post.service';
+import { Association } from 'src/app/api/server/types/association';
 
 @Component({
     selector: 'post-view',
@@ -21,18 +25,22 @@ export class PostViewComponent implements OnInit {
     postId!: string;
     post!: Post;
     comments: Comment[] = [];
-    expanded: Set<string> = new Set();
-    replyParentId: string | null = null;
+    expanded = new Set<string>();
+    processedComments = new Set<string>();
+    replyParentId?: string;
+    repliedUserName?: string;
+    editingComment?: Comment;
     newCommentBody: string = '';
     userIdToDisplayName = new Map<string, string>();
     readonly defaultUserName = 'משתמש מחוק';
     authorName = this.defaultUserName;
+    subject!: Association;
     postSchools: string[] = [];
 
-    // TODO: add edit and delete post functionality here to
-    // TODO: make delete and edit comment work
-    // TODO: make comment box customize based on if we reply, if we edit, etc.
-    // TODO: make comments expanding and unexpanding work 
+    isProcessing = false;
+    canEdit = false;
+    canDelete = false;
+    // TODO: bugcheck expanding comment features: replying, editing and deleting child comments 
 
     constructor(
         private readonly authQuery: AuthQuery,
@@ -41,6 +49,8 @@ export class PostViewComponent implements OnInit {
         private readonly router: Router,
         private readonly userQuery: UserQuery,
         private readonly destroyRef: DestroyRef,
+        private readonly confirmationService: ConfirmationService,
+        private readonly postService: PostService,
     ) { }
 
     async ngOnInit(): Promise<void> {
@@ -53,6 +63,7 @@ export class PostViewComponent implements OnInit {
 
         this.postId = postId;
         await this.fetchPostData();
+        this.initPermissions();
         this.initUserList();
         this.initNewComment();
     }
@@ -80,14 +91,36 @@ export class PostViewComponent implements OnInit {
 
             try {
                 const subject = await getAssociationById(userId, post?.subjectId);
-                this.postSchools = subject?.associatedSchools ?? [];
+
+                if (!subject) {
+                    this.redirect();
+                }
+
+                this.subject = subject;
+                this.postSchools = subject.associatedSchools ?? [];
             } catch {}
         }
     }
 
-    private initNewComment(): void {
+    private initPermissions(): void {
+        const userState = this.authQuery.getValue();
+
+        const canView = userState.associatedSchools.some(schoolId => this.postSchools.includes(schoolId));
+
+        if (!canView) {
+            this.redirect();
+            return;
+        }
+
+        this.canEdit = this.post.authorId === userState.id;
+        this.canDelete = this.canEdit || hasPermissions(userState.role, UserRoles.Admin);
+    }
+
+    initNewComment(): void {
         this.newCommentBody = '';
-        this.replyParentId = null;
+        this.replyParentId = undefined;
+        this.repliedUserName = undefined;
+        this.editingComment = undefined;
     }
 
     private initUserList(): void {
@@ -107,31 +140,109 @@ export class PostViewComponent implements OnInit {
             })
     }
 
-    async toggleCommentExpanding(commentIndex: number): Promise<void> {
-        const comment: Comment = this.comments[commentIndex];
+    private getComment(indexChain: number[]): Comment {
+        let comment = this.comments[indexChain[0]];
+
+        for (let index = 1; index < indexChain.length; index++) {
+            comment = comment.children![indexChain[index]];
+        }
+
+        return comment;
+    }
+
+    private setComment(indexChain: number[], newComment: Comment): void {
+        if (indexChain.length < 1) {
+            return;
+        }
+
+        if (indexChain.length < 2) {
+            this.comments[indexChain[0]] = newComment;
+            return;
+        }
+
+        const lastIndexInChain = indexChain[indexChain.length - 1];
+        let parentComment = this.comments[indexChain[0]];
+
+        for (let index = 1; index < indexChain.length - 2; index++) {
+            parentComment = parentComment.children![indexChain[index]];
+        }
+
+        parentComment.children![lastIndexInChain] = newComment;
+    }
+
+    // TODO: for some reason edit crushes stuff
+    async editPost(): Promise<void> {
+        this.isProcessing = true;
+
+        if(await this.postService.openPostForm(this.subject, this.post)) {
+            await this.fetchPostData();
+            this.initNewComment();
+        }
+
+        this.isProcessing = false;
+    }
+
+    async deletePost(): Promise<void> {
+        this.isProcessing = true;
+
+        if (await this.postService.deletePost(this.post.id!)) {
+            // no post to read anymore
+            this.redirect();
+        }
+
+        this.isProcessing = false;
+    }
+
+    async toggleCommentExpanding(firstCommentIndex: number, indexChain: number[]): Promise<void> {
+        const fullCommentChain = [firstCommentIndex, ...indexChain];
+        const comment = this.getComment(fullCommentChain);
+
         if (!comment?.id || comment.totalChildrenCount < 1) {
             return;
         }
 
+        this.processedComments.add(comment.id);
+        this.processedComments = new Set(this.processedComments);
+        
         if (!comment.children?.length) {
             const expandedComment = await getCommentById(this.authQuery.getUserId()!, comment.id);
-            this.comments[commentIndex] = expandedComment ?? comment;
+            this.setComment(fullCommentChain, expandedComment ?? comment);
         }
 
         if (!this.expanded.has(comment.id)) {
             this.expanded.add(comment.id);
+            this.expanded = new Set(this.expanded);
         } else {
             this.expanded.delete(comment.id);
+            this.expanded = new Set(this.expanded);
         }
+
+        this.processedComments.delete(comment.id);
+        this.processedComments = new Set(this.processedComments);
     }
 
     async submitComment(): Promise<void> {
-        await this.upsertComment(this.newCommentBody);
+        this.isProcessing = true;
+
+        if (!this.newCommentBody.trim()) {
+            this.notificationsService.warn(`לא ניתן להגיב תגובה ריקה`, { position: 'bottom left' });
+            this.newCommentBody="";
+        } else {
+            await this.upsertComment(this.newCommentBody);
+        }
+
+        this.isProcessing = false;
     }
 
     private async upsertComment(body: string): Promise<boolean> {
         const userId = this.authQuery.getUserId()!;
-        const serializedComment: Comment = {
+        const serializedComment: Comment = this.editingComment
+        ? {
+            ...this.editingComment,
+            body,
+            lastUpdatedAt: new Date().toISOString(),
+        }
+        : {
             authorId: userId,
             body,
             parentId: this.replyParentId ?? this.postId,
@@ -145,20 +256,23 @@ export class PostViewComponent implements OnInit {
             return false;
         }
 
+        await this.refreshComments();
+
         this.notificationsService.success(`התגובה נשמרה בהצלחה`);
         this.post.totalChildrenCount++;
-
-        if (!this.replyParentId) {
-            // direct child of the post
-            this.refreshTopLevelComments();
-        } else {
-            this.refreshCommentTree(this.replyParentId);
-        }
 
         this.initNewComment();
         return true;
     }
 
+    private refreshComments(): Promise<void> {        
+        if (!this.replyParentId) {
+            // direct child of the post
+            return this.refreshTopLevelComments();
+        }
+
+        return this.refreshCommentTree(this.replyParentId);
+    }
 
     private async refreshTopLevelComments(): Promise<void> {
         const updatedPost = await getPostById(this.authQuery.getUserId()!, this.postId);
@@ -178,7 +292,6 @@ export class PostViewComponent implements OnInit {
 
         this.comments = updatedComments;
     }
-
 
     private async refreshCommentTree(parentId: string): Promise<void> {
         const updatedComment = await getCommentById(this.authQuery.getUserId()!, parentId);
@@ -201,12 +314,37 @@ export class PostViewComponent implements OnInit {
         updateTree(this.comments);
     }
 
-
-    setReplyParent(commentId: string): void {
-        this.replyParentId = commentId;
+    setReplyParent(comment?: Comment): void {
+        this.replyParentId = comment?.id;
+        this.repliedUserName = comment ? this.userIdToDisplayName.get(comment.authorId) : undefined;
+        
+        if (this.editingComment) {
+            this.editingComment = undefined;
+            this.newCommentBody = '';
+        }
     }
 
-    cancelReply(): void {
-        this.replyParentId = null;
+    setEditingComment([comment, parent]: [Comment, Comment?]): void {
+        this.setReplyParent(parent);
+        this.editingComment = comment;
+        this.newCommentBody = comment.body;
+    }
+
+    async deleteComment(commentId: string): Promise<void> {
+        if (!await this.confirmationService.didConfirmAction(`האם ברצונך למחוק את התגובה?`)) {
+            return;
+        }
+
+        if (!await tryDeleteComment(this.authQuery.getUserId()!, commentId)) {
+            this.notificationsService.error(`מחיקת תגובה נכשלה`);
+            return;
+        }
+
+        await this.refreshComments();
+
+        this.notificationsService.success(`התגובה נמחקה בהצלחה`);
+        this.post.totalChildrenCount--;
+
+        this.initNewComment();
     }
 }
