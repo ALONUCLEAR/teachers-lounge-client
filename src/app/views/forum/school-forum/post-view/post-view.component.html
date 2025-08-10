@@ -50,7 +50,7 @@
           (onExpand)="toggleCommentExpanding(index, $event)"
           (onEdit)="setEditingComment($event)"
           (onDelete)="deleteComment($event)"
-          (onReply)="setReplyParent(comment)">
+          (onReply)="setReplyParent($event)">
         </comment-tree>
       </ng-container>
 
@@ -87,12 +87,13 @@
         <button
           class="btn btn-primary"
           (click)="submitComment()"
-          [disabled]="!newCommentBody || this.isProcessing">
+          [disabled]="!newCommentBody || isProcessing">
           {{ editingComment ? 'שמור שינויים' : 'שלח תגובה' }}
         </button>
         <button
           *ngIf="replyParentId && !editingComment"
           class="btn btn-outline-secondary"
+          [disabled]="isProcessing"
           (click)="initNewComment()">
           בטל תגובה
         </button>

@@ -40,7 +40,6 @@ export class PostViewComponent implements OnInit {
     isProcessing = false;
     canEdit = false;
     canDelete = false;
-    // TODO: bugcheck expanding comment features: replying, editing and deleting child comments 
 
     constructor(
         private readonly authQuery: AuthQuery,
@@ -163,14 +162,13 @@ export class PostViewComponent implements OnInit {
         const lastIndexInChain = indexChain[indexChain.length - 1];
         let parentComment = this.comments[indexChain[0]];
 
-        for (let index = 1; index < indexChain.length - 2; index++) {
+        for (let index = 0; index < indexChain.length - 2; index++) {
             parentComment = parentComment.children![indexChain[index]];
         }
 
         parentComment.children![lastIndexInChain] = newComment;
     }
 
-    // TODO: for some reason edit crushes stuff
     async editPost(): Promise<void> {
         this.isProcessing = true;
 
@@ -256,22 +254,25 @@ export class PostViewComponent implements OnInit {
             return false;
         }
 
-        await this.refreshComments();
+        await this.refreshComments(serializedComment.parentId, serializedComment.parentPostId);
 
         this.notificationsService.success(`התגובה נשמרה בהצלחה`);
-        this.post.totalChildrenCount++;
+
+        if (!this.editingComment) {
+            this.post.totalChildrenCount++;
+        }
 
         this.initNewComment();
         return true;
     }
 
-    private refreshComments(): Promise<void> {        
-        if (!this.replyParentId) {
+    private refreshComments(parentId: string, postId: string): Promise<void> {        
+        if (parentId === postId) {
             // direct child of the post
             return this.refreshTopLevelComments();
         }
 
-        return this.refreshCommentTree(this.replyParentId);
+        return this.refreshCommentTree(parentId);
     }
 
     private async refreshTopLevelComments(): Promise<void> {
@@ -305,6 +306,9 @@ export class PostViewComponent implements OnInit {
                 }
 
                 if (comments[i].children && updateTree(comments[i].children!)) {
+                    const newTotal = comments[i].children?.reduce((acc, curr) => acc + curr.totalChildrenCount + 1, 0) ?? 0;
+                    comments[i].totalChildrenCount = newTotal;
+
                     return true;
                 }
             }
@@ -330,20 +334,21 @@ export class PostViewComponent implements OnInit {
         this.newCommentBody = comment.body;
     }
 
-    async deleteComment(commentId: string): Promise<void> {
-        if (!await this.confirmationService.didConfirmAction(`האם ברצונך למחוק את התגובה?`)) {
+    async deleteComment(comment: Comment): Promise<void> {
+        const dontDeletePrompt = `האם ברצונך למחוק את התגובה? גם כל תגובות הבן שלה(אם יש כאלו) ימחקו!`;
+        if (!await this.confirmationService.didConfirmAction(dontDeletePrompt)) {
             return;
         }
 
-        if (!await tryDeleteComment(this.authQuery.getUserId()!, commentId)) {
+        if (!await tryDeleteComment(this.authQuery.getUserId()!, comment.id!)) {
             this.notificationsService.error(`מחיקת תגובה נכשלה`);
             return;
         }
 
-        await this.refreshComments();
+        await this.refreshComments(comment.parentId, comment.parentPostId);
 
         this.notificationsService.success(`התגובה נמחקה בהצלחה`);
-        this.post.totalChildrenCount--;
+        this.post.totalChildrenCount -= (1 + comment.totalChildrenCount);
 
         this.initNewComment();
     }

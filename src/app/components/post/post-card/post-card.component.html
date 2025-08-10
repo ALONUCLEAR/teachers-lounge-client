@@ -23,8 +23,20 @@
             </div>
             <div *ngIf="post.lastUpdatedAt" class="updated-at">נערך לאחרונה ב{{ post.lastUpdatedAt | date : 'dd/MM/yyyy HH:mm' : undefined : 'en-IL' }}</div>
         </div>
-        <!--TODO: replace it with a comment-card component(or whatever it'll be called)-->
-        <div *ngIf="mostPopularComment" (click)="openPostView()" class="most-popular-comment clickable">{{ mostPopularComment.body }}</div>
-        <div *ngIf="!mostPopularComment" (click)="openPostView()" class="clickable">לא קיימות תגובות לפוסט</div>
+        <div *ngIf="mostPopularComment; else noComments" class="most-popular-comment clickable" (click)="openPostView()">
+            <div class="popular-header">
+                <i class="fa-solid fa-fire text-warning me-2" aria-hidden="true"></i>
+                התגובה הכי פופולרית
+            </div>
+            <div class="popular-body">"{{ mostPopularComment.body }}"</div>
+            <div class="popular-meta">
+                <span class="author">{{ mostPopularComment.authorName }}</span>
+                <span class="timestamp">{{ mostPopularComment.publishedAt | date : 'dd/MM/yyyy HH:mm' : undefined : 'en-IL' }}</span>
+            </div>
+        </div>
     </div>
 </div>
+
+<ng-template #noComments>
+  <div (click)="openPostView()" class="clickable no-comments">לא קיימות תגובות לפוסט</div>
+</ng-template>

@@ -22,7 +22,7 @@ export class CommentTreeComponent implements OnChanges {
   @Output() onExpand = new EventEmitter<number[]>();
   @Output() onReply = new EventEmitter<Comment>();
   @Output() onEdit = new EventEmitter<[Comment, Comment?]>();
-  @Output() onDelete = new EventEmitter<string>();
+  @Output() onDelete = new EventEmitter<Comment>();
 
   authorName = 'משתמש מחוק';
   isExpanded = false;
@@ -72,6 +72,7 @@ export class CommentTreeComponent implements OnChanges {
 }
 
   handleReplyClick(): void {
+    console.log(`Replying to `, this.comment)
     this.onReply.emit(this.comment);
   }
 
@@ -88,6 +89,6 @@ export class CommentTreeComponent implements OnChanges {
   }
 
   handleDeleteClick(): void {
-    this.onDelete.emit(this.comment.id!);
+    this.onDelete.emit(this.comment);
   }
 }

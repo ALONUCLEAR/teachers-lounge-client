@@ -24,7 +24,7 @@ export class PostCardComponent implements OnChanges {
     canEdit = false;
     canDelete = false;
 
-    mostPopularComment?: Comment;
+    mostPopularComment?: Comment & { authorName: string };
 
     constructor(
         private readonly authQuery: AuthQuery,
@@ -33,11 +33,7 @@ export class PostCardComponent implements OnChanges {
 
     ngOnChanges(changes: SimpleChanges) {
         if (changes['post'] || changes['users']) {
-            const author = this.users.find(user => user.id === this.post.authorId);
-
-            if (author) {
-                this.authorName = author.display;
-            }
+            this.authorName = this.getAuthorName(this.post);
         }
 
         if (changes['post']) {
@@ -46,14 +42,23 @@ export class PostCardComponent implements OnChanges {
         }
     }
 
+    private getAuthorName(content: Pick<Post, 'authorId'>): string {
+        const author = this.users.find(user => user.id === content.authorId);
+        
+        return author?.display ?? 'משתמש מחוק';
+    }
+
     private initPermissions(): void {
         const userState = this.authQuery.getValue();
         this.canEdit = userState.id === this.post.authorId;
         this.canDelete = this.canEdit || hasPermissions(userState.role, UserRoles.Admin);
     }
 
-    private getMostPopularComment(post: Post): Comment | undefined {
-        return (post.children ?? []).sort((a, b) => b.totalChildrenCount - a.totalChildrenCount)?.[0];
+    private getMostPopularComment(post: Post): Comment & { authorName: string } | undefined {
+        const mostPopularComment = (post.children ?? []).sort((a, b) => b.totalChildrenCount - a.totalChildrenCount)?.[0];
+        const authorName = this.getAuthorName(mostPopularComment);
+
+        return mostPopularComment ? { ...mostPopularComment, authorName } : undefined;
     }
 
     openPostView(): void {

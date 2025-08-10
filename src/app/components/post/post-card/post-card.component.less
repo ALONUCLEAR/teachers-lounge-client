@@ -111,7 +111,53 @@
                 background: #f8f9fa;
                 padding: 1em;
                 border-radius: 8px;
-                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+                transition: background-color 0.2s;
+
+                &:hover {
+                    background-color: #f1f3f5;
+                }
+
+                .popular-header {
+                    font-weight: bold;
+                    color: @primary-color;
+                    gap: 0.5em;
+                    display: flex;
+                    align-items: center;
+                    margin-bottom: 0.5em;
+
+                    i {
+                        font-size: 1rem;
+                    }
+                }
+
+                .popular-body {
+                    font-style: italic;
+                    margin-bottom: 0.5em;
+                    color: @text-color;
+                }
+
+                .popular-meta {
+                    font-size: 0.8em;
+                    display: flex;
+                    justify-content: space-between;
+                    color: @secondary-color;
+
+                    .author {
+                        font-weight: 500;
+                    }
+
+                    .timestamp {
+                        direction: ltr;
+                    }
+                }
+            }
+
+            .no-comments {
+                font-size: 0.9em;
+                color: @secondary-color;
+                text-align: center;
+                margin-top: 1em;
             }
         }
     }

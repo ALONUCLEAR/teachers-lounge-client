@@ -1,6 +1,9 @@
 <div class="comment">
   <div class="comment-header">
-    <div class="author">{{ authorName }}</div>
+    <div class="author d-flex align-items-center gap-1">
+      {{ authorName }}
+      <div class="edited" *ngIf="comment.lastUpdatedAt"> (ערוך) </div>
+    </div>
     <div class="timestamp">
       {{ comment.publishedAt | date: 'dd/MM/yyyy HH:mm' : undefined : 'en-IL' }}
     </div>
@@ -36,6 +39,11 @@
       (click)="handleDeleteClick()">
       <i class="fa-solid fa-trash"></i> מחק
     </button>
+
+    <div *ngIf="comment.lastUpdatedAt" class="comment-last-updated">
+      נערך לאחרונה בתאריך:
+      {{ comment.lastUpdatedAt | date: 'dd/MM/yyyy HH:mm' : undefined : 'en-IL' }}
+    </div>
   </div>
 
   <div class="comment-children" *ngIf="isExpanded && comment.children?.length">
