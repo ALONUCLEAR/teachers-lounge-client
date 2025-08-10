@@ -22,7 +22,6 @@ import { AuthStore } from 'src/app/stores/auth/auth.store';
   selector: 'user-status-management',
   templateUrl: './user-status-management.component.html',
   styleUrls: ['./user-status-management.component.less'],
-  providers: [AuthQuery, AuthStore],
 })
 export class UserStatusManagementComponent implements OnInit, OnDestroy {
   private readonly USER_POLLING_RATE_MS = 5000;

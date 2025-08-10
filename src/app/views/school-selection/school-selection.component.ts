@@ -16,7 +16,6 @@ import { Page, SchoolSelectionService } from './school-selection.service';
   styleUrls: ['./school-selection.component.less'],
   standalone: true,
   imports: [SearchComponent, CommonModule, LoaderComponent],
-  providers: [AuthStore, AuthQuery],
 })
 export class SchoolSelectionComponent implements OnInit {
   isLoading = false;

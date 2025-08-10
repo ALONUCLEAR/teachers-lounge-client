@@ -19,7 +19,6 @@ interface LoginForm {
   selector: 'login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.less'],
-  providers: [AuthStore],
 })
 export class LoginComponent implements OnInit, AfterViewInit {
   @ViewChild('form') formElement?: ElementRef;

@@ -12,6 +12,14 @@
       "webRoot": "${workspaceFolder}"
     },
     {
+      "name": "Attach to Brave",
+      "type": "chrome",
+      "request": "attach",
+      "port": 9222,
+      "webRoot": "${workspaceFolder}",
+      "timeout": 10000
+    },
+    {
       "name": "ng serve",
       "type": "chrome",
       "request": "launch",
