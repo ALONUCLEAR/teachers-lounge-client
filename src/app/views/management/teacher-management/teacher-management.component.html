@@ -10,5 +10,5 @@
 <ng-template #userFilters>
     <input [ngModel]="nameorGoveIdFilter" class="form-control filter" placeholder="שם מלא או תעודת זהות"
         (ngModelChange)="changeNameOrGovIdFilter($event)" [maxlength]="255">
-    <drop-down [entities]="statuses" displayField="name" [defaultValue]="statuses[0]" [allowReset]="true" [resetVar]="resetVar" (onSelectionChanged)="changeActivityStatusFilter($event)"></drop-down>
+    <drop-down [entities]="statuses" displayField="name" [defaultValue]="defaultStatus" [allowReset]="true" [resetVar]="resetVar" (onSelectionChanged)="changeActivityStatusFilter($event)"></drop-down>
 </ng-template>

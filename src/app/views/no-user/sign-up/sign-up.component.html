@@ -49,7 +49,7 @@
         <div class="input-group" *ngIf="!isSupportApprovalRequired">
             <div class="field-name">בית ספר</div>
             <search [entities]="schoolList || []" [displayField]="'display'"
-                placeholder="בחר בית ספר" (onEntitySelected)="changeSelectedSchool($event?.[0]?.id)">
+                placeholder="בחר בית ספר" (onEntitySelected)="changeSelectedSchool($event[0]?.id)">
             </search>
         </div>
     </div>
@@ -62,7 +62,7 @@
     </div>
 
     <div class="submit-btn-container">
-        <button type="submit" [disabled]="signUpForm!.invalid" class="submit-btn" (click)="onSubmit()">
+        <button type="submit" [disabled]="signUpForm!.invalid || isLoading" class="submit-btn" (click)="onSubmit()">
             שליחת בקשה
         </button>
     </div>

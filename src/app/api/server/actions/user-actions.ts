@@ -202,14 +202,20 @@ export const tryDeleteUserRequest = async (requestingUserId: string, requestId: 
 }
 
 //TEMP
-export const tryGettingUserIdByGovId = async (govId: string): Promise<string | undefined> => {
-    const response = await axios.get(`${usersUrl}/${govId}`);
+export const tryGettingUserByGovId = async (govId: string): Promise<User | undefined> => {
+    try {
+        const response = await axios.get(`${usersUrl}/${govId}`);
 
-    if (response.status >= HttpStatusCode.MultipleChoices) {
-        console.error(`Request to reject user creation requestFailed, returned with status ${response.status}`);
+        if (response.status >= HttpStatusCode.MultipleChoices) {
+            console.error(`Request to get user by govId ${govId} failed! Returned with status ${response.status}`);
+
+            return undefined;
+        }
+
+        return userRoleMapper(response.data);
+    } catch (error) {
+        console.error(error);
 
         return undefined;
     }
-
-    return response.data;
 }

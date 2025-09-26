@@ -22,6 +22,7 @@ import { HttpStatusCode } from 'axios';
 import { SchoolLinkingPopupComponent } from './school-linking-popup/school-linking-popup.component';
 import { uniqBy } from 'lodash';
 import { ConfirmationService } from 'src/app/services/confirmation.service';
+import { ActivatedRoute } from '@angular/router';
 
 const getUserFullName = ({ info: { firstName, lastName } }: Pick<User, 'info'>) => `${firstName} ${lastName}`;
 const getUserFullInfo = (user: Pick<User, 'govId' | 'info'>) => `${getUserFullName(user)}(${user.govId})`;
@@ -74,10 +75,11 @@ export class TeacherManagementComponent implements OnInit, OnDestroy {
     name: getHebrewwActivityStatus(status),
     value: status,
   }));
+  defaultStatus = this.statuses[0];
   resetVar = 0;
 
-
   constructor(
+    private readonly route: ActivatedRoute,
     private readonly schoolSelectionService: SchoolSelectionService,
     private readonly notificationsService: NotificationsService,
     private readonly modalService: NgbModal,
@@ -97,6 +99,16 @@ export class TeacherManagementComponent implements OnInit, OnDestroy {
     this.schoolName = (await getSchoolById(this.schoolId))!.name;
 
     this.fetchUsers();
+
+    const shouldSwitchToPending = this.route.snapshot.queryParamMap.get('pending') ?? "false";
+
+    console.log({shouldSwitchToPending, params: this.route.snapshot.queryParamMap.keys});
+
+    if (shouldSwitchToPending == "true") {
+      this.defaultStatus = this.statuses[1];
+      this.changeActivityStatusFilter(this.defaultStatus);
+      this.resetVar = (this.resetVar + 1) % 2;
+    }
   }
 
   setUsers(users: User[]): void {
@@ -200,7 +212,7 @@ export class TeacherManagementComponent implements OnInit, OnDestroy {
       content: `בקשתך לפתיחת משתמש נדחתה. להלן הסיבה:\n${rejectionReason}`,
     };
 
-    if (!await trySendingMailTo(userRequest.email, mailInput)) {
+    if (!await trySendingMailTo(this.authQuery.getUserId()!, userRequest.email, mailInput)) {
       this.notificationsService.error(`לא הצלחנו לשלוח למשתמש את המייל`, { title: `שגיאה בשליחת הודעת דחייה` });
     }
 
@@ -271,6 +283,7 @@ export class TeacherManagementComponent implements OnInit, OnDestroy {
   }
 
   changeActivityStatusFilter({ name, value }: DisplayedStatus): void {
+    console.trace(name, value);
     this.statusFilter = name;
 
     if (value === ActivityStatus.Pending) {

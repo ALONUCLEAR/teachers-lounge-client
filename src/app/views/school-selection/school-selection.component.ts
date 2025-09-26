@@ -63,8 +63,7 @@ export class SchoolSelectionComponent implements OnInit {
 
   async logout(): Promise<void> {
     this.isLoading = true;
-    this.authStore.logoutUser();
-    await this.router.navigate(['/login']);
+    await this.authStore.logoutUser();
     this.isLoading = false;
   }
 }

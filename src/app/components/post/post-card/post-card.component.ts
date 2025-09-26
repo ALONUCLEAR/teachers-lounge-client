@@ -43,8 +43,8 @@ export class PostCardComponent implements OnChanges {
     }
 
     private getAuthorName(content: Pick<Post, 'authorId'>): string {
-        const author = this.users.find(user => user.id === content.authorId);
-        
+        const author = this.users.find(user => user.id === content?.authorId);
+
         return author?.display ?? 'משתמש מחוק';
     }
 

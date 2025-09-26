@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormControl, FormControlOptions, FormGroup, ValidatorFn, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { trySendingCodeToUser } from 'src/app/api/server/actions/email-actions';
+import { isCodeVerified, trySendingCodeToUser } from 'src/app/api/server/actions/email-actions';
 import { getAllSchools } from 'src/app/api/server/actions/school-actions';
 import { trySendingUserRequest } from 'src/app/api/server/actions/user-actions';
 import { getRoleKey, UserRoles } from 'src/app/api/server/types/permissions';
@@ -46,6 +46,7 @@ export class SignUpComponent implements OnInit {
   * ספרה
   * לפחות 8 תווים`;
   isSupportApprovalRequired = false;
+  isLoading = false;
 
   constructor(
     private readonly router: Router,
@@ -167,23 +168,37 @@ export class SignUpComponent implements OnInit {
     };
   }
 
-  // TODO: change it to work as it should (don't get the code back to the client)
-  private async codeVerification(email: string): Promise<boolean> {
-    const verificationCode = await trySendingCodeToUser(email);
+  private async codeVerification(govId: string, email: string): Promise<boolean> {
+    if (!await trySendingCodeToUser(govId, email)) {
+      return false;
+    }
+
     const modalRef = this.modalService.open(PromptComponent);
     const instance: PromptComponent = modalRef.componentInstance;
     instance.promptTitle = `קוד אימות`;
-    instance.promptText = `הכניסו את קוד האימות שקיבלתם במייל(${verificationCode})`;
+    instance.promptText = `הכניסו את קוד האימות שקיבלתם במייל`;
     const inputCode = await modalRef.result;
 
     if (!inputCode) {
       return false;
     }
 
-    return inputCode === verificationCode;
+    return await isCodeVerified(govId, inputCode);
   }
 
   async onSubmit(): Promise<void> {
+    if (this.isLoading) {
+      return;
+    }
+
+    this.isLoading = true;
+
+    await this.submitSingUpForm();
+
+    this.isLoading = false;
+  }
+
+  private async submitSingUpForm(): Promise<void> {
     if (!this.isFormValid()) {
       return;
     }
@@ -197,7 +212,7 @@ export class SignUpComponent implements OnInit {
     }
 
     try {
-      if (!await this.codeVerification(formData.email)) {
+      if (!await this.codeVerification(formData.govId, formData.email)) {
         this.popupService.error(`קוד לא נכון`);
 
         return;

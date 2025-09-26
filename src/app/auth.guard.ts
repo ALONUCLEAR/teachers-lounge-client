@@ -41,7 +41,7 @@ export class AuthGuard implements CanActivate {
     }
   }
 
-  private handleUnauthorizedAccess(currentUrl: string, fallBackUrl = '/school-management'): UrlTree {
+  private handleUnauthorizedAccess(currentUrl: string, fallBackUrl = '/forum'): UrlTree {
     const returnUrl = this.getReturnUrl(currentUrl);
 
     if (!returnUrl) {

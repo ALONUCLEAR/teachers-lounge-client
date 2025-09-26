@@ -218,7 +218,7 @@ export class UserStatusManagementComponent implements OnInit, OnDestroy {
           content: `בקשתך לפתיחת משתמש נדחתה. להלן הסיבה:\n${rejectionReason}`,
         };
 
-    if (!await trySendingMailTo(userToReject.email, mailInput)) {
+    if (!await trySendingMailTo(this.authQuery.getUserId()!, userToReject.email, mailInput)) {
       this.notificationService.error(`לא הצלחנו לשלוח למשתמש את המייל`, { title: `שגיאה בשליחת הודעת ${isBlocking ? 'חסימה': 'דחייה'}` });
     }
   }

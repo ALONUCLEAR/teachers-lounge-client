@@ -3,9 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, FormControl, FormControlOptions, FormGroup, ValidatorFn, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { buffer, debounceTime, filter, fromEvent, map, throttleTime } from 'rxjs';
-import { trySendingMailTo } from 'src/app/api/server/actions/email-actions';
-import { tryGettingUserIdByGovId, tryLogin } from 'src/app/api/server/actions/user-actions';
-import { ActivityStatus } from 'src/app/api/server/types/user';
+import { tryGettingUserByGovId, tryLogin } from 'src/app/api/server/actions/user-actions';
 import { PopupService } from 'src/app/services/popup.service';
 import { AuthStore } from 'src/app/stores/auth/auth.store';
 import { PASSWORD_PATTERN } from '../sign-up/sign-up.component';
@@ -25,6 +23,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
   @HostBinding('style.--bg-img') bgImgStyle = "";
   
   loginForm?: FormGroup<LoginForm>;
+  isLoading = false;
   readonly passwordPattern = PASSWORD_PATTERN;
   private readonly IMAGE_NAMES = ["teachers at noon.jpeg", "teachers at night.jpeg"];
   private imageName = this.IMAGE_NAMES[0];
@@ -94,6 +93,18 @@ export class LoginComponent implements OnInit, AfterViewInit {
   }
 
   async onSubmit(): Promise<void> {
+    if (this.isLoading) {
+      return;
+    }
+
+    this.isLoading = true;
+
+    await this.tryLogin();
+
+    this.isLoading = false;
+  }
+
+  async tryLogin(): Promise<void> {
     try {
       if (!this.loginForm?.valid) {
         this.popupService.error("אחד מהערכים שהזנת לא תקין");
@@ -108,17 +119,6 @@ export class LoginComponent implements OnInit, AfterViewInit {
         throw new Error("Invalid credentials");
       }
 
-      if (user.activityStatus !== ActivityStatus.Active) {
-        const userState = user.activityStatus === ActivityStatus.Blocked ? 'חסום' : 'ממתין לאישור ראשוני';
-        const revertingAction = user.activityStatus === ActivityStatus.Blocked ? 'עד שישוחזר' : 'לאישור הבקשה';
-        const message = `זיהינו שניסת להתחבר למערכת חדר מורים. המשתמש שלך ${userState}.\n`
-        +`נא להמתין ${revertingAction} ע"י הגורמים המאשרים הרלוונטיים.`;
-
-        await trySendingMailTo(user.email, { title: 'נסיון התחברות למערכת חדר מורים', content: message });
-
-        throw new Error("Inactive user login attempt");
-      }
-
       this.authStore.updateUser({ ...user, role: user.role! });
 
       await this.router.navigate(['/forum']);
@@ -130,9 +130,14 @@ export class LoginComponent implements OnInit, AfterViewInit {
 
   async navigateToForgotPassword(): Promise<void> {
     try {
-      const userId: string | undefined = await tryGettingUserIdByGovId(this.loginForm!.value["govId"]!);
-
-      userId ? this.router.navigate(["/forgot-password"], {queryParams: {userId}}) : this.popupService.warn("אנא הזן תז נכון");
+      const govId = this.loginForm!.value["govId"]!;
+      const user = await tryGettingUserByGovId(govId);
+      
+      if (user) {
+        this.router.navigate(["/forgot-password"], { queryParams: { userId: user.id, govId } });
+      } else {
+        this.popupService.warn("אנא הזן תז נכון");
+      }
     } catch (e) {
       this.popupService.warn("אנא הזן תז נכון");
       console.error(e);
