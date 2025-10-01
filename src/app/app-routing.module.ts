@@ -14,6 +14,7 @@ import { TeacherManagementComponent } from './views/management/teacher-managemen
 import { SchoolForumComponent } from './views/forum/school-forum/school-forum.component';
 import { PostViewComponent } from './views/forum/school-forum/post-view/post-view.component';
 import { AdminManagementComponent } from './views/management/admin-management/admin-management.component';
+import { SuperAdminManagementComponent } from './views/management/super-admin-management/super-admin-management.component';
 
 const makeRouteGuarded = (route: Route, requiredRole?: UserRoles): Route => {
   return {
@@ -23,7 +24,9 @@ const makeRouteGuarded = (route: Route, requiredRole?: UserRoles): Route => {
   };
 };
 
-const SupportRoutes: Routes = [].map(route => makeRouteGuarded(route as Route, UserRoles.Support));
+const SupportRoutes: Routes = [
+  { path: 'super-admin-management', pathMatch: 'full', component: SuperAdminManagementComponent },
+].map(route => makeRouteGuarded(route as Route, UserRoles.Support));
 
 const SuperAdminRoutes: Routes = [
   { path: 'school-management', pathMatch: 'full', component: SchoolManagementComponent },

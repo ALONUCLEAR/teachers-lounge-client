@@ -64,7 +64,9 @@ export class AdminManagementComponent implements OnInit {
     if (!this.schoolId) {
       return;
     }
+
     await this.initSchools();
+    this.selectedSchoolName = this.allSchools.find(school => school.id === this.schoolId)?.name ?? '';
 
     this.userQuery.selectAll({
       filterBy: user => !hasPermissions(user.role, UserRoles.SuperAdmin)
@@ -112,6 +114,10 @@ export class AdminManagementComponent implements OnInit {
   }
 
   async onUnlink(userToReject: User): Promise<void> {
+    if (this.isLoading) {
+      return;
+    }
+
     this.isLoading = true;
     await this.unlinkUser(userToReject);
     this.isLoading = false;
@@ -148,6 +154,10 @@ export class AdminManagementComponent implements OnInit {
   }
 
   async onLink(userToLink: User): Promise<void> {
+    if (this.isLoading) {
+      return;
+    }
+
     this.isLoading = true;
     await this.linkUser(userToLink);
     this.isLoading = false;
@@ -179,6 +189,10 @@ export class AdminManagementComponent implements OnInit {
   }
 
   async onRoleChange(user: User): Promise<void> {
+    if (this.isLoading) {
+      return;
+    }
+
     this.isLoading = true;
 
     if (hasPermissions(user.role, UserRoles.Admin)) {

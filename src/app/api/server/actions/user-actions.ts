@@ -169,6 +169,22 @@ export const tryLinkUsersToSchool = async (requestingUserId: string, targetUserI
     }
 }
 
+export const tryLinkUserToSchools = async (requestingUserId: string, targetUserId: string, schoolIds: string[]): Promise<boolean> => {
+    try {
+        const response = await axios.patch(`${usersUrl}/${targetUserId}/set-schools`, schoolIds, { headers: { userId: requestingUserId } });
+
+        if (response.status >= HttpStatusCode.MultipleChoices) {
+            throw new Error(`Error linking user ${targetUserId} to schools ${schoolIds.join(", ")}, returned with status ${response.status}`);
+        }
+
+        return true;
+    } catch (error) {
+        console.error(error);
+
+        return false;
+    }
+}
+
 export const tryChangeUserRole = async (requestingUserId: string, targetUserId: string, hebrewRole: UserRoles, action: 'promote' | 'demote'): Promise<boolean> => {
     try {
         const role = (getRoleKey(hebrewRole) ?? "").toString();

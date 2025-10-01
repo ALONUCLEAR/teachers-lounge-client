@@ -1,0 +1,50 @@
+<loader *ngIf="isLoading"></loader>
+<list-view *ngIf="!isLoading"
+    [data]="userGroups" [displayMapper]="userDataMapper" [selectedEntityId]="selectedUserId"
+    [entityTrackBy]="userTrackBy" [template]="selectedUserTemplate"
+    (onEntitySelected)="selectUser($event)"></list-view>
+
+<ng-template #selectedUserTemplate let-selectedUser="selectedEntity">
+    <div *ngIf="selectedUser?.info" class="user-info">
+        <div class="user-header">
+            <div class="gov-id-email">
+                <p class="gov-id">תעודת זהות: {{ selectedUser.govId }}</p>
+                <p class="email">דוא"ל: {{ selectedUser.email }}</p>
+            </div>
+
+            <div class="full-name">
+                <p>{{ selectedUser.info.firstName }} {{ selectedUser.info.lastName }}</p>
+            </div>
+        </div>
+
+        <div class="user-details">
+            <div *ngIf="(selectedUser.associatedSchools | func: idToSchoolMapper) | func: joinStrings as joinedAssociatedSchoolNames"
+                class="schools">
+                <p *ngIf="joinedAssociatedSchoolNames.length">בתי ספר: 
+                    <span> {{ joinedAssociatedSchoolNames }} </span>
+                </p>
+            </div>
+
+            <div class="role-message">
+                <div class="role">
+                    <p>דרגת הרשאות: <span>{{ selectedUser.role }}</span></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="submit-container">
+            <ng-container *ngIf="selectedUser.role | permissions: UserRoles.SuperAdmin">
+                <div class="submit-btn demote-user" (click)="onRoleChange(selectedUser, UserRoles.Admin)">
+                    שנמוך למנהל/ת
+                </div>
+                <div class="submit-btn demote-user" (click)="onRoleChange(selectedUser, UserRoles.Base)">
+                    שנמוך למורה
+                </div>
+            </ng-container>
+            <div *ngIf="!(selectedUser.role | permissions: UserRoles.SuperAdmin)"
+                class="submit-btn promote-user" (click)="onRoleChange(selectedUser, UserRoles.SuperAdmin)">
+                קידום לבכיר
+            </div>
+        </div>
+    </div>
+</ng-template>
