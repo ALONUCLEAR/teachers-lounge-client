@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { tryLinkUserToSchool } from 'src/app/api/server/actions/user-actions';
+import { tryLinkUsersToSchool } from 'src/app/api/server/actions/user-actions';
 import { DisplayedUser } from 'src/app/api/server/types/user';
 import { PopupService } from 'src/app/services/popup.service';
 import { AuthQuery } from 'src/app/stores/auth/auth.query';
@@ -58,7 +58,7 @@ export class SchoolLinkingPopupComponent implements OnInit {
 
     this.isLoading = true;
 
-    if (await tryLinkUserToSchool(this.authQuery.getUserId()!, this.selectedUsers.map(({ id }) => id), this.currentSchoolId)) {
+    if (await tryLinkUsersToSchool(this.authQuery.getUserId()!, this.selectedUsers.map(({ id }) => id), this.currentSchoolId)) {
       this.modal.close(this.selectedUsers.map(user => ({...user, associatedSchools: [...user.associatedSchools, this.currentSchoolId]})));
     } else {
       this.popupService.error(`לא הצלחנו לקשר את המורים`);

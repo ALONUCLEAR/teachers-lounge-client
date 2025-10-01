@@ -17,6 +17,7 @@ import { NotificationsService } from 'src/app/services/notifications.service';
 import { PopupService } from 'src/app/services/popup.service';
 import { AuthQuery } from 'src/app/stores/auth/auth.query';
 import { AuthStore } from 'src/app/stores/auth/auth.store';
+import { getUserFullName } from '../teacher-management/teacher-management.component';
 
 @Component({
   selector: 'user-status-management',
@@ -37,7 +38,7 @@ export class UserStatusManagementComponent implements OnInit, OnDestroy {
   readonly ActivityStatus = ActivityStatus;
   isLoading = false;
 
-  readonly userDataMapper = (user: GenericUser) => `${user.info.firstName} ${user.info.lastName}`;
+  readonly userDataMapper = (user: GenericUser) => getUserFullName(user);
   readonly userTrackBy = (user1?: GenericUser) => user1?.id ?? `User doesn't exist`;
   readonly idToSchoolMapper = (schoolIds: string[]): string[] => {
     return this.allSchools
@@ -112,7 +113,7 @@ export class UserStatusManagementComponent implements OnInit, OnDestroy {
   private pollBannedUsers(): void {
     const bannedUsersInterval = window.setInterval(async () => {
       try {
-        const allBannedUsers = await getAllUsersByStatus(this.authQuery.getUserId()!, false);
+        const allBannedUsers = await getAllUsersByStatus(this.authQuery.getUserId()!, false, true);
 
         if (this.isFirstLoad) {
           this.isLoading = false;
@@ -133,7 +134,7 @@ export class UserStatusManagementComponent implements OnInit, OnDestroy {
   private pollActiveUsers(): void {
     const activeUsersInterval = window.setInterval(async () => {
       try {
-        const allActiveUsers = await getAllUsersByStatus(this.authQuery.getUserId()!, true);
+        const allActiveUsers = await getAllUsersByStatus(this.authQuery.getUserId()!, true, true);
 
         if (this.isFirstLoad) {
           this.isLoading = false;

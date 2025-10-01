@@ -7,6 +7,9 @@ import { AssociationCreationPopupComponent } from './association-management/asso
 import { AssociationManagementService } from './association-management/association-management.service';
 import { TeacherManagementComponent } from './teacher-management/teacher-management.component';
 import { SchoolLinkingPopupComponent } from './teacher-management/school-linking-popup/school-linking-popup.component';
+import { AdminManagementComponent } from './admin-management/admin-management.component';
+import { IncludesPipe } from "../../pipes/includes.pipe";
+import { PermissionsPipe } from "../../pipes/permissions.pipe";
 
 @NgModule({
   declarations: [
@@ -16,9 +19,10 @@ import { SchoolLinkingPopupComponent } from './teacher-management/school-linking
     AssociationCreationPopupComponent,
     TeacherManagementComponent,
     SchoolLinkingPopupComponent,
+    AdminManagementComponent,
   ],
   providers: [AssociationManagementService],
-  imports: [BasicModule],
+  imports: [BasicModule, IncludesPipe, PermissionsPipe],
   exports: [SchoolManagementComponent]
 })
 export class ManagementModule { }

@@ -13,6 +13,7 @@ import { SchoolSelectionComponent } from './views/school-selection/school-select
 import { TeacherManagementComponent } from './views/management/teacher-management/teacher-management.component';
 import { SchoolForumComponent } from './views/forum/school-forum/school-forum.component';
 import { PostViewComponent } from './views/forum/school-forum/post-view/post-view.component';
+import { AdminManagementComponent } from './views/management/admin-management/admin-management.component';
 
 const makeRouteGuarded = (route: Route, requiredRole?: UserRoles): Route => {
   return {
@@ -26,7 +27,8 @@ const SupportRoutes: Routes = [].map(route => makeRouteGuarded(route as Route, U
 
 const SuperAdminRoutes: Routes = [
   { path: 'school-management', pathMatch: 'full', component: SchoolManagementComponent },
-  { path: 'user-status-management', pathMatch: 'full', component: UserStatusManagementComponent }
+  { path: 'user-status-management', pathMatch: 'full', component: UserStatusManagementComponent },
+  { path: 'admin-management', pathMatch: 'full', component: AdminManagementComponent },
 ].map(route => makeRouteGuarded(route as Route, UserRoles.SuperAdmin));
 
 const AdminRoutes: Routes = [

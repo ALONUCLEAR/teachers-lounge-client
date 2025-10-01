@@ -1,7 +1,7 @@
 import { environment } from "src/environments/environment";
 import { GenericUser, User, UserRequest } from "../types/user";
 import axios, { HttpStatusCode } from "axios";
-import { UserRoles } from "../types/permissions";
+import { getRoleKey, UserRoles } from "../types/permissions";
 
 const requestsUrl = `${environment.serverUrl}/requests`;
 const usersUrl = `${environment.serverUrl}/users`;
@@ -23,8 +23,8 @@ export const getAllUserRequests = async (requestingUserId: string): Promise<Gene
     return response.data.map(userRoleMapper);
 }
 
-export const getAllUsersByStatus = async (requestingUserId: string, areActive: boolean): Promise<User[]> => {
-    const response = await axios.get(`${usersUrl}/active/${areActive}`, { headers: { userId: requestingUserId } });
+export const getAllUsersByStatus = async (requestingUserId: string, areActive: boolean, affectedOnly = false): Promise<User[]> => {
+    const response = await axios.get(`${usersUrl}/active/${areActive}?affectedOnly=${affectedOnly}`, { headers: { userId: requestingUserId } });
 
     if (response.status >= HttpStatusCode.BadRequest) {
         throw new Error(`Request to get all blocked users failed, returned with status ${response.status}`);
@@ -153,7 +153,7 @@ export const tryUnlinkUserFromSchool = async (requestingUserId: string, targetUs
     }
 }
 
-export const tryLinkUserToSchool = async (requestingUserId: string, targetUserIds: string[], schoolId: string): Promise<boolean> => {
+export const tryLinkUsersToSchool = async (requestingUserId: string, targetUserIds: string[], schoolId: string): Promise<boolean> => {
     try {
         const response = await axios.post(`${usersUrl}/link-school/${schoolId}`, targetUserIds, { headers: { userId: requestingUserId } });
 
@@ -162,6 +162,28 @@ export const tryLinkUserToSchool = async (requestingUserId: string, targetUserId
         }
 
         return true;
+    } catch (error) {
+        console.error(error);
+
+        return false;
+    }
+}
+
+export const tryChangeUserRole = async (requestingUserId: string, targetUserId: string, hebrewRole: UserRoles, action: 'promote' | 'demote'): Promise<boolean> => {
+    try {
+        const role = (getRoleKey(hebrewRole) ?? "").toString();
+
+        if (!role) {
+            throw new Error(`Invalid role ${hebrewRole}!`);
+        }
+
+        const response = await axios.patch(`${usersUrl}/${action}/${targetUserId}/to/${role}`, undefined, { headers: { userId: requestingUserId } });
+
+        if (response.status >= HttpStatusCode.MultipleChoices) {
+            throw new Error(`Error trying to ${action} ${targetUserId} to ${role}, returned with status ${response.status}`);
+        }
+
+        return response.data;
     } catch (error) {
         console.error(error);
 

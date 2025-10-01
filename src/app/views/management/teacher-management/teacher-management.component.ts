@@ -24,7 +24,7 @@ import { uniqBy } from 'lodash';
 import { ConfirmationService } from 'src/app/services/confirmation.service';
 import { ActivatedRoute } from '@angular/router';
 
-const getUserFullName = ({ info: { firstName, lastName } }: Pick<User, 'info'>) => `${firstName} ${lastName}`;
+export const getUserFullName = ({ info: { firstName, lastName } }: Pick<User, 'info'>) => `${firstName} ${lastName}`;
 const getUserFullInfo = (user: Pick<User, 'govId' | 'info'>) => `${getUserFullName(user)}(${user.govId})`;
 
 @Component({
@@ -227,7 +227,7 @@ export class TeacherManagementComponent implements OnInit, OnDestroy {
     }
 
     const userName = getUserFullName(user);
-    const confirmationBody = `אתם בטוחים שברצונכם לבצע את הניתוק? לא ישארו ל${userName} שום בתי ספר מקושרים!`;;
+    const confirmationBody = `אתם בטוחים שברצונכם לבצע את הניתוק? לא ישארו ל${userName} שום בתי ספר מקושרים!`;
 
     if (user.associatedSchools.length === 1 && !await ConfirmationService.didConfirmAction(this.modalService, confirmationBody)) {
       return;
@@ -238,7 +238,7 @@ export class TeacherManagementComponent implements OnInit, OnDestroy {
         title: `שגיאה בניתוק ${userName} מבית הספר`,
       });
     } else {
-      this.notificationsService.success(userName + " נותקה מבית הספר בהצלחה");
+      this.notificationsService.success(userName + " נותק/ה מבית הספר בהצלחה");
       await this.getAndSetUsers();
     }
 
