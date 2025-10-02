@@ -1,0 +1,6 @@
+<ng-container *ngIf="file" [ngSwitch]="mediaItem?.type">
+  <img *ngSwitchCase="MediaType.JPG" [src]="imageUrl">
+  <div *ngSwitchDefault>
+    סוג מדיה לא נתמך
+  </div>
+</ng-container>

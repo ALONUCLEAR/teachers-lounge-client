@@ -6,13 +6,14 @@ import { hasPermissions, UserRoles } from "src/app/api/server/types/permissions"
 import { Comment, Post } from "src/app/api/server/types/post";
 import { DisplayedUser } from 'src/app/api/server/types/user';
 import { AuthQuery } from "src/app/stores/auth/auth.query";
+import { MediaComponent } from "../../ui/media/media.component";
 
 @Component({
     standalone: true,
     selector: 'post-card',
     templateUrl: './post-card.component.html',
     styleUrls: ['./post-card.component.less'],
-    imports: [CommonModule, NgbTooltipModule],
+    imports: [CommonModule, NgbTooltipModule, MediaComponent],
 })
 export class PostCardComponent implements OnChanges {
     @Input({ required: true }) post: Post = {} as Post;

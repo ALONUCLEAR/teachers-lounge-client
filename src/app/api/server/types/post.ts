@@ -3,7 +3,7 @@ interface ContentEntity {
     id?: string;
     authorId: string;
     body: string;
-    // Media: Media[]
+    media?: MediaItem[]
     publishedAt: string;
     lastUpdatedAt?: string;
     totalChildrenCount: number;
@@ -18,4 +18,14 @@ export interface Post extends ContentEntity {
 export interface Comment extends ContentEntity {
     parentPostId: string,
     parentId: string,
+}
+
+export enum MediaType {
+    JPG = "image/jpeg",
+    PNG = "image/png",
+}
+
+export interface MediaItem {
+    data: string;
+    type: MediaType;
 }

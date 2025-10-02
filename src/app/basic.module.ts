@@ -18,6 +18,7 @@ import { ListViewComponent } from "./components/ui/list-view/list-view.component
 import { FuncPipe } from "./pipes/func.pipe";
 import { PostCardComponent } from "./components/post/post-card/post-card.component";
 import { CommentTreeComponent } from "./components/post/comments/comment-tree/comment-tree.component";
+import { MediaComponent } from "./components/ui/media/media.component";
 
 const basicModules = [
     BrowserModule, CommonModule,
@@ -37,6 +38,7 @@ const standaloneComponents = [
     SelectedSchoolInfoComponent,
     PostCardComponent,
     CommentTreeComponent,
+    MediaComponent,
 ];
 
 const services = [NotificationsService, PopupService];

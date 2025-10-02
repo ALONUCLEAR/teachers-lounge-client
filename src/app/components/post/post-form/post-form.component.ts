@@ -7,7 +7,8 @@ import { AuthQuery } from 'src/app/stores/auth/auth.query';
 import { setFormArray } from 'src/app/utils/form-utils';
 import { PostForm, PostService } from 'src/app/views/forum/school-forum/post.service';
 import { SchoolSelectionService } from 'src/app/views/school-selection/school-selection.service';
-import { Post } from '../../../api/server/types/post';
+import { MediaItem, MediaType, Post } from '../../../api/server/types/post';
+import { ConvertFileListToMedia, ConvertMediaToFileList } from 'src/app/utils/media-utils';
 
 @Component({
     selector: 'post-form',
@@ -18,6 +19,9 @@ export class PostFormComponent implements OnInit {
     @Input({ required: true }) subject: Pick<Association, 'id' | 'name'> = { id: '', name: '' };
     @Input() post?: Post;
     postForm!: FormGroup<PostForm>;
+    selectedMediaItems: MediaItem[] = [];
+    maxMediaItems = 1;
+    acceptedFileTypes = Object.values(MediaType).join(', ');
 
     associationEntities: Association[] = [];
     isEditing = false;
@@ -36,6 +40,7 @@ export class PostFormComponent implements OnInit {
 
         await this.initEntities();
         this.postForm = this.postService.createPostForm(this.post);
+        this.selectedMediaItems = this.post?.media ?? [];
         this.isEditing = Boolean(this.post?.id);
 
         this.isLoading = false;
@@ -56,19 +61,33 @@ export class PostFormComponent implements OnInit {
         ];
     }
 
+    async onFilesSelected(event: Event): Promise<void> {
+        const input = event.target as HTMLInputElement;
+
+        if (input.files) {
+            this.selectedMediaItems = await ConvertFileListToMedia(input.files);
+        }
+    }
+
+    removeMediaItem(index: number): void {
+        this.selectedMediaItems = this.selectedMediaItems.filter((_, i) => i !== index);
+    }
+
     updateImportantParticipants(associations: Association[]): void {
         const associationIds = associations.map(({ id }) => id!).filter(Boolean);
         setFormArray(this.postForm.controls.importantParticipants, associationIds);
     }
 
     async onSubmit(): Promise<void> {
-        if (!this.postService.isFormValid(this.postForm)) {
+        const selectedFileList = ConvertMediaToFileList(this.selectedMediaItems);
+
+        if (!this.postService.isFormValid(this.postForm, selectedFileList)) {
             return;
         }
 
         const updatedPost = PostService.serializeForm(this.postForm, this.authorId, this.subject.id!, this.post);
 
-        if (await this.postService.upsertPost(updatedPost)) {
+        if (await this.postService.upsertPost(updatedPost, selectedFileList)) {
             this.modal.close(updatedPost);
         }
     }

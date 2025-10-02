@@ -3,7 +3,7 @@ import { FormArray, FormBuilder, FormControl, FormGroup, Validators } from "@ang
 import { NgbModal } from "@ng-bootstrap/ng-bootstrap";
 import { tryDeletePost, tryUpsertPost } from "src/app/api/server/actions/post-actions";
 import { Association } from "src/app/api/server/types/association";
-import { Post } from "src/app/api/server/types/post";
+import { MediaType, Post } from "src/app/api/server/types/post";
 import { PostFormComponent } from "src/app/components/post/post-form/post-form.component";
 import { ConfirmationService } from "src/app/services/confirmation.service";
 import { PopupService } from "src/app/services/popup.service";
@@ -25,6 +25,8 @@ export class PostService {
         private readonly authQuery: AuthQuery,
         private readonly modalService: NgbModal,
     ) { }
+
+    public static MAX_FILE_SIZE_MB = 15;
 
     createPostForm(post?: Post): FormGroup<PostForm> {
         return this.formBuilder.group({
@@ -59,9 +61,17 @@ export class PostService {
         };
     }
 
-    isFormValid(postFrom: FormGroup<PostForm>): boolean {
+    isFormValid(postFrom: FormGroup<PostForm>, selectedFiles: FileList | null): boolean {
+        const errorOptions = { title: `שגיאה בשמירת פוסט` };
+
         if (postFrom.invalid) {
-            this.popupService.error(`שדות לא תקינים`, { title: `שגיאה בשמירת פוסט` });
+            this.popupService.error(`שדות לא תקינים`, errorOptions);
+
+            return false;
+        }
+
+        if (!PostService.isAllMediaValid(selectedFiles)) {
+            this.popupService.error(`מדיה לא תקינה בפוסט. שימו לב שגודל קובץ לא יכול לעלות על 15MB בדיוק`, errorOptions);
 
             return false;
         }
@@ -84,8 +94,41 @@ export class PostService {
         return undefined;
     }
 
-    async upsertPost(inputPost: ExpandedPost): Promise<boolean> {
-        if (await tryUpsertPost(this.authQuery.getUserId()!, inputPost, inputPost.importantParticipants)) {
+
+    private static get allowedMediaTypes() {
+        return Object.values(MediaType);
+    } 
+
+    static isMediaValid(media: File): boolean {
+        if (!PostService.allowedMediaTypes.includes(media.type as MediaType)) {
+            return false;
+        }
+
+        // media.size is in bytes
+        const sizeMb = media.size / (1024 * 1024);
+
+        if (sizeMb > PostService.MAX_FILE_SIZE_MB) {
+            return false;
+        }
+
+        return true;
+    }
+
+    static isAllMediaValid(mediaFiles: File[]): boolean
+    static isAllMediaValid(mediaFiles: FileList | null | undefined): boolean
+    static isAllMediaValid(mediaFiles: File[] | FileList | null | undefined): boolean {
+        if (!mediaFiles?.length) {
+            // If it's empty it's valid
+            return true;
+        }
+
+        const files = ('item' in mediaFiles) ? Array.from(mediaFiles) : mediaFiles;
+
+        return files.every(this.isMediaValid);
+    }
+
+    async upsertPost(inputPost: ExpandedPost, selectedFiles: FileList | null): Promise<boolean> {
+        if (await tryUpsertPost(this.authQuery.getUserId()!, inputPost, selectedFiles, inputPost.importantParticipants)) {
             this.popupService.success(`הפוסט נשמר בהצלחה`);
             return true;
         } else {

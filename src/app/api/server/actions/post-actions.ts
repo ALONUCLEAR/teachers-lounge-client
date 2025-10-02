@@ -29,9 +29,20 @@ export const getPostById = async (requestingUserId: string, postId: string): Pro
     return response.data;
 }
 
-export const tryUpsertPost = async (requestingUserId: string, post: Post, importantParticipants?: string[]): Promise<boolean> => {
+export const tryUpsertPost = async (requestingUserId: string, post: Post, selectedFiles: FileList | null , importantParticipants?: string[]): Promise<boolean> => {
     try {
-        const response = await axios.post(postsUrl, post, {
+        const formData = new FormData();
+
+        post.media = undefined;
+        formData.append('postJson', JSON.stringify(post));
+
+        if (selectedFiles) {
+             Array.from(selectedFiles).forEach(file => {
+                formData.append('mediaFiles', file);
+            });
+        }
+
+        const response = await axios.post(postsUrl, formData, {
             headers: { userId: requestingUserId },
             params: { importantParticipants },
         });

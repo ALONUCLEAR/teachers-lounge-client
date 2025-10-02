@@ -27,6 +27,19 @@
               (onEntitySelected)="updateImportantParticipants($event)"
               ></search>
         </div>
+
+        <div *ngIf="maxMediaItems > selectedMediaItems.length" class="mb-3">
+          <label class="form-label">מדיה</label>
+          <input class="form-control" type="file" (change)="onFilesSelected($event)" [accept]="acceptedFileTypes" />
+        </div>
+
+        <div *ngIf="selectedMediaItems.length" class="mb-3">
+          <label class="form-label">תמונות שנבחרו: </label>
+          <div *ngFor="let mediaItem of selectedMediaItems; let index=index;" class="media-box">
+            <app-media [mediaItem]="mediaItem"></app-media>
+            <button type="button" class="btn btn-outline-danger" (click)="removeMediaItem(index)">הסר</button>
+          </div>
+        </div>
       
         <div class="mb-3">
           <label class="form-label">גוף</label><span class="text-danger">*</span>

@@ -14,6 +14,7 @@
         </div>
     </div>
     <div class="card-body">
+        <app-media *ngFor="let mediaItem of (post?.media ?? [])" [mediaItem]="mediaItem"></app-media>
         <pre>{{ post.body }}</pre>
     </div>
     <div class="card-footer">
