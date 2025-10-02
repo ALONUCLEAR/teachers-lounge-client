@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges, ViewChild } from '@angular/core';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { MediaItem, MediaType } from 'src/app/api/server/types/post';
 import { ConvertMediaItemToFile } from 'src/app/utils/media-utils';
 
@@ -14,10 +15,14 @@ import { ConvertMediaItemToFile } from 'src/app/utils/media-utils';
 export class MediaComponent implements OnChanges {
   @Input({required: true}) mediaItem?: MediaItem;
 
+  @ViewChild('imagePreview', { static: true }) imagePreviewTemplate: any;
+
   readonly MediaType = MediaType;
 
   file?: File;
   imageUrl = '';
+
+  constructor(private readonly modalService: NgbModal) {}
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['mediaItem']) {
@@ -28,5 +33,14 @@ export class MediaComponent implements OnChanges {
         this.imageUrl = this.file ? URL.createObjectURL(this.file) : '';
       }
     }
+  }
+
+  openImagePreview(): void {
+    this.modalService.open(this.imagePreviewTemplate, {
+      size: 'lg',
+      centered: true,
+      backdrop: true,
+      keyboard: true
+    });
   }
 }

@@ -1,5 +1,4 @@
-<nav style="display: flex; justify-content: space-evenly; align-items: center;">
-    <a routerLink="super-admin-management" style="text-decoration: none; color: black;">Page currently being built</a>
-    <h3 *ngIf="ENVIRONMENT !== 'Prod'" >{{ ENVIRONMENT }}</h3>
+<nav *ngIf="ENVIRONMENT !== 'Prod'" style="display: flex; justify-content: space-evenly; align-items: center;">
+    <h3>{{ ENVIRONMENT }}</h3>
 </nav>
 <router-outlet></router-outlet>
