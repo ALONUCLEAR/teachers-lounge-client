@@ -9,7 +9,10 @@
     </div>
   </div>
 
-  <div class="comment-body">{{ comment.body }}</div>
+  <div class="comment-body">
+    <app-media *ngFor="let mediaItem of (comment?.media ?? [])" [mediaItem]="mediaItem"></app-media>
+    <div>{{ comment.body }}</div>
+  </div>
 
   <div class="comment-actions">
     <ng-container *ngIf="comment.totalChildrenCount > 0">

@@ -3,13 +3,15 @@ import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from
 import { hasPermissions, UserRoles } from 'src/app/api/server/types/permissions';
 import { Comment } from 'src/app/api/server/types/post';
 import { AuthQuery } from 'src/app/stores/auth/auth.query';
+import { BasicModule } from "src/app/basic.module";
+import { MediaComponent } from 'src/app/components/ui/media/media.component';
 
 @Component({
   standalone: true,
   selector: 'comment-tree',
   templateUrl: './comment-tree.component.html',
   styleUrls: ['./comment-tree.component.less'],
-  imports: [CommonModule, DatePipe]
+  imports: [CommonModule, DatePipe, MediaComponent]
 })
 export class CommentTreeComponent implements OnChanges {
   @Input() comment!: Comment;

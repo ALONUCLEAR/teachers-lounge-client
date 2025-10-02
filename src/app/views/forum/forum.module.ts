@@ -3,6 +3,7 @@ import { BasicModule } from 'src/app/basic.module';
 import { SchoolForumComponent } from './school-forum/school-forum.component';
 import { PostFormComponent } from 'src/app/components/post/post-form/post-form.component';
 import { PostViewComponent } from './school-forum/post-view/post-view.component';
+import { AppRoutingModule } from "src/app/app-routing.module";
 
 @NgModule({
   declarations: [
@@ -11,7 +12,7 @@ import { PostViewComponent } from './school-forum/post-view/post-view.component'
     PostViewComponent,
   ],
   providers: [],
-  imports: [BasicModule],
+  imports: [BasicModule, AppRoutingModule],
   exports: []
 })
 export class ForumModule { }

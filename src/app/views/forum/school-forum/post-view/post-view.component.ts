@@ -7,7 +7,7 @@ import { getAssociationById } from 'src/app/api/server/actions/association-actio
 import { getCommentById, tryDeleteComment, tryUpsertComment } from 'src/app/api/server/actions/comment-actions';
 import { getPostById } from 'src/app/api/server/actions/post-actions';
 import { hasPermissions, UserRoles } from 'src/app/api/server/types/permissions';
-import { Comment, Post } from 'src/app/api/server/types/post';
+import { Comment, MediaItem, MediaType, Post } from 'src/app/api/server/types/post';
 import { DisplayedUser } from 'src/app/api/server/types/user';
 import { ConfirmationService } from 'src/app/services/confirmation.service';
 import { NotificationsService } from 'src/app/services/notifications.service';
@@ -15,6 +15,7 @@ import { AuthQuery } from 'src/app/stores/auth/auth.query';
 import { UserQuery } from 'src/app/stores/user/user.query';
 import { PostService } from '../post.service';
 import { Association } from 'src/app/api/server/types/association';
+import { ConvertFileListToMedia, ConvertMediaToFileList } from 'src/app/utils/media-utils';
 
 @Component({
     selector: 'post-view',
@@ -36,6 +37,9 @@ export class PostViewComponent implements OnInit {
     authorName = this.defaultUserName;
     subject!: Association;
     postSchools: string[] = [];
+    selectedMediaItems: MediaItem[] = [];
+    maxMediaItems = 1;
+    acceptedFileTypes = Object.values(MediaType).join(', ');
 
     isProcessing = false;
     canEdit = false;
@@ -117,6 +121,7 @@ export class PostViewComponent implements OnInit {
 
     initNewComment(): void {
         this.newCommentBody = '';
+        this.selectedMediaItems = [];
         this.replyParentId = undefined;
         this.repliedUserName = undefined;
         this.editingComment = undefined;
@@ -219,20 +224,35 @@ export class PostViewComponent implements OnInit {
         this.processedComments = new Set(this.processedComments);
     }
 
+    async onFilesSelected(event: Event): Promise<void> {
+        const input = event.target as HTMLInputElement;
+
+        if (input.files) {
+            this.selectedMediaItems = await ConvertFileListToMedia(input.files);
+        }
+    }
+
+    removeMediaItem(index: number): void {
+        this.selectedMediaItems = this.selectedMediaItems.filter((_, i) => i !== index);
+    }
+
     async submitComment(): Promise<void> {
         this.isProcessing = true;
+        const selectedFileList = ConvertMediaToFileList(this.selectedMediaItems);
 
         if (!this.newCommentBody.trim()) {
             this.notificationsService.warn(`לא ניתן להגיב תגובה ריקה`, { position: 'bottom left' });
             this.newCommentBody="";
+        } else if(!PostService.isAllMediaValid(selectedFileList)) {
+            this.notificationsService.error(`קובץ גדול מידי(מעל 15MB) או מסוג לא נתמך.`, { title: `קבצים לא תקינים` })
         } else {
-            await this.upsertComment(this.newCommentBody);
+            await this.upsertComment(this.newCommentBody, selectedFileList);
         }
 
         this.isProcessing = false;
     }
 
-    private async upsertComment(body: string): Promise<boolean> {
+    private async upsertComment(body: string, fileList: FileList | null): Promise<boolean> {
         const userId = this.authQuery.getUserId()!;
         const serializedComment: Comment = this.editingComment
         ? {
@@ -249,7 +269,7 @@ export class PostViewComponent implements OnInit {
             totalChildrenCount: 0,
         }
 
-        if (!await tryUpsertComment(userId, serializedComment)) {
+        if (!await tryUpsertComment(userId, serializedComment, fileList)) {
             this.notificationsService.error(`שמירת תגובה נכשלה`);
             return false;
         }
@@ -332,6 +352,7 @@ export class PostViewComponent implements OnInit {
         this.setReplyParent(parent);
         this.editingComment = comment;
         this.newCommentBody = comment.body;
+        this.selectedMediaItems = comment.media ?? [];
     }
 
     async deleteComment(comment: Comment): Promise<void> {

@@ -1,21 +1,26 @@
 <div class="post-container card shadow-sm" *ngIf="post">
   <div class="card-header d-flex justify-content-between align-items-start flex-wrap">
-    <div class="post-title d-flex mb-2 gap-3 align-items-center">      
-      <div *ngIf="canEdit || canDelete" class="post-actions ms-auto d-flex gap-2">
-        <button
-          *ngIf="canEdit" [disabled]="isProcessing"
-          class="btn btn-sm btn-outline-primary"
-          (click)="editPost()"
-          title="ערוך פוסט">
-          <i class="fa-regular fa-pen-to-square"></i>
-        </button>
-        <button
-          *ngIf="canDelete" [disabled]="isProcessing"
-          class="btn btn-sm btn-outline-danger"
-          (click)="deletePost()"
-          title="מחק פוסט">
-          <i class="fa-regular fa-trash-can"></i>
-        </button>
+    <div class="post-title d-flex mb-2 gap-3 align-items-center">
+      <div  class="post-actions ms-auto d-flex gap-2">
+        <a routerLink="/forum" class="btn btn-sm btn-outline-success">
+            <i class="fa-solid fa-arrow-right"></i>
+        </a>
+        <ng-container *ngIf="canEdit || canDelete">
+          <button
+            *ngIf="canEdit" [disabled]="isProcessing"
+            class="btn btn-sm btn-outline-primary"
+            (click)="editPost()"
+            title="ערוך פוסט">
+            <i class="fa-regular fa-pen-to-square"></i>
+          </button>
+          <button
+            *ngIf="canDelete" [disabled]="isProcessing"
+            class="btn btn-sm btn-outline-danger"
+            (click)="deletePost()"
+            title="מחק פוסט">
+            <i class="fa-regular fa-trash-can"></i>
+          </button>
+        </ng-container>
       </div>
       <h2 class="m-0">{{ post.title }}</h2>
     </div>
@@ -76,6 +81,18 @@
           ביטול
         </button>
       </div>
+
+      <div *ngIf="maxMediaItems > selectedMediaItems.length" class="mb-3 d-flex gap-4 align-items-center">
+        <label class="form-label media-input-label mb-0">מדיה לתגובה</label>
+        <input class="form-control ms-5" type="file" (change)="onFilesSelected($event)" [accept]="acceptedFileTypes" />
+      </div>
+
+      <div *ngIf="selectedMediaItems.length" class="mb-3">
+          <div *ngFor="let mediaItem of selectedMediaItems; let index=index;" class="media-box">
+            <app-media [mediaItem]="mediaItem"></app-media>
+            <button type="button" class="btn btn-outline-danger" (click)="removeMediaItem(index)">הסר</button>
+          </div>
+        </div>
 
       <textarea
         [(ngModel)]="newCommentBody"

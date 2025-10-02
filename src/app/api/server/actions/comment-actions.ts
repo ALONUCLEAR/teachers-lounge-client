@@ -16,9 +16,19 @@ export const getCommentById = async (requestingUserId: string, commentId: string
     return response.data;
 }
 
-export const tryUpsertComment = async (requestingUserId: string, comment: Comment): Promise<boolean> => {
+export const tryUpsertComment = async (requestingUserId: string, comment: Comment, selectedFiles: FileList | null): Promise<boolean> => {
     try {
-        const response = await axios.post(commentsUrl, comment, {
+        const formData = new FormData();
+        comment.media = undefined;
+        formData.append('commentJson', JSON.stringify(comment));
+
+        if (selectedFiles) {
+             Array.from(selectedFiles).forEach(file => {
+                formData.append('mediaFiles', file);
+            });
+        }
+
+        const response = await axios.post(commentsUrl, formData, {
             headers: { userId: requestingUserId },
         });
 

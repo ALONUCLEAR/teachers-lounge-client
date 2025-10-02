@@ -26,7 +26,6 @@ export class MediaComponent implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['mediaItem']) {
-      console.log({mediaItem: this.mediaItem})
       this.file = this.mediaItem ? ConvertMediaItemToFile(this.mediaItem) : undefined;
  
       if (this.mediaItem?.type === MediaType.JPG) {

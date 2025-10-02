@@ -237,10 +237,11 @@ export class TeacherManagementComponent implements OnInit, OnDestroy {
       this.notificationsService.error('אופס... משהו השתבש', {
         title: `שגיאה בניתוק ${userName} מבית הספר`,
       });
-    } else {
-      this.notificationsService.success(userName + " נותק/ה מבית הספר בהצלחה");
-      await this.getAndSetUsers();
+      return;
     }
+
+    this.notificationsService.success(userName + " נותק/ה מבית הספר בהצלחה");
+    await this.getAndSetUsers();
 
     this.setUsers(this.users.filter(({ id }) => id !== user.id));
   }
