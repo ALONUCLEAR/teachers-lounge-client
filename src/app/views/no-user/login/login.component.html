@@ -25,8 +25,8 @@
     </div>
 
     <div class="submit-btn-container">
-        <button type="submit" [disabled]="loginForm!.invalid" class="submit-btn" (click)="onSubmit()">
-            שליחת בקשה
+        <button type="submit" [disabled]="loginForm!.invalid || isLoading" class="submit-btn" (click)="onSubmit()">
+            התחברות
         </button>
     </div>
 </form>

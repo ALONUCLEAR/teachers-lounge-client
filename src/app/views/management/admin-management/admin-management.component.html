@@ -1,0 +1,53 @@
+<loader *ngIf="isLoading"></loader>
+<ng-container *ngIf="!isLoading">
+    <selected-school-info [selectedSchoolName]="selectedSchoolName" [pageName]="PAGE_NAME"></selected-school-info>
+    <list-view *ngIf="!isLoading"
+        [data]="allTeachersAndAdminsGroups" [displayMapper]="userDataMapper" [selectedEntityId]="selectedUserId"
+        [entityTrackBy]="userTrackBy" [template]="selectedUserTemplate"
+        (onEntitySelected)="selectUser($event)"></list-view>
+</ng-container>
+
+<ng-template #selectedUserTemplate let-selectedUser="selectedEntity">
+    <div *ngIf="selectedUser?.info" class="user-info">
+        <div class="user-header">
+            <div class="gov-id-email">
+                <p class="gov-id">תעודת זהות: {{ selectedUser.govId }}</p>
+                <p class="email">דוא"ל: {{ selectedUser.email }}</p>
+            </div>
+
+            <div class="full-name">
+                <p>{{ selectedUser.info.firstName }} {{ selectedUser.info.lastName }}</p>
+            </div>
+        </div>
+
+        <div class="user-details">
+            <div *ngIf="(selectedUser.associatedSchools | func: idToSchoolMapper) | func: joinStrings as joinedAssociatedSchoolNames"
+                class="schools">
+                <p *ngIf="joinedAssociatedSchoolNames.length">בתי ספר: 
+                    <span> {{ joinedAssociatedSchoolNames }} </span>
+                </p>
+            </div>
+
+            <div class="role-message">
+                <div class="role">
+                    <p>דרגת הרשאות: <span>{{ selectedUser.role }}</span></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="submit-container">
+            <ng-container *ngIf="selectedUser.associatedSchools | includes: schoolId">
+                <div class="reject-btn" ngbTooltip="המשתמש לא יהיה מקושר יותר לבית הספר" (click)="onUnlink(selectedUser)">
+                    ניתוק מבית הספר
+                </div>
+                <div class="submit-btn" (click)="onRoleChange(selectedUser)"
+                [ngClass]="(selectedUser.role | permissions: UserRoles.Admin) ? 'demote-user' : 'promote-user'">
+                    {{ (selectedUser.role | permissions: UserRoles.Admin) ? 'שנמוך למורה': 'קידום למנהל' }}
+                </div>
+            </ng-container>
+            <ng-container *ngIf="!(selectedUser.associatedSchools | includes: schoolId)">
+                <button class="submit-btn" (click)="onLink(selectedUser)">קישור לבית הספר</button>
+            </ng-container>
+        </div>
+    </div>
+</ng-template>

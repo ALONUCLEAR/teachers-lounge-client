@@ -1,0 +1,164 @@
+:host {
+    @default-margin: 1em;
+    @card-background: #ffffff;
+    @header-background: #f7f7f7;
+    @footer-background: #fafafa;
+    @primary-color: #007bff;
+    @secondary-color: #6c757d;
+    @text-color: #333333;
+    @border-radius: 8px;
+    @box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+
+    .clickable {
+        cursor: pointer;
+    }
+
+    .card {
+        background: @card-background;
+        border-radius: @border-radius;
+        box-shadow: @box-shadow;
+        overflow: hidden;
+
+        .card-header {
+            background: @header-background;
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75em 1.25em;
+            border-bottom: 1px solid #e0e0e0;
+
+            .header-right {
+                display: flex;
+                flex-direction: column;
+                align-items: flex-start;
+
+                .title {
+                    font-weight: bold;
+                    font-size: 1.25em;
+                    color: @text-color;
+                }
+
+                .edited {
+                    font-size: 0.9em;
+                    color: @secondary-color;
+                    margin-top: 0.25em;
+                }
+            }
+
+            .header-left {
+                display: flex;
+                flex-direction: column;
+                margin-left: @default-margin;
+
+                .author-name {
+                    font-size: 1em;
+                    color: @secondary-color;
+                }
+
+                .published-at {
+                    font-size: 0.9em;
+                    color: @secondary-color;
+                    margin-top: 0.25em;
+                }
+            }
+        }
+
+        .card-body {
+            padding: 1.25em;
+            color: @text-color;
+
+            pre {
+                font-family: var(--bs-body-font-family);
+                // background-color: #f4f4f4;
+                padding: 1em;
+                border-radius: 8px;
+                white-space: pre-wrap;
+                word-wrap: break-word;
+            }
+        }
+
+        .card-footer {
+            background: @footer-background;
+            padding: 1em 1.25em;
+            border-top: 1px solid #e0e0e0;
+
+            .footer-data {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                font-size: 0.9em;
+                color: @secondary-color;
+
+                .updated-at {
+                    color: #999999;
+                }
+
+                .comment-count {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.25em;
+
+                    i {
+                        margin-left: 0.25em;
+                        font-size: 1em;
+                    }
+                }
+            }
+
+            .most-popular-comment {
+                margin-top: 1em;
+                font-size: 0.95em;
+                color: @text-color;
+                background: #f8f9fa;
+                padding: 1em;
+                border-radius: 8px;
+                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+                transition: background-color 0.2s;
+
+                &:hover {
+                    background-color: #f1f3f5;
+                }
+
+                .popular-header {
+                    font-weight: bold;
+                    color: @primary-color;
+                    gap: 0.5em;
+                    display: flex;
+                    align-items: center;
+                    margin-bottom: 0.5em;
+
+                    i {
+                        font-size: 1rem;
+                    }
+                }
+
+                .popular-body {
+                    font-style: italic;
+                    margin-bottom: 0.5em;
+                    color: @text-color;
+                }
+
+                .popular-meta {
+                    font-size: 0.8em;
+                    display: flex;
+                    justify-content: space-between;
+                    color: @secondary-color;
+
+                    .author {
+                        font-weight: 500;
+                    }
+
+                    .timestamp {
+                        direction: ltr;
+                    }
+                }
+            }
+
+            .no-comments {
+                font-size: 0.9em;
+                color: @secondary-color;
+                text-align: center;
+                margin-top: 1em;
+            }
+        }
+    }
+}

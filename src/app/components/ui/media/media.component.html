@@ -1,0 +1,10 @@
+<ng-container *ngIf="file" [ngSwitch]="mediaItem?.type">
+  <img *ngSwitchCase="MediaType.JPG" [src]="imageUrl" class="thumbnail" (click)="openImagePreview()">
+  <div *ngSwitchDefault>
+    סוג מדיה לא נתמך
+  </div>
+</ng-container>
+
+<ng-template #imagePreview let-modal>
+  <img [src]="imageUrl" class="img-fluid rounded shadow" />
+</ng-template>

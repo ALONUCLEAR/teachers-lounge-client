@@ -3,7 +3,7 @@ import { NgModule } from "@angular/core";
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BrowserModule } from "@angular/platform-browser";
-import { NgbModule, NgbTooltipModule } from "@ng-bootstrap/ng-bootstrap";
+import { NgbModule, NgbNavModule, NgbTooltipModule } from "@ng-bootstrap/ng-bootstrap";
 import { DropDownComponent } from "./components/ui/drop-down/drop-down.component";
 import { SearchComponent } from "./components/ui/search/search.components";
 import { ConfirmationPopupComponent } from "./components/ui/confirmation-popup/confirmation-popup.component";
@@ -13,13 +13,17 @@ import { PasswordInputComponent } from "./components/ui/password-input/password-
 import { PopupService } from "./services/popup.service";
 import { PromptComponent } from "./components/ui/prompt/prompt.component";
 import { LoaderComponent } from "./components/ui/loader/loader.component";
+import { SelectedSchoolInfoComponent } from "./components/selected-school-info/selected-school-info.component";
 import { ListViewComponent } from "./components/ui/list-view/list-view.component";
 import { FuncPipe } from "./pipes/func.pipe";
+import { PostCardComponent } from "./components/post/post-card/post-card.component";
+import { CommentTreeComponent } from "./components/post/comments/comment-tree/comment-tree.component";
+import { MediaComponent } from "./components/ui/media/media.component";
 
 const basicModules = [
     BrowserModule, CommonModule,
     FormsModule, ReactiveFormsModule,
-    NgbModule, NgbTooltipModule
+    NgbModule, NgbTooltipModule, NgbNavModule,
 ];
 
 const standaloneComponents = [
@@ -30,7 +34,11 @@ const standaloneComponents = [
     ListViewComponent,
     MyTableComponent,
     PasswordInputComponent,
-    LoaderComponent
+    LoaderComponent,
+    SelectedSchoolInfoComponent,
+    PostCardComponent,
+    CommentTreeComponent,
+    MediaComponent,
 ];
 
 const services = [NotificationsService, PopupService];
@@ -40,7 +48,7 @@ const pipes = [FuncPipe];
 @NgModule({
     declarations: [],
     imports: [...basicModules, ...standaloneComponents, ...pipes],
-    providers: [services],
+    providers: [...services],
     exports: [...basicModules, ...standaloneComponents, ...pipes],
   })
  export class BasicModule {}

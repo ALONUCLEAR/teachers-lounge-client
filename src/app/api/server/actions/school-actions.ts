@@ -14,26 +14,44 @@ export const getAllSchools = async (): Promise<School[]> => {
     return response.data;
 }
 
-export const tryUpsertSchool = async (schoolToUpsert: School): Promise<boolean> => {
-    const response = await axios.post(`${schoolsUrl}/upsert`, schoolToUpsert);
+export const getSchoolById = async (schoolId: string): Promise<School | undefined> => {
+    const reponse = await axios.get(`${schoolsUrl}/${schoolId}`);
 
-    if (response.status >= HttpStatusCode.BadRequest) {
-        console.error(`Request to get all schools failed, returned with status ${response.status}`);
-
-        return false;
+    if (reponse.status > HttpStatusCode.Ok) {
+        return;
     }
 
-    return true;
+    return reponse.data;
 }
 
-export const tryDeleteSchool = async (schoolId: string): Promise<boolean> => {
-    const response = await axios.delete(`${schoolsUrl}/${schoolId}`);
+export const tryUpsertSchool = async (userId: string, schoolToUpsert: School): Promise<boolean> => {
+    try {
+        const response = await axios.post(`${schoolsUrl}/upsert`, schoolToUpsert, { headers: { userId } });
 
-    if (response.status >= HttpStatusCode.BadRequest) {
-        console.error(`Request to get all schools failed, returned with status ${response.status}`);
+        if (response.status >= HttpStatusCode.BadRequest) {
+            throw new Error(`Request to get all schools failed, returned with status ${response.status}`);
+        }
+
+        return true;
+    } catch (error) {
+        console.error(error);
 
         return false;
     }
+}
 
-    return response.data;
+export const tryDeleteSchool = async (userId: string, schoolId: string): Promise<boolean> => {
+    try {
+        const response = await axios.delete(`${schoolsUrl}/${schoolId}`, { headers: { userId } });
+
+        if (response.status >= HttpStatusCode.BadRequest) {
+            throw new Error(`Request to get all schools failed, returned with status ${response.status}`);
+        }
+
+        return response.data;
+    } catch (error) {
+        console.error(error);
+
+        return false;
+    }
 }

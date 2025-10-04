@@ -1,50 +1,60 @@
-import { Component, ElementRef, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild } from "@angular/core";
+import { CommonModule } from "@angular/common";
+import { AfterViewInit, Component, ElementRef, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { NgbTypeahead } from "@ng-bootstrap/ng-bootstrap";
 import { debounceTime, map, Observable, OperatorFunction } from "rxjs";
+import { FuncPipe } from "src/app/pipes/func.pipe";
 
 @Component({
   selector: 'search',
   templateUrl: './search.component.html',
   styleUrls: ['./search.component.less'],
   standalone: true,
-  imports: [FormsModule, NgbTypeahead],
+  imports: [FormsModule, NgbTypeahead, CommonModule, FuncPipe],
 })
-export class SearchComponent<T> implements OnInit {
+export class SearchComponent<T> implements OnInit, OnChanges, AfterViewInit {
   @Input({ required: true }) entities: T[] = [];
   @Input({ required: true }) displayField?: keyof T;
-  @Input() initialValue?: T;
+  @Input() initialValues?: T[];
   @Input() markValidity = true;
   @Input() placeholder?: string;
   @Input() maxSuggestedElements = 10;
-  @Output() onEntitySelected = new EventEmitter<T>();
+  @Input() isMultiple = false;
+  @Input() autoComplete = true;
+  @Input() allowReinitialization = false;
+  @Output() onEntitySelected = new EventEmitter<T[]>();
 
   @ViewChild('entityInput') entityInput!: ElementRef<HTMLInputElement>;
 
-  selectedEntity?: T;
+  selectedEntities: T[] = [];
 
   ngOnInit(): void {
-      if (this.initialValue) {
-        this.selectedEntity = this.initialValue;
-      }
+    if (this.initialValues) {
+      this.selectedEntities = this.initialValues;
+    }
   }
 
   ngAfterViewInit(): void {
-    const isValid = Boolean(this.selectedEntity);
+    const isValid = this.selectedEntities.length > 0;
     this.setValidity(isValid);
 
     if (!isValid) {
-      this.onEntitySelected.emit(undefined);
+      this.onEntitySelected.emit([]);
     }
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['entities']) {
-      if (this.selectedEntity && !this.entities.includes(this.selectedEntity)) {
-        this.selectedEntity = undefined;
+    if (changes['entities'] || changes['initialValues']) {
+      if (this.displayField) {
+        const selectedEntities = this.initialValues && this.allowReinitialization
+          ? this.initialValues
+          : this.selectedEntities;
+        this.selectedEntities = selectedEntities.filter(selectedEntity =>
+          this.entities.some(entity => entity[this.displayField!] === selectedEntity[this.displayField!])
+        );
       }
 
-      this.setValidity(Boolean(this.selectedEntity));
+      this.setValidity(this.selectedEntities.length > 0);
     }
   }
 
@@ -69,15 +79,25 @@ export class SearchComponent<T> implements OnInit {
   ) =>
     text$.pipe(
       debounceTime(200),
-      map((term) =>
-        term === ''
-          ? this.entities
-          : this.entities
-              .filter(
-                (v) => this.formatter(v).toLowerCase().indexOf(term.toLowerCase()) > -1
-              )
-              .slice(0, this.maxSuggestedElements)
-      )
+      map(term => {
+        const options = this.entities
+          .filter(
+            entity => {
+              const entityDisplay = this.formatter(entity).toLowerCase();
+              const shouldShowBySelected = !this.isMultiple ||
+                !this.selectedEntities.some(selectedEntity => this.formatter(selectedEntity).toLowerCase() === entityDisplay);
+              const shouldShowByTerm = term === '' || entityDisplay.indexOf(term.toLowerCase()) > -1;
+
+              return shouldShowBySelected && shouldShowByTerm;
+            }
+          ).slice(0, this.maxSuggestedElements);
+
+        if (options.length == 1 && this.autoComplete) {
+          this.selectionChanged(options[0]);
+        }
+
+        return options;
+      })
     );
 
   formatter = (entity: T): string => {
@@ -90,15 +110,33 @@ export class SearchComponent<T> implements OnInit {
 
   selectionChanged(selection: T | string): void {
     if (typeof selection === 'string') {
-        // a proper object wasn't selected yet
         this.setValidity(false);
-        this.onEntitySelected.emit(undefined);
+
+        // if multiple, we don't want it to affect the rest, but if not, we do want to know our one value is now null
+        // (eg if we use it in a filter, the filter should be empty)
+        if (!this.isMultiple) {
+          this.onEntitySelected.emit([]);
+        }
 
         return;
     }
 
     this.setValidity(true);
-    this.selectedEntity = selection;
-    this.onEntitySelected.emit(selection);
+
+    if (!this.isMultiple) {
+      this.selectedEntities = [selection];
+      this.onEntitySelected.emit(this.selectedEntities);
+    } else if (!this.selectedEntities.includes(selection)) {
+      this.selectedEntities.push(selection);
+      this.onEntitySelected.emit(this.selectedEntities);
+    }
+  }
+
+  removeSelection(entity: T): void {
+    const index = this.selectedEntities.indexOf(entity);
+    if (index > -1) {
+      this.selectedEntities.splice(index, 1);
+      this.onEntitySelected.emit(this.selectedEntities);
+    }
   }
 }

@@ -1,0 +1,38 @@
+<loader *ngIf="isLoading"></loader>
+<ng-container *ngIf="!isLoading">
+    <selected-school-info [selectedSchoolName]="selectedSchoolName" [pageName]="PAGE_NAME"></selected-school-info>
+    <list-view
+        [data]="associationGroups" [displayMapper]="associationDataMapper" [selectedEntityId]="selectedAssociationId"
+        [entityTrackBy]="associationTrackBy" [template]="selectedAssociationTemplate"
+        (onEntitySelected)="selectAssociation($event)" [creationFunction]="createAssociation.bind(this)"></list-view>
+</ng-container>
+
+<ng-template #selectedAssociationTemplate let-selectedAssociation="selectedEntity">
+    <div class="name">
+        <div class="title">שם:</div>
+        <input type="text" class="value" [ngModel]="associationForm.value.name" (ngModelChange)="setAssociationName($event)"/>
+    </div>
+    
+    <ng-container [ngSwitch]="selectedAssociation.type">
+        <div *ngSwitchCase="AssociationType.Subject" class="associated-schools">
+            <div class="title-container"><div class="title">בתי ספר מקושרים:</div><p class="requirement">(לפחות אחד)</p></div>
+            <search [entities]="allSchools" displayField="name" [initialValues]="selectedAssociationInfo.associatedSchools"
+            [isMultiple]="true" [allowReinitialization]="true" (onEntitySelected)="setAssociatedSchools($event)" [markValidity]="false"></search>
+        </div>
+        <div *ngIf="selectedAssociation.type === AssociationType.Normal" class="associated-schools">
+            <div class="title">בית ספר מקושר:</div>
+            <div type="text" class="value" readonly>{{ selectedAssociationInfo.associatedSchools[0]?.name }}</div>
+        </div>
+    </ng-container>
+
+    <div class="associated-users">
+        <div class="title">משתמשים מקושרים:</div>
+        <search [entities]="allSchoolUsers" displayField="display" [initialValues]="selectedAssociationInfo.associatedUsers"
+        [isMultiple]="true" [allowReinitialization]="true" (onEntitySelected)="setAssociatedUsers($event)" [markValidity]="false"></search>
+    </div>
+
+    <div [ngSwitch]="selectedAssociation.type" class="actions">
+        <button class="delete-btn" (click)="onDelete(selectedAssociation)">מחיקה</button>
+        <button class="save-btn" (click)="onUpdate(selectedAssociation)">שמירה</button>
+    </div>
+</ng-template>

@@ -1,10 +1,10 @@
-<div [ngSwitch]="choice">
-  <div *ngSwitchCase="LoaderChoice.Whiteboard" class="d-flex justify-content-center">
+<ng-container [ngSwitch]="choice">
+  <div *ngSwitchCase="LoaderChoice.Whiteboard" [style.margin]="margin" class="d-flex justify-content-center">
     <img src="assets/gifs/loading-board.gif">
   </div>
-  <div *ngSwitchDefault class="d-flex justify-content-center">
+  <div *ngSwitchDefault [style.margin]="margin" class="d-flex justify-content-center">
     <div class="spinner-border" role="status">
       <span class="sr-only">Loading...</span>
     </div>
   </div>
-</div>
+</ng-container>

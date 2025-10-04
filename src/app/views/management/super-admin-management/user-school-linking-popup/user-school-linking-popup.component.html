@@ -1,0 +1,35 @@
+<loader *ngIf="isLoading" margin='10em'></loader>
+<ng-container *ngIf="!isLoading">
+  <div class="modal-header">
+      <h4 class="modal-title" id="modal-title"> קישור בתי ספר ל{{ currentUser.info.firstName }} {{ currentUser.info.lastName }} </h4>
+      <button
+          type="button"
+          class="btn-close"
+          aria-label="Close button"
+          aria-describedby="modal-title"
+          (click)="cancel()"
+      ></button>
+  </div>
+  <div class="modal-body">
+      <div class="form-group associated-schools">
+        <div class="title">בתי ספר לקשר:</div>
+        <search
+          [entities]="allSchools"
+          displayField="name"
+          [initialValues]="selectedSchools"
+          [isMultiple]="true"
+          [allowReinitialization]="true"
+          (onEntitySelected)="setAssociatedSchools($event)"
+          [markValidity]="false"
+        ></search>
+      </div>
+  </div>
+  <div class="modal-footer">
+      <button type="button" class="btn btn-outline-secondary" (click)="cancel()">ביטול</button>
+      <button type="button" class="btn btn-outline-primary" ngbTooltip="קישור לבתי הספר הנבחרים"
+        [disabled]="!selectedSchools.length" (click)="onSubmit()">קישור</button>
+      <div *ngIf="!selectedSchools.length" class="no-selected-schools">
+        לפחות בית ספר אחד חייב להיות בחור כדי שתוכלו להמשיך
+      </div>
+  </div>
+</ng-container>

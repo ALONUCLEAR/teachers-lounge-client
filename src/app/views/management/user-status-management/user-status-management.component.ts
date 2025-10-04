@@ -5,23 +5,24 @@ import { HttpStatusCode } from 'axios';
 import { BehaviorSubject, combineLatest } from 'rxjs';
 import { trySendingMailTo } from 'src/app/api/server/actions/email-actions';
 import { getAllSchools } from 'src/app/api/server/actions/school-actions';
-import { createUserFromRequest, getAllUsersByStatus, getAllUserRequests, tryDeleteUserRequest, tryUnblockUser, tryBlockUser } from 'src/app/api/server/actions/user-status-actions';
+import { createUserFromRequest, getAllUsersByStatus, getAllUserRequests, tryDeleteUserRequest, tryUnblockUser, tryBlockUser } from 'src/app/api/server/actions/user-actions';
 import { MailInput } from 'src/app/api/server/types/email';
 import { School } from 'src/app/api/server/types/school';
 import { ActivityStatus, GenericUser } from 'src/app/api/server/types/user';
 import { ConfirmationPopupComponent, ConfirmationResult } from 'src/app/components/ui/confirmation-popup/confirmation-popup.component';
 import { EntityGroup } from 'src/app/components/ui/list-view/list-view.component';
 import { PromptComponent } from 'src/app/components/ui/prompt/prompt.component';
+import { ConfirmationService } from 'src/app/services/confirmation.service';
 import { NotificationsService } from 'src/app/services/notifications.service';
 import { PopupService } from 'src/app/services/popup.service';
 import { AuthQuery } from 'src/app/stores/auth/auth.query';
 import { AuthStore } from 'src/app/stores/auth/auth.store';
+import { getUserFullName } from '../teacher-management/teacher-management.component';
 
 @Component({
   selector: 'user-status-management',
   templateUrl: './user-status-management.component.html',
   styleUrls: ['./user-status-management.component.less'],
-  providers: [AuthQuery, AuthStore],
 })
 export class UserStatusManagementComponent implements OnInit, OnDestroy {
   private readonly USER_POLLING_RATE_MS = 5000;
@@ -37,7 +38,7 @@ export class UserStatusManagementComponent implements OnInit, OnDestroy {
   readonly ActivityStatus = ActivityStatus;
   isLoading = false;
 
-  readonly userDataMapper = (user: GenericUser) => `${user.info.firstName} ${user.info.lastName}`;
+  readonly userDataMapper = (user: GenericUser) => getUserFullName(user);
   readonly userTrackBy = (user1?: GenericUser) => user1?.id ?? `User doesn't exist`;
   readonly idToSchoolMapper = (schoolIds: string[]): string[] => {
     return this.allSchools
@@ -112,7 +113,7 @@ export class UserStatusManagementComponent implements OnInit, OnDestroy {
   private pollBannedUsers(): void {
     const bannedUsersInterval = window.setInterval(async () => {
       try {
-        const allBannedUsers = await getAllUsersByStatus(this.authQuery.getUserId()!, false);
+        const allBannedUsers = await getAllUsersByStatus(this.authQuery.getUserId()!, false, true);
 
         if (this.isFirstLoad) {
           this.isLoading = false;
@@ -133,7 +134,7 @@ export class UserStatusManagementComponent implements OnInit, OnDestroy {
   private pollActiveUsers(): void {
     const activeUsersInterval = window.setInterval(async () => {
       try {
-        const allActiveUsers = await getAllUsersByStatus(this.authQuery.getUserId()!, true);
+        const allActiveUsers = await getAllUsersByStatus(this.authQuery.getUserId()!, true, true);
 
         if (this.isFirstLoad) {
           this.isLoading = false;
@@ -161,21 +162,6 @@ export class UserStatusManagementComponent implements OnInit, OnDestroy {
       { title: 'משתמשים שנחסמו', entities: bannedUsers },
       { title: 'משתמשים פעילים', entities: activeUsers }
     ];
-  }
-
-  private async didConfirmAction(popupPrompt: string): Promise<boolean> {
-    const modalRef = this.modalService.open(ConfirmationPopupComponent);
-    const componentInstance: ConfirmationPopupComponent = modalRef.componentInstance;
-    componentInstance.body = popupPrompt;
-    let result = ConfirmationResult.CANCEL;
-
-    try {
-      result = await modalRef.result;
-    } catch {
-      // user clicked outside the modal to close
-    }
-
-    return result === ConfirmationResult.OK;
   }
 
   async onReject(userToReject: GenericUser): Promise<void> {
@@ -207,7 +193,7 @@ export class UserStatusManagementComponent implements OnInit, OnDestroy {
       ? `הפעולה תחסום את ${this.userDataMapper(userToReject)}.\n האם להמשיך?`
       : `דחיית הבקשה של ${this.userDataMapper(userToReject)} היא בלתי הפיכה.\n האם להמשיך?`;
 
-    if (!await this.didConfirmAction(rejectionText)) {
+    if (!await ConfirmationService.didConfirmAction(this.modalService, rejectionText)) {
       return;
     }
 
@@ -233,7 +219,7 @@ export class UserStatusManagementComponent implements OnInit, OnDestroy {
           content: `בקשתך לפתיחת משתמש נדחתה. להלן הסיבה:\n${rejectionReason}`,
         };
 
-    if (!await trySendingMailTo(userToReject.email, mailInput)) {
+    if (!await trySendingMailTo(this.authQuery.getUserId()!, userToReject.email, mailInput)) {
       this.notificationService.error(`לא הצלחנו לשלוח למשתמש את המייל`, { title: `שגיאה בשליחת הודעת ${isBlocking ? 'חסימה': 'דחייה'}` });
     }
   }
@@ -250,7 +236,7 @@ export class UserStatusManagementComponent implements OnInit, OnDestroy {
     const userDetails = `${this.userDataMapper(userToAccept)}(${userToAccept.govId})`;
     const popupText = `הפעולה ${actionName} את המשתמש ${userDetails}.\n האם להמשיך?`;
 
-    if (!await this.didConfirmAction(popupText)) {
+    if (!await ConfirmationService.didConfirmAction(this.modalService, popupText)) {
       return;
     }
 

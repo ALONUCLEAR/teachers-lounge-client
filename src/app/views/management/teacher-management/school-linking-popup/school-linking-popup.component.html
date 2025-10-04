@@ -1,0 +1,31 @@
+<loader *ngIf="isLoading" [margin]="'10em'"></loader>
+<ng-container *ngIf="!isLoading">
+  <div class="modal-header">
+      <h4 class="modal-title" id="modal-title"> קישור מורים לבית הספר </h4>
+      <button
+          type="button"
+          class="btn-close"
+          aria-label="Close button"
+          aria-describedby="modal-title"
+          (click)="cancel()"
+      ></button>
+  </div>
+  <div class="modal-body">
+      <div class="form-group associated-users">
+        <div class="title">משתמשים לקשר:</div>
+        <search
+          [entities]="allSchoolUsers"
+          displayField="display"
+          [initialValues]="selectedUsers"
+          [isMultiple]="true"
+          [allowReinitialization]="true"
+          (onEntitySelected)="setAssociatedUsers($event)"
+          [markValidity]="false"
+        ></search>
+      </div>
+  </div>
+  <div class="modal-footer">
+      <button type="button" #cancelButton class="btn btn-outline-secondary" (click)="cancel()">ביטול</button>
+      <button type="button" #okButton class="btn btn-outline-primary" [disabled]="!selectedUsers.length" (click)="save()">קישור</button>
+  </div>
+</ng-container>

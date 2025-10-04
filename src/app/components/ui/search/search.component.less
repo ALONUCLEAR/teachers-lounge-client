@@ -1,3 +1,39 @@
-:host ::ng-deep ngb-typeahead-window {
-  text-align: right;
+:host {
+  &::ng-deep ngb-typeahead-window {
+    text-align: right;
+  }
+
+  .multi-select-container {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .selected-items {
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: 0.5em;
+    gap: 0.5em;
+
+    .selected-item {
+      background-color: #f1f1f1;
+      border: 0.0625em solid #ccc;
+      border-radius: 0.25em;
+      padding: 0.3125em 0.625em;
+      font-size: 0.875em;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+
+      .remove-selection {
+        margin-right: 1em;
+        color: #ff0000;
+        font-weight: bold;
+        font-size: 1em;
+
+        &:hover {
+          color: #c70000;
+        }
+      }
+    }
+  }  
 }

@@ -5,7 +5,6 @@ import {
     Router,
     RouterStateSnapshot,
     UrlTree,
-    NavigationExtras
 } from '@angular/router';
 import { hasPermissions, UserRoles } from './api/server/types/permissions';
 import { LocalAuthService } from './stores/auth/local-auth.service';
@@ -42,7 +41,7 @@ export class AuthGuard implements CanActivate {
     }
   }
 
-  private handleUnauthorizedAccess(currentUrl: string, fallBackUrl = '/school-management'): UrlTree {
+  private handleUnauthorizedAccess(currentUrl: string, fallBackUrl = '/forum'): UrlTree {
     const returnUrl = this.getReturnUrl(currentUrl);
 
     if (!returnUrl) {

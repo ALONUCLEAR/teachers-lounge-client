@@ -3,10 +3,34 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Launch Brave",
+      "type": "chrome",
+      "request": "launch",
+      "runtimeExecutable": "C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe",
+      "runtimeArgs": ["--remote-debugging-port=9222", "--incognito"],
+      "url": "http://localhost:4200",
+      "webRoot": "${workspaceFolder}"
+    },
+    {
+      "name": "Attach to Brave",
+      "type": "chrome",
+      "request": "attach",
+      "port": 9222,
+      "webRoot": "${workspaceFolder}",
+      "timeout": 10000
+    },
+    {
       "name": "ng serve",
       "type": "chrome",
       "request": "launch",
       "preLaunchTask": "npm: start",
+      "url": "http://localhost:4200/"
+    },
+    {
+      "name": "run dev",
+      "type": "chrome",
+      "request": "launch",
+      "preLaunchTask": "npm: dev",
       "url": "http://localhost:4200/"
     },
     {

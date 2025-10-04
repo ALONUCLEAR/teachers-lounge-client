@@ -1,0 +1,60 @@
+:host {
+    selected-school-info {
+        top: 0;
+        padding: 0.25em 0;
+    }
+
+    .sticky {
+        position: sticky;
+        z-index: 3;
+        background-color: white;
+    }
+
+    .filters-and-actions {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 1em;
+        top: 2em;
+        padding-bottom: 0.5em;
+
+        i {
+            font-size: larger;
+            cursor: pointer;
+        }
+
+        search, input {
+            width: max-content;
+        }
+    }
+
+    .no-subjects, .no-posts {
+        text-align: center;
+        font-weight: bold;
+        font-size: 1.5em;
+    }
+
+    .no-subjects {
+        color: #ea1b1b;
+    }
+
+    .no-posts {
+        color: #a9a9a9;
+    }
+
+    .subject-title {
+        display: flex;
+        gap: 0.25em;
+        align-items: center;
+    }
+
+    post-card {
+        display: block;
+        width: 50%;
+        margin: 2em auto;
+    }
+
+    .nav-tabs {
+        top: 4.5em;
+    }
+}

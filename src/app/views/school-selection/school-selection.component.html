@@ -1,0 +1,14 @@
+<loader *ngIf="isLoading"></loader>
+<div class="container" *ngIf="!isLoading">
+        <ng-container *ngIf="schools?.length">
+                <div class="prompt"> בחרו בית ספר כדי להתקדם אל מסך </div>
+                <div class="title">{{ redirectPage?.name }}</div>
+                <search [entities]="schools" displayField="name" (onEntitySelected)="selectSchool($event[0]?.id)"></search>
+
+                <button class="btn btn-success" [disabled]="!this.selectedSchoolId || !this.redirectPage" (click)="save()">בחירה</button>
+        </ng-container>
+        <ng-container *ngIf="!schools?.length">
+                <div class="prompt"> לא זוהו בתי ספר משוייכים. יש לפנות לממונים עליכם לקבלת הרשאות מתאימות. </div>
+                <button class="btn btn-warning" (click)="logout()">התנתקות</button>
+        </ng-container>
+</div>

@@ -1,15 +1,12 @@
 import { AfterViewInit, Component, DestroyRef, ElementRef, HostBinding, OnInit, ViewChild } from '@angular/core';
-import { FormBuilder, FormControl, FormControlOptions, FormGroup, ValidatorFn, Validators } from '@angular/forms';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { tryGettingUserIdByGovId, tryLogin } from 'src/app/api/server/actions/user-status-actions';
-import { PopupService } from 'src/app/services/popup.service';
-import { PASSWORD_PATTERN } from '../sign-up/sign-up.component';
-import { AuthStore } from 'src/app/stores/auth/auth.store';
-import { Router } from '@angular/router';
-import { ActivityStatus } from 'src/app/api/server/types/user';
-import { trySendingMailTo } from 'src/app/api/server/actions/email-actions';
-import { buffer, debounceTime, filter, fromEvent, map, throttleTime } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { FormBuilder, FormControl, FormControlOptions, FormGroup, ValidatorFn, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
+import { buffer, debounceTime, filter, fromEvent, map, throttleTime } from 'rxjs';
+import { tryGettingUserByGovId, tryLogin } from 'src/app/api/server/actions/user-actions';
+import { PopupService } from 'src/app/services/popup.service';
+import { AuthStore } from 'src/app/stores/auth/auth.store';
+import { PASSWORD_PATTERN } from '../sign-up/sign-up.component';
 
 interface LoginForm {
   govId: FormControl<string>;
@@ -20,13 +17,13 @@ interface LoginForm {
   selector: 'login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.less'],
-  providers: [AuthStore],
 })
 export class LoginComponent implements OnInit, AfterViewInit {
   @ViewChild('form') formElement?: ElementRef;
   @HostBinding('style.--bg-img') bgImgStyle = "";
   
   loginForm?: FormGroup<LoginForm>;
+  isLoading = false;
   readonly passwordPattern = PASSWORD_PATTERN;
   private readonly IMAGE_NAMES = ["teachers at noon.jpeg", "teachers at night.jpeg"];
   private imageName = this.IMAGE_NAMES[0];
@@ -96,6 +93,18 @@ export class LoginComponent implements OnInit, AfterViewInit {
   }
 
   async onSubmit(): Promise<void> {
+    if (this.isLoading) {
+      return;
+    }
+
+    this.isLoading = true;
+
+    await this.tryLogin();
+
+    this.isLoading = false;
+  }
+
+  async tryLogin(): Promise<void> {
     try {
       if (!this.loginForm?.valid) {
         this.popupService.error("אחד מהערכים שהזנת לא תקין");
@@ -110,21 +119,9 @@ export class LoginComponent implements OnInit, AfterViewInit {
         throw new Error("Invalid credentials");
       }
 
-      if (user.activityStatus !== ActivityStatus.Active) {
-        const userState = user.activityStatus === ActivityStatus.Blocked ? 'חסום' : 'ממתין לאישור ראשוני';
-        const revertingAction = user.activityStatus === ActivityStatus.Blocked ? 'עד שישוחזר' : 'לאישור הבקשה';
-        const message = `זיהינו שניסת להתחבר למערכת חדר מורים. המשתמש שלך ${userState}.\n`
-        +`נא להמתין ${revertingAction} ע"י הגורמים המאשרים הרלוונטיים.`;
+      this.authStore.updateUser({ ...user, role: user.role! });
 
-        await trySendingMailTo(user.email, { title: 'נסיון התחברות למערכת חדר מורים', content: message });
-
-        throw new Error("Inactive user login attempt");
-      }
-
-      this.authStore.update(user);
-
-      // TODO: move to forum page when exists
-      this.router.navigate(['/school-management']);
+      await this.router.navigate(['/forum']);
     } catch (e) {
       console.error(e);
       this.popupService.error(`בדקו את הפרטים שהזנתם או נסו שוב במועד מאוחר יותר.`, { title: "שגיאה בהתחברות" });
@@ -133,11 +130,16 @@ export class LoginComponent implements OnInit, AfterViewInit {
 
   async navigateToForgotPassword(): Promise<void> {
     try {
-      const userId: string | undefined = await tryGettingUserIdByGovId(this.loginForm!.value["govId"]!);
-
-      userId ? this.router.navigate(["/forgot-password"], {queryParams: {userId}}) : this.popupService.warn("אנא הזן תז נכון");
+      const govId = this.loginForm!.value["govId"]!;
+      const user = await tryGettingUserByGovId(govId);
+      
+      if (user) {
+        this.router.navigate(["/forgot-password"], { queryParams: { userId: user.id, govId } });
+      } else {
+        this.popupService.warn("אנא הזן תז נכון");
+      }
     } catch (e) {
-      this.popupService.warn("הנה הזן תז נכון");
+      this.popupService.warn("אנא הזן תז נכון");
       console.error(e);
     }
   }

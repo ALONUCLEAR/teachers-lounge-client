@@ -1,0 +1,65 @@
+<div class="comment">
+  <div class="comment-header">
+    <div class="author d-flex align-items-center gap-1">
+      {{ authorName }}
+      <div class="edited" *ngIf="comment.lastUpdatedAt"> (ערוך) </div>
+    </div>
+    <div class="timestamp">
+      {{ comment.publishedAt | date: 'dd/MM/yyyy HH:mm' : undefined : 'en-IL' }}
+    </div>
+  </div>
+
+  <div class="comment-body">
+    <app-media *ngFor="let mediaItem of (comment?.media ?? [])" [mediaItem]="mediaItem"></app-media>
+    <div>{{ comment.body }}</div>
+  </div>
+
+  <div class="comment-actions">
+    <ng-container *ngIf="comment.totalChildrenCount > 0">
+      <div class="comment-summary text-muted">
+        <i class="fa-regular fa-comment me-1"></i> {{ comment.totalChildrenCount }} תגובות
+      </div>
+      <button [disabled]="isProcessing" class="expand-button" (click)="emitExpand([])">
+          <ng-container *ngIf="!isExpanded"> <i class="fa-solid fa-square-plus"></i> הצג תגובות </ng-container>
+          <ng-container *ngIf="isExpanded"> <i class="fa-solid fa-square-minus"></i> הסתר תגובות </ng-container>
+      </button>
+    </ng-container>
+
+    <button class="reply-button" (click)="handleReplyClick()">
+      <i class="fa-solid fa-reply"></i> השב
+    </button>
+
+    <button
+      *ngIf="canEdit"
+      class="edit-button"
+      (click)="emitEdit()">
+      <i class="fa-solid fa-pen-to-square"></i> ערוך
+    </button>
+
+    <button
+      *ngIf="canDelete"
+      class="delete-button"
+      (click)="handleDeleteClick()">
+      <i class="fa-solid fa-trash"></i> מחק
+    </button>
+
+    <div *ngIf="comment.lastUpdatedAt" class="comment-last-updated">
+      נערך לאחרונה בתאריך:
+      {{ comment.lastUpdatedAt | date: 'dd/MM/yyyy HH:mm' : undefined : 'en-IL' }}
+    </div>
+  </div>
+
+  <div class="comment-children" *ngIf="isExpanded && comment.children?.length">
+    <comment-tree
+      *ngFor="let child of comment.children; let childIndex = index"
+      [comment]="child"
+      [expanded]="expanded" [processed]="processed"
+      [userIdToDisplayName]="userIdToDisplayName"
+      [postSchools]="postSchools"
+      (onExpand)="emitExpand($event, childIndex)"
+      (onReply)="onReply.emit($event)"
+      (onEdit)="emitEdit($event)"
+      (onDelete)="onDelete.emit($event)">
+    </comment-tree>
+  </div>
+</div>

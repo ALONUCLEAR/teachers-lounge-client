@@ -13,6 +13,7 @@ import {
   PropertyField,
 } from 'src/app/components/ui/my-table/my-table.components';
 import { NotificationsService } from 'src/app/services/notifications.service';
+import { AuthQuery } from 'src/app/stores/auth/auth.query';
 import { MunicipaitiesQuery } from 'src/app/stores/gov/municipalities/municipalities.query';
 import { StreetsQuery } from 'src/app/stores/gov/streets/streets.query';
 
@@ -20,15 +21,13 @@ const emptySchool: School = {
   id: '',
   name: '',
   municipality: {
-    fk: -1,
     id: -1,
     name: '',
   },
   address: {
     street: {
       id: -1,
-      fk: -1,
-      municipalityFk: -1,
+      municipalityId: -1,
       name: '',
     },
     houseNumber: 0,
@@ -39,7 +38,7 @@ const emptySchool: School = {
   selector: 'school-management',
   templateUrl: './school-management.component.html',
   styleUrls: ['./school-management.component.less'],
-  providers: [MunicipaitiesQuery, StreetsQuery],
+  providers: [MunicipaitiesQuery, StreetsQuery, AuthQuery],
 })
 export class SchoolManagementComponent implements OnInit, OnDestroy {
   fields: PropertyField<School>[] = [
@@ -97,7 +96,8 @@ export class SchoolManagementComponent implements OnInit, OnDestroy {
     private readonly municipaitiesQuery: MunicipaitiesQuery,
     private readonly streetsQuery: StreetsQuery,
     private readonly notificationsService: NotificationsService,
-    private readonly modalService: NgbModal
+    private readonly modalService: NgbModal,
+    private readonly authQuery: AuthQuery,
   ) {}
 
   ngOnInit(): void {
@@ -137,7 +137,16 @@ export class SchoolManagementComponent implements OnInit, OnDestroy {
       const nonNewSchools = sortBy(this.schools.filter(({ id }) => id !== emptySchool.id), idSorter);
 
       if (!isEqual(upToDateSchools, nonNewSchools)) {
-        this.resetEditedFields();
+        // no need to check for editedEntity change if nothing's edited or the edited school is a new one being created
+        if (this.inputEditedEntityIndex >= 0 && nonNewSchools[this.inputEditedEntityIndex]?.id) {
+          const editedSchool = nonNewSchools[this.inputEditedEntityIndex];
+          const newEditedSchoolData = upToDateSchools.find(school => school.id === editedSchool.id);
+  
+          if (!isEqual(newEditedSchoolData, editedSchool)) {
+            this.resetEditedFields();
+          }
+        }
+
         this.setSchools(upToDateSchools);
 
         if (alertUserToChange) {
@@ -237,7 +246,7 @@ export class SchoolManagementComponent implements OnInit, OnDestroy {
     }
 
     if (school.id !== emptySchool.id) {
-      if (!(await tryDeleteSchool(school.id))) {
+      if (!(await tryDeleteSchool(this.authQuery.getUserId()!, school.id))) {
         this.notificationsService.error('אופס... משהו השתבש', {
           title: 'שגיאה במחיקת בית ספר',
         });
@@ -261,11 +270,13 @@ export class SchoolManagementComponent implements OnInit, OnDestroy {
       return false;
     }
 
-    if (!municipality) {
+    const isGovDataValid = (data: GovernmentData): boolean => data?.id >= 0 && data.id <= 20_000;
+
+    if (!isGovDataValid(municipality)) {
       return false;
     }
 
-    if (!street) {
+    if (!isGovDataValid(street)) {
       return false;
     }
 
@@ -318,7 +329,7 @@ export class SchoolManagementComponent implements OnInit, OnDestroy {
       }
       this.filterSchools();
 
-      if (!(await tryUpsertSchool(schoolToEdit))) {
+      if (!(await tryUpsertSchool(this.authQuery.getUserId()!, schoolToEdit))) {
         this.notificationsService.error('אופס... משהו השתבש', {
           title: 'שגיאה בשמירת בית ספר',
         });
@@ -367,7 +378,7 @@ export class SchoolManagementComponent implements OnInit, OnDestroy {
     const changedMunicipality = this.municipalityFilter?.id !== municipality?.id;
 
     this.municipalityFilter = municipality ? { ...municipality } : undefined;
-    this.filterStreets = municipality?.fk
+    this.filterStreets = municipality?.id
       ? this.streetsQuery.getStreetsByMunicipality(municipality)
       : [];
 

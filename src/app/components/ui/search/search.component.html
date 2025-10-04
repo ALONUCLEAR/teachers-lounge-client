@@ -1,6 +1,24 @@
-<input #entityInput
+<div *ngIf="isMultiple; else singleSelection" class="multi-select-container">
+    <input #entityInput
+      type="text" class="form-control" placement="bottom-right"
+      (focus)="onFocus($event)"
+      [ngModel]="selectedEntities[selectedEntities.length - 1]" (ngModelChange)="selectionChanged($event)"
+      [ngbTypeahead]="search" [selectOnExact]="true" [attr.placeholder]="placeholder ? placeholder : null"
+      [inputFormatter]="formatter" [resultFormatter]="formatter" container="body"/>
+  
+    <div class="selected-items">
+      <div *ngFor="let entity of selectedEntities" class="selected-item" (click)="removeSelection(entity)">
+        {{ entity | func: formatter }}
+        <span class="remove-selection">&times;</span>
+      </div>
+    </div>
+</div>
+  
+<ng-template #singleSelection>
+  <input #entityInput
     type="text" class="form-control" placement="bottom-right"
     (focus)="onFocus($event)"
-    [ngModel]="selectedEntity" (ngModelChange)="selectionChanged($event)"
+    [ngModel]="selectedEntities[0]" (ngModelChange)="selectionChanged($event)"
     [ngbTypeahead]="search" [selectOnExact]="true" [attr.placeholder]="placeholder ? placeholder : null"
-    [inputFormatter]="formatter" [resultFormatter]="formatter"/>
+    [inputFormatter]="formatter" [resultFormatter]="formatter" container="body"/>
+</ng-template>

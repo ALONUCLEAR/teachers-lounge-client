@@ -2,8 +2,8 @@ import { Component, inject } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { trySendingCodeToUserByGovId } from 'src/app/api/server/actions/email-actions';
-import { trySendingUserRecoveryRequest } from 'src/app/api/server/actions/user-status-actions';
+import { isCodeVerified, trySendingCodeToUserByGovId } from 'src/app/api/server/actions/email-actions';
+import { trySendingUserRecoveryRequest } from 'src/app/api/server/actions/user-actions';
 import { PromptComponent } from 'src/app/components/ui/prompt/prompt.component';
 import { PopupService } from 'src/app/services/popup.service';
 
@@ -29,22 +29,28 @@ export class AccountRecoveryComponent {
     this.govIdControl.markAsDirty();
   }
 
-  // TODO: change it to work as it should (don't get the code back to the client)
-  private async codeVerification(email: string): Promise<boolean> {
+  private async codeVerification(govId: string): Promise<boolean> {
     this.isLoading = true;
-    const verificationCode = await trySendingCodeToUserByGovId(email);
-    const modalRef = this.modalService.open(PromptComponent);
-    const instance: PromptComponent = modalRef.componentInstance;
-    instance.promptTitle = `קוד אימות`;
-    instance.promptText = `הכניסו את קוד האימות שקיבלתם במייל(${verificationCode})`;
-    this.isLoading = false;
-    const inputCode = await modalRef.result;
 
-    if (!inputCode) {
+    if (!await trySendingCodeToUserByGovId(govId)) {
       return false;
     }
 
-    return inputCode === verificationCode;
+    const modalRef = this.modalService.open(PromptComponent);
+    const instance: PromptComponent = modalRef.componentInstance;
+    instance.promptTitle = `קוד אימות`;
+    instance.promptText = `הכניסו את קוד האימות שקיבלתם במייל`;
+    const inputCode = await modalRef.result;
+    
+    if (!inputCode) {
+      this.isLoading = false;
+      return false;
+    }
+
+    const isVerified = await isCodeVerified(govId, inputCode);
+    this.isLoading = false;
+
+    return isVerified;
   }
 
   async onSubmit(): Promise<void> {

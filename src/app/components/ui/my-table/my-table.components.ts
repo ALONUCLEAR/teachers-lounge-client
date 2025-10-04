@@ -15,6 +15,7 @@ import {
   ConfirmationPopupComponent,
   ConfirmationResult,
 } from '../confirmation-popup/confirmation-popup.component';
+import { NotificationsService } from 'src/app/services/notifications.service';
 
 export enum FieldType {
   READONLY = 'READ ONLY',
@@ -22,9 +23,26 @@ export enum FieldType {
   ACTION = 'ACTION'
 }
 
+export interface ActionEvent<Entity> {
+  action: ActionType,
+  entity?: Entity,
+  editedEntity?: Entity
+}
+
+export interface InputAction {
+  action: ActionType,
+  icon: ActionIcon;
+}
+
+export interface Action {
+  action: ActionType,
+  iconClasses: string;
+}
+
 export enum ActionType {
   SAVE = 'SAVE',
-  DELETE = 'DELETE'
+  DELETE = 'DELETE',
+  APPROVE_USER = 'APPROVE_USER',
 }
 
 interface BaseField {
@@ -42,42 +60,71 @@ interface ActionField extends BaseField {
 
 export type Field<Entity> = ActionField | PropertyField<Entity>;
 
+export enum ActionIcon {
+  DELETE = "DELETE",
+  UNLINK = "UNLINK",
+  APPROVE_USER = "APPROVE",
+  REJECT_USER = "REJECT"
+}
+
 @Component({
   selector: 'my-table',
   templateUrl: './my-table.component.html',
   styleUrls: ['./my-table.component.less'],
   standalone: true,
   imports: [FormsModule, CommonModule, NgbTooltipModule],
+  providers: [NotificationsService],
 })
 export class MyTableComponent<Entity extends { id: string }> implements OnChanges {
   @Input({ required: true }) fields: PropertyField<Entity>[] = [];
   @Input({ required: true }) entities: Entity[] = [];
-  @Input({ required: true }) editedRowTemplate?: TemplateRef<any>;
-  @Input({ required: true }) emptyEntity?: Entity;
+  @Input() editedRowTemplate?: TemplateRef<any>;
+  @Input() emptyEntity?: Entity;
+  @Input() allowEdit = true;
+  @Input() deleteIcon = ActionIcon.DELETE;
+  @Input() additionalActionInputs: InputAction[] = [];
   @Input() filterTemplate?: TemplateRef<any>;
   @Input() inputEditedEntityIndex = -1;
   @Input() midEditSwapAlert =
     'לערוך את השורה הזו יאפס את השינויים שלא שמרתם על השורה הקודמת';
   @Output() onEditedEntityChanged = new EventEmitter<{entity: Entity, index: number}>();
-  @Output() onAction = new EventEmitter<{action: ActionType, entity?: Entity, editedEntity?: Entity}>();
+  @Output() onAction = new EventEmitter<ActionEvent<Entity>>();
   @Output() onFiltersCleared = new EventEmitter<void>();
-
 
   editedEntity?: Entity & { displayId: string };
   displayedFields: Field<Entity>[] = [];
   copiedEntities: Entity[] = [];
   mappedEntities: Record<string, string>[] = [];
 
+  additionalActions: Action[] = [];
+
   private readonly ACTION_FIELDS: ActionField[] = ['פעולות', ''].map(title => ({title, type: FieldType.ACTION}));
   readonly ActionType = ActionType;
+  deleteIconClasses = this.getIconClasses(this.deleteIcon);
 
   constructor(
-    private readonly modalService: NgbModal
+    private readonly modalService: NgbModal,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes[`fields`]) {
       this.initTable();
+    }
+
+    if (changes['additionalActionInputs']) {
+      this.additionalActions = this.additionalActionInputs.map(
+        action => ({
+          action: action.action,
+          iconClasses: this.getIconClasses(action.icon)
+        })
+      );
+    }
+
+    if (changes['allowEdit'] || changes['editedRowTemplate'] || changes['emptyEntity']) {
+      if (this.allowEdit && (!this.editedRowTemplate || !this.emptyEntity)) {
+        this.notificationsService.error(`ישות ריקה או טמפלייט שורת עריכה`, { title: 'אחד משדות החובה הבאים לא הוזן' });
+      }
     }
 
     if (changes[`inputEditedEntityIndex`]) {
@@ -90,6 +137,24 @@ export class MyTableComponent<Entity extends { id: string }> implements OnChange
     if (changes[`fields`] || changes[`entities`]) {
       this.initMappedEntities(this.entities);
     }
+
+    if (changes['deleteIcon']) {
+      this.deleteIconClasses = this.getIconClasses(this.deleteIcon);
+    }
+  }
+
+  private getIconClasses(deleteIcon: ActionIcon): string {
+    switch(deleteIcon) {
+      case ActionIcon.UNLINK:
+        return "fa-solid fa-link-slash";
+      case ActionIcon.APPROVE_USER:
+        return "fa-solid fa-user-check";
+      case ActionIcon.REJECT_USER:
+        return "fa-solid fa-user-slash";
+      default: break;
+    }
+
+    return "fa-solid fa-trash";
   }
 
   private mapIdToDisplay(entity: Entity): string {
@@ -140,6 +205,12 @@ export class MyTableComponent<Entity extends { id: string }> implements OnChange
   }
 
   addEntity(): void {
+    if (!this.allowEdit) {
+      // allow parent components to have a custom add function if it's not editable
+      this.onAction.emit({ action: ActionType.SAVE });
+      return;
+    }
+
     if (this.editedEntity || !this.emptyEntity) {
       return;
     }
@@ -148,6 +219,10 @@ export class MyTableComponent<Entity extends { id: string }> implements OnChange
     this.initMappedEntities(this.copiedEntities);
     this.editedEntity = {...this.emptyEntity, displayId: this.mapIdToDisplay(this.emptyEntity) };
     this.onEditedEntityChanged.emit({ entity: this.editedEntity, index: 0 });
+  }
+
+  fireCustomAction({ action }: Action, entity?: Entity): void {
+    this.onAction.emit({ action, editedEntity: this.editedEntity, entity: entity });
   }
 
   saveEntity(entity: Entity): void {

@@ -12,13 +12,13 @@ export class StreetsQuery extends QueryEntity<StreetsState> {
 
   selectStreetsByMunicipality(municipality: GovernmentData): Observable<Street[]> {
     return this.selectAll({
-      filterBy: (street) => street.municipalityFk === municipality.fk,
+      filterBy: (street) => street.municipalityId === municipality.id,
     });
   }
 
   getStreetsByMunicipality(municipality: GovernmentData): Street[] {
     return this.getAll({
-      filterBy: (street) => street.municipalityFk === municipality.fk,
+      filterBy: (street) => street.municipalityId === municipality.id,
     });
   }
 }
