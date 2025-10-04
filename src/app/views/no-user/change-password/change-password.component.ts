@@ -141,7 +141,7 @@ export class ChangePasswordComponent implements AfterViewInit, OnInit {
   }
 
   private getImageStyleFromName(imageName: string): string {
-    return `url('${imageName}')`;
+    return `url('assets/images/${imageName}')`;
   }
 }
 

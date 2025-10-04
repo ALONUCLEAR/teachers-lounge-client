@@ -72,7 +72,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
   }
 
   private getImageStyleFromName(imageName: string): string {
-    return `url('${imageName}')`;
+    return `url('assets/images/${imageName}')`;
   }
 
   toggleBackgroundImage(): void {
