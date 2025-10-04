@@ -7,7 +7,7 @@
     "prod": "ng serve -c production",
     "dev": "npm run env && ng serve --watch -c development",
     "env": "node set-env.js",
-    "build": "npm run env && ng build",
+    "build": "npm run env && node --max-old-space-size=4096 ./node_modules/@angular/cli/bin/ng build",
     "test": "ng test --browsers ChromeHeadless"
   },
   "private": true,
