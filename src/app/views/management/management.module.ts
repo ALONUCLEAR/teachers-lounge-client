@@ -12,6 +12,8 @@ import { IncludesPipe } from "../../pipes/includes.pipe";
 import { PermissionsPipe } from "../../pipes/permissions.pipe";
 import { SuperAdminManagementComponent } from './super-admin-management/super-admin-management.component';
 import { UserSchoolLinkingPopupComponent } from './super-admin-management/user-school-linking-popup/user-school-linking-popup.component';
+import {NavbarComponent} from "../../components/ui/navbar/navbar.component";
+import {RouterOutlet} from "@angular/router";
 
 @NgModule({
   declarations: [
@@ -26,7 +28,7 @@ import { UserSchoolLinkingPopupComponent } from './super-admin-management/user-s
     UserSchoolLinkingPopupComponent,
   ],
   providers: [AssociationManagementService],
-  imports: [BasicModule, IncludesPipe, PermissionsPipe],
+    imports: [BasicModule, IncludesPipe, PermissionsPipe, NavbarComponent, RouterOutlet],
   exports: [SchoolManagementComponent]
 })
 export class ManagementModule { }

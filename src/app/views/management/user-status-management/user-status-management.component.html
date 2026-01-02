@@ -1,8 +1,11 @@
 <loader *ngIf="isLoading"></loader>
-<list-view *ngIf="!isLoading"
-    [data]="approvalGroups" [displayMapper]="userDataMapper" [selectedEntityId]="selectedUserId"
-    [entityTrackBy]="userTrackBy" [template]="selectedUserTemplate"
-    (onEntitySelected)="selectUser($event)"></list-view>
+<div *ngIf="!isLoading">
+  <app-navbar></app-navbar>
+  <list-view [data]="approvalGroups" [displayMapper]="userDataMapper" [selectedEntityId]="selectedUserId"
+             [entityTrackBy]="userTrackBy" [template]="selectedUserTemplate"
+             (onEntitySelected)="selectUser($event)">
+  </list-view>
+</div>
 
 <ng-template #selectedUserTemplate let-selectedUser="selectedEntity">
     <div *ngIf="selectedUser?.info" class="user-info">
@@ -20,7 +23,7 @@
         <div class="user-details">
             <div *ngIf="(selectedUser.associatedSchools | func: idToSchoolMapper) | func: joinStrings as joinedAssociatedSchoolNames"
                 class="schools">
-                <p *ngIf="joinedAssociatedSchoolNames.length">בתי ספר: 
+                <p *ngIf="joinedAssociatedSchoolNames.length">בתי ספר:
                     <span> {{ joinedAssociatedSchoolNames }} </span>
                 </p>
             </div>

@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import {Router, RouterOutlet} from '@angular/router';
 import { getAllSchools } from 'src/app/api/server/actions/school-actions';
 import { hasPermissions, UserRoles } from 'src/app/api/server/types/permissions';
 import { School } from 'src/app/api/server/types/school';
@@ -9,13 +9,14 @@ import { SearchComponent } from 'src/app/components/ui/search/search.components'
 import { AuthQuery } from 'src/app/stores/auth/auth.query';
 import { AuthStore } from 'src/app/stores/auth/auth.store';
 import { Page, SchoolSelectionService } from './school-selection.service';
+import {NavbarComponent} from "../../components/ui/navbar/navbar.component";
 
 @Component({
   selector: 'school-selection',
   templateUrl: './school-selection.component.html',
   styleUrls: ['./school-selection.component.less'],
   standalone: true,
-  imports: [SearchComponent, CommonModule, LoaderComponent],
+  imports: [SearchComponent, CommonModule, LoaderComponent, NavbarComponent, RouterOutlet],
 })
 export class SchoolSelectionComponent implements OnInit {
   isLoading = false;
@@ -23,7 +24,7 @@ export class SchoolSelectionComponent implements OnInit {
   schools: School[] = [];
   redirectPage?: Page;
   selectedSchoolId?: string;
-  
+
   constructor(
     private readonly authStore: AuthStore,
     private readonly authQuery: AuthQuery,

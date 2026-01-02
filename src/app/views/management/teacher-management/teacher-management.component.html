@@ -1,6 +1,7 @@
 <loader *ngIf="isLoading"></loader>
 <ng-container *ngIf="!isLoading">
-    <selected-school-info [pageName]="PAGE_NAME" [selectedSchoolName]="schoolName"></selected-school-info>
+  <app-navbar></app-navbar>
+  <selected-school-info [pageName]="PAGE_NAME" [selectedSchoolName]="schoolName"></selected-school-info>
     <my-table [fields]="fields" [entities]="filteredUsers" [filterTemplate]="userFilters" [allowEdit]="false"
         [deleteIcon]="deleteIcon" [additionalActionInputs]="additionalActions"
         (onAction)="handleAction($event)" (onFiltersCleared)="clearFilters()">

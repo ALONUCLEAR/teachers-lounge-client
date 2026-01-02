@@ -1,0 +1,22 @@
+﻿<div class="menu-container position-fixed top-0 end-0 p-3" dir="rtl" style="z-index: 1050;">
+
+  <div class="btn btn-light align-items-center justify-content-center p-1" (click)="toggleMenu()">
+    <img class="position-relative" ngSrc="https://cdn-icons-png.flaticon.com/512/9293/9293128.png" alt="d" height="30" width="28"/>
+  </div>
+
+  <div *ngIf="isMenuOpen" class="menu-dropdown bg-dark text-white mt-2 rounded shadow">
+    <ul class="list-unstyled m-0 p-2">
+      <ng-container *ngFor="let item of menuItems">
+        <li *ngIf="item.neededPermission" class="py-1 px-2 rounded hover-item">
+          <a
+            class="text-decoration-none text-white d-block"
+            [routerLink]="item.link"
+            routerLinkActive="active"
+            (click)="closeMenu()">
+            {{ item.label }}
+          </a>
+        </li>
+      </ng-container>
+    </ul>
+  </div>
+</div>

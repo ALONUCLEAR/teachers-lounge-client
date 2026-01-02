@@ -1,6 +1,7 @@
 <loader *ngIf="isLoading"></loader>
 <ng-container *ngIf="!isLoading">
-    <selected-school-info [selectedSchoolName]="selectedSchoolName" [pageName]="PAGE_NAME"></selected-school-info>
+  <app-navbar></app-navbar>
+  <selected-school-info [selectedSchoolName]="selectedSchoolName" [pageName]="PAGE_NAME"></selected-school-info>
     <list-view
         [data]="associationGroups" [displayMapper]="associationDataMapper" [selectedEntityId]="selectedAssociationId"
         [entityTrackBy]="associationTrackBy" [template]="selectedAssociationTemplate"
@@ -12,7 +13,7 @@
         <div class="title">שם:</div>
         <input type="text" class="value" [ngModel]="associationForm.value.name" (ngModelChange)="setAssociationName($event)"/>
     </div>
-    
+
     <ng-container [ngSwitch]="selectedAssociation.type">
         <div *ngSwitchCase="AssociationType.Subject" class="associated-schools">
             <div class="title-container"><div class="title">בתי ספר מקושרים:</div><p class="requirement">(לפחות אחד)</p></div>

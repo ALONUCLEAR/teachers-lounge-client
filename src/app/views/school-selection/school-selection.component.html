@@ -1,6 +1,7 @@
 <loader *ngIf="isLoading"></loader>
 <div class="container" *ngIf="!isLoading">
-        <ng-container *ngIf="schools?.length">
+  <app-navbar></app-navbar>
+  <ng-container *ngIf="schools?.length">
                 <div class="prompt"> בחרו בית ספר כדי להתקדם אל מסך </div>
                 <div class="title">{{ redirectPage?.name }}</div>
                 <search [entities]="schools" displayField="name" (onEntitySelected)="selectSchool($event[0]?.id)"></search>

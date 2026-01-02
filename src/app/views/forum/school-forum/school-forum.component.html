@@ -1,6 +1,7 @@
 <loader *ngIf="isLoading"></loader>
 <ng-container *ngIf="!isLoading">
-    <selected-school-info class="sticky" [selectedSchoolName]="selectedSchoolName" [pageName]="PAGE_NAME"></selected-school-info>
+  <app-navbar></app-navbar>
+  <selected-school-info class="sticky" [selectedSchoolName]="selectedSchoolName" [pageName]="PAGE_NAME"></selected-school-info>
     <div *ngIf="!subjects?.length" class="no-subjects">לא קיימים נושאים בבית הספר {{selectedSchoolName}}.<br>{{noSubjectsInstructions}}</div>
     <ng-container *ngIf="subjects?.length">
         <div class="filters-and-actions sticky">

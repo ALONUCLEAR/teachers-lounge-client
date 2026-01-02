@@ -9,6 +9,7 @@ import { AccountRecoveryComponent } from './views/no-user/account-recovery/accou
 import { LoginComponent } from './views/no-user/login/login.component';
 import { ForumModule } from './views/forum/forum.module';
 import { ChangePasswordComponent } from './views/no-user/change-password/change-password.component';
+import {NavbarComponent} from "./components/ui/navbar/navbar.component";
 
 const subModules = [ManagementModule, ForumModule];
 
@@ -20,11 +21,12 @@ const subModules = [ManagementModule, ForumModule];
     LoginComponent,
     ChangePasswordComponent,
   ],
-  imports: [
-    AppRoutingModule,
-    BasicModule,
-    ...subModules,
-  ],
+    imports: [
+        AppRoutingModule,
+        BasicModule,
+        ...subModules,
+        NavbarComponent,
+    ],
   providers: [],
   bootstrap: [AppComponent]
 })
