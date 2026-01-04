@@ -21,7 +21,7 @@ export class NavbarComponent {
     { label: 'ניהול משתמשים', link: '/user-status-management', neededPermission: hasPermissions(LocalAuthService.getLoggedUser()!.role,  UserRoles.SuperAdmin) },
     { label: 'ניהול אגודות', link: '/association-management', neededPermission: hasPermissions(LocalAuthService.getLoggedUser()!.role,  UserRoles.Admin) },
     { label: 'ניהול מורים', link: '/teacher-management', neededPermission: hasPermissions(LocalAuthService.getLoggedUser()!.role,  UserRoles.Admin) },
-    { label: 'בחירת בית ספר', link: '/school-selection', neededPermission: hasPermissions(LocalAuthService.getLoggedUser()!.role,  UserRoles.Base) }
+    { label: 'פורום בית ספר', link: '/forum', neededPermission: hasPermissions(LocalAuthService.getLoggedUser()!.role,  UserRoles.Base) }
   ];
 
   toggleMenu() {
