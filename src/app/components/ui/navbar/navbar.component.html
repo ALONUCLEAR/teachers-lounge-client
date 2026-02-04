@@ -1,22 +1,47 @@
-﻿<div class="menu-container position-fixed top-0 end-0 p-3" dir="rtl" style="z-index: 1050;">
-
-  <div class="btn btn-light align-items-center justify-content-center p-1" (click)="toggleMenu()">
-    <img class="position-relative" ngSrc="assets/images/navigation-bar-icon.png" alt="ew" height="30" width="28"/>
-  </div>
-
-  <div *ngIf="isMenuOpen" class="menu-dropdown bg-dark text-white mt-2 rounded shadow">
-    <ul class="list-unstyled m-0 p-2">
-      <ng-container *ngFor="let item of menuItems">
-        <li *ngIf="item.neededPermission" class="py-1 px-2 rounded hover-item">
-          <a
-            class="text-decoration-none text-white d-block"
-            [routerLink]="item.link"
-            routerLinkActive="active"
-            (click)="closeMenu()">
-            {{ item.label }}
-          </a>
-        </li>
-      </ng-container>
-    </ul>
+﻿<div *ngIf="!isMenuOpen" class="menu-container position-fixed top-0 end-0 p-3" dir="rtl" style="z-index: 1050;">
+  <div class="btn btn-transparent border-0 align-items-center justify-content-center p-1" (click)="toggleMenu(content)">
+    <img class="position-relative nav-icon" ngSrc="assets/images/navigation-bar-icon.png" alt="menu" height="30" width="28"/>
   </div>
 </div>
+
+<ng-template #content let-offcanvas>
+  <div class="offcanvas-header bg-dark text-white d-flex justify-content-between align-items-center" dir="rtl">
+    <h5 class="offcanvas-title m-0">עמודים</h5>
+    <button type="button" class="btn-close btn-close-white m-0" aria-label="Close" (click)="offcanvas.dismiss()"></button>
+  </div>
+  
+  <div class="offcanvas-body bg-dark text-white d-flex flex-column" dir="rtl">
+    <ul class="list-unstyled m-0 p-0">
+      <li class="py-2 px-3 rounded hover-item mb-2">
+        <a class="text-decoration-none text-white d-block w-100" routerLink="/forum" routerLinkActive="active" (click)="offcanvas.close()">פורום</a>
+      </li>
+
+      <div ngbAccordion [closeOthers]="true" class="custom-accordion">
+        <div ngbAccordionItem *ngFor="let group of groupedMenus" [collapsed]="activeCategory !== group.title">
+          <h2 ngbAccordionHeader>
+            <button ngbAccordionButton class="bg-dark text-white border-0 w-100 text-end">{{ group.title }}</button>
+          </h2>
+          <div ngbAccordionCollapse>
+            <div ngbAccordionBody>
+              <ng-template>
+                <ul class="list-unstyled m-0 ps-3 pe-1">
+                  <li *ngFor="let item of group.items" class="py-1 pe-1 rounded hover-item">
+                    <a class="text-decoration-none text-white d-block" [routerLink]="item.link" routerLinkActive="active" (click)="offcanvas.close()">
+                      {{ item.label }}
+                    </a>
+                  </li>
+                </ul>
+              </ng-template>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ul>
+
+    <div class="mt-auto">
+      <button class="btn logout-btn w-100 text-end py-2" (click)="logOut()">
+      התנתקות
+      </button>
+    </div>
+  </div>
+</ng-template>
