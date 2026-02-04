@@ -1,29 +1,55 @@
-﻿.menu-container {
-  direction: rtl;
-}
+﻿:host {
+  .menu-container {
+    direction: rtl;
 
-.menu-dropdown {
-  width: 220px;
-  animation: fadeIn 0.2s ease-in-out;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.hover-item:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  transition: background-color 0.2s ease;
-}
-
-a.active {
-  color: #0d6efd !important;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-5px);
+    .btn:hover {
+      opacity: 0.8;
+    }
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+
 }
+
+.offcanvas-body {
+    flex-grow: 1;
+
+    .custom-accordion {
+      --bs-accordion-bg: transparent;
+      --bs-accordion-border-color: transparent;
+      --bs-accordion-btn-color: white;
+      --bs-accordion-active-color: white;
+      --bs-accordion-active-bg: rgba(255, 255, 255, 0.05);
+
+      .accordion-button {
+        padding: 0.75rem 1rem;
+        box-shadow: none;
+        &:after { 
+          filter: invert(1); 
+          margin-right: auto;
+          margin-left: 0;
+        }
+      }
+    }
+
+    .hover-item:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+      transition: background-color 0.2s ease;
+    }
+
+    a.active {
+      color: #0d6efd !important;
+      font-weight: bold;
+    }
+
+    .logout-btn {
+      color: #dc3545;
+      border: 1px solid #dc3545;
+      background: transparent;
+      transition: 0.2s;
+
+      &:hover {
+        background-color: #dc3545;
+        color: #fff;
+      }
+    }
+}
+ 
